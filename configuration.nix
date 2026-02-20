@@ -1,0 +1,413 @@
+# Edit this configuration file to define what should be installed on
+# your system.  Help is available in the configuration.nix(5) man page
+# and in the NixOS manual (accessible by running ‘nixos-help’).
+{ config, pkgs, ... }:
+
+{
+  imports =
+    [ # Include the results of the hardware scan.
+      ./hardware-configuration.nix
+    ];
+  # Define o Zen Kernel
+  boot.kernelPackages = pkgs.linuxPackages_zen;
+
+  # Bootloader.
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
+  boot.kernelParams = [ "amd_pstate=active" ]; # # Ativa o controle fino de energia/clocks
+
+  # Gaming: Steam e Gamemode
+  programs.steam.enable = true;
+  programs.gamemode.enable = true;
+
+  # Configuração TPM
+  boot.initrd.availableKernelModules = [ "tpm_tis" ]; # Driver essencial para o TPM
+  boot.initrd.systemd.enable = true;
+  boot.initrd.systemd.tpm2.enable = true;
+  security.tpm2.enable = true;
+  
+   # "Zé Ram" ZRAM
+   zramSwap = {
+     enable = true;
+     algorithm = "zstd"; # Mais rapido para 4.2GHz
+     memoryPercent = 30; # reserva 30% de ram
+   };
+
+   # Limpeza e Saúde do SSD
+   services.fstrim.enable = true; # Mantem a velocidade do SSD e vida útil
+
+   # 
+
+   virtualisation.virtualbox.guest.enable = pkgs.lib.mkForce false;  # Desativa o drive visual box
+
+
+
+  # Gráficos (Essencial para jogos de Windows/Wine)
+  hardware.graphics = {
+    enable = true;
+    enable32Bit = true;
+  };
+
+     /* # Ativa o driver AMDGPU e suporte gráfico
+  services.xserver.videoDrivers = [ "amdgpu" ];
+  hardware.graphics = {
+    enable = true;
+    enable32Bit = true; # Essencial para Steam/Jogos
+  };
+  
+  # Opcional: Ferramentas para monitorar sua GPU AMD
+  environment.systemPackages = with pkgs; [
+    amdgpu_top
+    lact # Controle de fans e overclock (Interface gráfica)  ];
+}
+*/
+
+  networking.hostName = "alligare"; # Define your hostname.
+  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+
+  # Configure network proxy if necessary
+  # networking.proxy.default = "http://user:password@proxy:port/";
+  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
+
+  # Set your time zone.
+  time.timeZone = "America/Recife";
+
+  # Select internationalisation properties.
+  i18n.defaultLocale = "pt_BR.UTF-8";
+
+  i18n.extraLocaleSettings = {
+    LC_ADDRESS = "pt_BR.UTF-8";
+    LC_IDENTIFICATION = "pt_BR.UTF-8";
+    LC_MEASUREMENT = "pt_BR.UTF-8";
+    LC_MONETARY = "pt_BR.UTF-8";
+    LC_NAME = "pt_BR.UTF-8";
+    LC_NUMERIC = "pt_BR.UTF-8";
+    LC_PAPER = "pt_BR.UTF-8";
+    LC_TELEPHONE = "pt_BR.UTF-8";
+    LC_TIME = "pt_BR.UTF-8";
+    LC_MESSAGES = "pt_BR.UTF-8"; # Esta linha foca nas ajudas e erros
+  };
+
+  # Habilita o servidor de interface gráfica (X11)
+  # You can disable this if you're only using the Wayland session.
+  services.xserver.enable = true; # dasabilitar ao usar XWayland
+ 
+   # Ativação e configuração do XWayland
+ #  services.displayManager.sddm.wayland.enable = true;
+ #  services.displayManager.defaultSession = "plasma"; # Para o Plasma 6/Wayland
+
+    # Habilita o gerenciador de login (SDDM)
+  services.displayManager.sddm.enable = true;
+  # Habilita o ambiente de desktop KDE Plasma 6
+  services.desktopManager.plasma6.enable = true;
+  # Habilitar Flatpak
+    # Configure keymap in X11
+  services.xserver.xkb = {
+    layout = "br";
+    variant = "";
+  };
+
+  # Configure console keymap
+  console.keyMap = "br-abnt2";
+
+  # Define a variável de ambiente globalmente
+  environment.sessionVariables = {
+    nh_FLAKE = "/etc/nixos";
+  };
+   
+  programs.nh = {
+    enable = true;
+    clean.enable = true;
+    clean.extraArgs = "--keep-since 4d --keep 7";
+    flake = "/etc/nixos";
+  };
+
+  # Enable CUPS to print documents.
+  services.printing.enable = true;
+
+  # Enable sound with pipewire.
+  # services.pulseaudio.enable = false;
+  security.rtkit.enable = true;
+  services.pipewire = {
+    enable = true;
+    alsa.enable = true;
+    alsa.support32Bit = true;
+    pulse.enable = true;
+    # If you want to use JACK applications, uncomment this
+    #jack.enable = true;
+
+    # use the example session manager (no others are packaged yet so this is enabled by default,
+    # no need to redefine it in your config for now)
+    #media-session.enable = true;
+  };
+
+  # Enable touchpad support (enabled default in most desktopManager).
+  # services.xserver.libinput.enable = true;
+
+  # Define a user account. Don't forget to set a password with ‘passwd’.
+  users.users._-_-yakov_-_- = {
+    isNormalUser = true;
+    description = "Tiago da Silva Santos";
+    extraGroups = [ "networkmanager" "wheel" "networkmanager" "libvirtd" "microvm" "podman" "video" ];
+    packages = with pkgs; [
+      kdePackages.kate
+      vscode            # Ou vscodium para uma versão open source
+        # Ferramentas de Terminal e Git
+    git
+    gh                  # GitHub CLI
+    tldr                # Resumo de comandos (melhor que o 'man')
+    direnv              # MÁGICA: carrega ambientes de dev ao entrar na pasta
+        # Utilitários
+    #postman             # Para testar APIs
+    #docker-compose      # Orquestração de containers
+    #  thunderbird
+        # Redes sociais
+    telegram-desktop
+    discord
+    # Tema cmd
+    eza
+    bat
+    fzf
+    libsForQt5.qtstyleplugin-kvantum
+    papirus-icon-theme
+    layan-gtk-theme # O tema Layan se assemelha ao visual "moderno/azul" do Zorin
+    ];
+  };
+  
+    # No seu configuration.nix
+programs.zsh = {
+  # O 'enable = true' aqui no sistema é necessário para que o NixOS 
+  # entenda que deve aplicar estas configurações globais ao Zsh.
+  enable = true; 
+
+            # 	Atalhos
+    shellAliases = {
+     nos = "nh os switch";
+      nosu = "nh os switch -u";
+      #hms = "home-manager switch --flake /etc/nixos#_-_-yakov_-_-";
+      #hmn  = "home-manager news --flake /etc/nixos#_-_-yakov_-_-"; # Atalho para as notícias
+      gp = "sudo git -C /etc/nixos push origin main"; # Git push
+        ls = "eza --icons --group-directories-first";
+        ll = "eza -l --icons --git";
+        cat = "bat";
+        c = "printf \"\\033[2J\\033[3J\\033[1;1H\"";
+         };  
+             
+     # 2. A função para o sga aceitar argumentos (FORA do bloco acima)
+         interactiveShellInit = ''
+   sga() {
+      # O parâmetro -C faz o git rodar como se estivesse na pasta /etc/nixos
+      sudo git -C /etc/nixos add .
+      
+      if [ -n "$1" ]; then
+        sudo git -C /etc/nixos commit -m "$1 - $(date +'%Y-%m-%d %H:%M')"
+      else
+        sudo git -C /etc/nixos commit -m "update: $(date +'%Y-%m-%d %H:%M')"
+      fi
+     } 
+
+         # Comando alvejante-> av
+  av() {
+    if [ -z "$1" ]; then
+      echo "🧹 Limpando TUDO (deixando apenas a atual)..."
+      sudo nix-collect-garbage -d
+    else
+      echo "🧹 Mantendo as $1 versões mais recentes..."
+      sudo nix-env --profile /nix/var/nix/profiles/system --delete-generations +$1
+      sudo nix-collect-garbage
+    fi
+
+    echo "⚙️ Otimizando e aplicando Flake..."
+    sudo nix-store --gc
+    sudo nixos-rebuild switch --flake /etc/nixos/
+     }
+  '';
+};
+
+   programs.git.config.safe.directory = [ "/etc/nixos" ];
+
+  
+   # Configurações 
+    nix.settings = {
+    experimental-features = [ "nix-command" "flakes" ];
+    download-buffer-size = 134217728;
+   };
+
+  # Corretor Ortográfico Global
+  # Garante que o sistema aponte para onde os dicionários estão
+  #environment.variables.DICPATH = "/run/current-system/sw/share/hunspell";
+
+   # Habilitar o uinput:
+  hardware.uinput.enable = true;
+	
+   # Ativa o Docker
+  #virtualisation.docker.enable = true;
+
+  # Permite programas e drivers proprietarios
+  nixpkgs.config.allowUnfree = true;
+
+  # List packages installed in system profile. To search, run:
+  # $ nix search wget
+
+  # APPs Global
+  environment.systemPackages = with pkgs; [
+  pkgs.tpm2-tss # TPM seguraça
+   qemu # Esqueleto da máquina virtua
+  OVMF # Necessário se você quiser simular UEFI/Secure Boot na VM
+  amdgpu_top    # Monitor de GPU AMD estilo 'htop'
+  btop          # Monitor de sistema bonitão (CPU, RAM, Rede)
+  # VPN
+  protonvpn-gui  # Ou protonvpn-cli
+   # Temas de ícones e aplicações
+  papirus-icon-theme
+  # Breeze-dark ou outro tema dark para base
+  kdePackages.breeze-gtk
+  # Opcional: motor kvantum para temas mais profundos
+  kdePackages.qtstyleplugin-kvantum 
+  kdePackages.breeze-icons # Base para muitos temas monochrome
+  #qt6Packages.fcitx5-configtool    # Interface para ajustes visuais se precisar
+ # hunspellDicts.pt-br # Dicionário rigoroso
+ # hunspell 
+  nil       # O servidor LSP para Nix
+  nixpkgs-fmt # Opcional: formatador de código para Nix
+  # Para Plasma 6
+  kdePackages.plasma-browser-integration
+  nh # O executável do helper
+  home-manager
+  freerdp
+  
+  #  mangohud  #  Overlay para ver FPS, temperatura e uso de CPU/GPU (AMD)
+  # Adicione ferramentas úteis para monitorar o seu AMD no PC real:
+ # amdgpu_top  # Se tiver GPU AMD, para ver o uso de vídeo
+ # lm_sensors  # Para ver temperaturas reais (comando 'sensors')
+
+    #lact # Gerenciador de energia amd
+  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+     wget # Baixar qualquer coisa via comando
+  ];
+
+   # Ativa o motor da "box" (Podman)
+  virtualisation.podman = {
+    enable = true;
+    dockerCompat = true; # Essencial para o WinBoat reconhecer o Podman
+    defaultNetwork.settings.dns_enabled = true;
+  };
+
+  # IBus escrita rapida em português
+   i18n.inputMethod = {
+   enable = true;
+   type = "ibus";
+   ibus.engines = with pkgs.ibus-engines; [ 
+    typing-booster 
+    ];
+  };
+
+    # Configurações específicas para garantir compatibilidade com KDE/Qt
+   /* environment.variables = {
+    GTK_IM_MODULE = "ibus";
+    QT_IM_MODULE = "ibus";
+    XMODIFIERS = "@im=ibus";
+   };*/
+
+   # 1. Garante que o dconf e dbus estão habilitados no sistema
+     services.dbus.enable = true;
+
+  # Habilitar o uso do Home Manager
+  #  home-manager.enable = true;
+   # 2. Configuração da Escrita Rápida (Fcitx5) com a sintaxe nova
+  /* i18n.inputMethod = {                  # Confira se esta chave existe
+    enable = true;
+    type = "fcitx5";
+    fcitx5.addons = with pkgs;  [
+     fcitx5-gtk
+     fcitx5-lua # Suporte a scripts extras
+    ];                                  
+  };*/            
+ 
+  # 3. Garante que o KDE use o Fcitx5 em vez do corretor padrão do sistema
+  /*environment.variables = {
+    GTK_IM_MODULE = "fcitx";
+    QT_IM_MODULE = "fcitx";
+    XMODIFIERS = "@im=fcitx";
+    # Ativar a Transparência no KDE (Blur)
+    QT_STYLE_OVERRIDE = "kvantum";
+   };*/
+  
+  # O app do Proton funciona melhor com o gnome-keyring mesmo no KDE
+  services.gnome.gnome-keyring.enable = true;
+
+  # Garante que o NetworkManager gerencie a conexão
+  networking.networkmanager.enable = true;
+
+   fonts.packages = with pkgs; [
+  nerd-fonts.jetbrains-mono
+  ];
+
+     # 1. Ativa o daemon da virtualização (KVM/QEMU por baixo)
+  virtualisation.libvirtd.enable = true;
+
+  # 2. Ativa a interface gráfica do virt-manager
+  programs.virt-manager.enable = true;
+  
+  # O BLOCO XDG PORTAL (Pode ficar aqui, entre outras categorias)
+  xdg.portal = {
+    enable = true;
+    extraPortals = [ pkgs.kdePackages.xdg-desktop-portal-kde ];
+    config.common.default = "kde";
+  };
+
+  # systemd.services.lactd.enable = true; # ativar o gerenciador de energia amd
+  # 1. Habilita o gerenciamento de energia base do NixOS
+  powerManagement.enable = true;
+
+  # 2. Perfil de energia (substitui o TLP, ideal para desktops modernos)
+  # Permite alternar entre "Performance", "Balanced" e "Power Saver"
+  services.power-profiles-daemon.enable = true;
+
+  # 4. Evita que o PC suspenda sozinho (opcional para desktops)
+  systemd.targets.sleep.enable = false;
+  systemd.targets.suspend.enable = false;
+  systemd.targets.hibernate.enable = false;
+  systemd.targets.hybrid-sleep.enable = false;
+  
+  #limpesa automatica de gerações
+   /* nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    # Este comando deleta todas as gerações do sistema exceto as últimas 7
+    options = "--delete-old"; */
+
+  # Adicionalmente, para limpar perfis de usuário e ser mais preciso:
+  system.activationScripts.cleanupOldGenerations = {
+    text = ''
+      ${pkgs.nix}/bin/nix-env -p /nix/var/nix/profiles/system --delete-generations +7
+    '';
+  };
+
+  # Some programs need SUID wrappers, can be configured further or are
+  # started in user sessions.
+  # programs.mtr.enable = true;
+  # programs.gnupg.agent = {
+  #   enable = true;
+  #   enableSSHSupport = true;
+  # };
+
+  # List services that you want to enable:
+
+  # Enable the OpenSSH daemon.
+  # services.openssh.enable = true;
+
+  # Open ports in the firewall.
+  # networking.firewall.allowedTCPPorts = [ ... ];
+  # networking.firewall.allowedUDPPorts = [ ... ];
+  # Or disable the firewall altogether.
+  # networking.firewall.enable = false;
+
+  # This value determines the NixOS release from which the default
+  # settings for stateful data, like file locations and database versions
+  # on your system were taken. It‘s perfectly fine and recommended to leave
+  # this value at the release version of the first install of this system.
+  # Before changing this value read the documentation for this option
+  # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
+  system.stateVersion = "25.11"; # Did you read the comment? # build limpo 1
+}
