@@ -242,7 +242,7 @@ programs.zsh = {
   hardware.uinput.enable = true;
 	
    # Ativa o Docker
-  #virtualisation.docker.enable = true;
+   # virtualisation.docker.enable = true;
 
   # Permite programas e drivers proprietarios
   nixpkgs.config.allowUnfree = true;
@@ -296,6 +296,7 @@ programs.zsh = {
   virtualisation.podman = {
     enable = true;
     dockerCompat = true; # Essencial para o WinBoat reconhecer o Podman
+    dockerSocket.enable = true; # Cria o socket que o WinBoat procura
     defaultNetwork.settings.dns_enabled = true;
   };
 
