@@ -4,28 +4,40 @@
 { config, lib, pkgs, modulesPath, ... }:
 
 {
-  imports = [ ];
+  imports =
+    [ (modulesPath + "/installer/scan/not-detected.nix")
+    ];
 
-  boot.initrd.availableKernelModules = [ "ata_piix" "ohci_pci" "ehci_pci" "ahci" "sd_mod" "sr_mod" ];
+  boot.initrd.availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usbhid" "sd_mod" ];
   boot.initrd.kernelModules = [ ];
-  boot.kernelModules = [ ];
+  boot.kernelModules = [ "kvm-amd" ];
   boot.extraModulePackages = [ ];
 
   fileSystems."/" =
-    { device = "/dev/mapper/luks-a4fc790f-72fc-467b-bd20-69cc09945327";
+    { device = "/dev/disk/by-uuid/822b74ea-09a7-465c-b5a8-5fa8e476603a";
       fsType = "ext4";
     };
 
-  boot.initrd.luks.devices."luks-a4fc790f-72fc-467b-bd20-69cc09945327".device = "/dev/disk/by-uuid/a4fc790f-72fc-467b-bd20-69cc09945327";
-
   fileSystems."/boot" =
-    { device = "/dev/disk/by-uuid/C9FC-43CC";
+    { device = "/dev/disk/by-uuid/BFAE-6BB9";
       fsType = "vfat";
       options = [ "fmask=0077" "dmask=0077" ];
     };
 
-  swapDevices = [ ];
+  fileSystems."/srv" =
+    { device = "/dev/disk/by-uuid/9d2c4551-f5c1-462d-afe3-4356b25afbe4";
+      fsType = "ext4";
+    };
+
+  fileSystems."/home" =
+    { device = "/dev/disk/by-uuid/04454677-37fb-4e3e-be76-eb1e2cd9b3fa";
+      fsType = "ext4";
+    };
+
+  swapDevices =
+    [ { device = "/dev/disk/by-uuid/142fee33-f10a-4309-bba8-a71b58682e33"; }
+    ];
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
-  virtualisation.virtualbox.guest.enable = true;
+  hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 }
