@@ -90,11 +90,12 @@
 
   # Habilita o servidor de interface gráfica (X11)
   # You can disable this if you're only using the Wayland session.
-  services.xserver.enable = true; # dasabilitar ao usar XWayland
+  # services.xserver.enable = true; # dasabilitar ao usar XWayland
  
    # Ativação e configuração do XWayland
- #  services.displayManager.sddm.wayland.enable = true;
- #  services.displayManager.defaultSession = "plasma"; # Para o Plasma 6/Wayland
+   services.displayManager.sddm.wayland.enable = true;
+   services.displayManager.defaultSession = "plasma"; # Para o Plasma 6/Wayland
+   programs.xwayland.enable = true;
 
     # Habilita o gerenciador de login (SDDM)
   services.displayManager.sddm.enable = true;
