@@ -306,13 +306,13 @@ programs.zsh = {
 
 
   # IBus escrita rapida em português
-   i18n.inputMethod = {
+   /*i18n.inputMethod = {
    enable = true;
    type = "ibus";
    ibus.engines = with pkgs.ibus-engines; [ 
     typing-booster 
     ];
-  };
+  };*/
 
     # Configurações específicas para garantir compatibilidade com KDE/Qt
    /* environment.variables = {
