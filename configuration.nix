@@ -279,7 +279,7 @@ programs.zsh = {
   vulkan-tools
 
          # Antvírus
-           claav
+           clamav
    	   clamtk
     mangohud  #  Overlay para ver FPS, temperatura e uso de CPU/GPU (AMD)
   # Adicione ferramentas úteis para monitorar o seu AMD no PC real:
