@@ -278,7 +278,7 @@ programs.zsh = {
   freerdp
   vulkan-tools
 
-         # Antvírus
+         # Antvirus
            clamav
    	   clamtk
     mangohud  #  Overlay para ver FPS, temperatura e uso de CPU/GPU (AMD)
