@@ -41,9 +41,10 @@
    environment.variables.AMD_VULKAN_ICD = "RADV"; # Força o uso do driver mais estável por padrão
 
    virtualisation.virtualbox.guest.enable = pkgs.lib.mkForce false;  # Desativa o drive visual box
-  
-   programs.ssh.startAgent = false;
-   services.gnome.gcr-ssh-agent.enable = false;
+
+   # seguração de git mas não nescesaria no kde ou na minah atual configuração  
+    programs.ssh.startAgent = false;
+    services.gnome.gcr-ssh-agent.enable = false;
 
 
       # Ativa o driver AMDGPU e suporte gráfico
