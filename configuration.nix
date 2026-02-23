@@ -193,32 +193,30 @@ programs.zsh = {
              
      # 2. A função para o sga aceitar argumentos (FORA do bloco acima)
          interactiveShellInit = ''
-  sga() {
-    # Agora aponta para a sua pasta na Home e sem sudo
-    git -C "/home/_-_-yakov_-_-/nixos-config" add .
-    
-    if [ -n "$1" ]; then
-      git -C "/home/_-_-yakov_-_-/nixos-config" commit -m "$1 - $(date +'%Y-%m-%d %H:%M')"
-    else
-      git -C "/home/_-_-yakov_-_-/nixos-config" commit -m "update: $(date +'%Y-%m-%d %H:%M')"
-    fi
-  }
+      # Função para Add e Commit rápido
+    sga() {
+      git -C "/home/_-_-yakov_-_-/nixos-config" add .
+      
+      # No Zsh, podemos usar a expansão de parâmetros diretamente
+      local msg="''${1:-update}" 
+      
+      git -C "/home/_-_-yakov_-_-/nixos-config" commit -m "$msg - ''$(date +'%Y-%m-%d %H:%M')"
+    }
 
-  av() {
-    if [ -z "$1" ]; then
-      echo "🧹 Limpando TUDO (deixando apenas a atual)..."
-      sudo nix-collect-garbage -d
-    else
-      echo "🧹 Mantendo as $1 versões mais recentes..."
-      sudo nix-env --profile /nix/var/nix/profiles/system --delete-generations +$1
-      sudo nix-collect-garbage
-    fi
-
-    echo "⚙️ Otimizando e aplicando Flake da Home..."
-    sudo nix-store --gc
-    # Atualizado para usar o flake da sua Home
-    nh os switch /home/_-_-yakov_-_-/nixos-config
-  }
+    # Função para Limpeza e Rebuild (usando o nh)
+    av() {
+      if [ -z "''$1" ]; then
+        echo "🧹 Limpando TUDO..."
+        sudo nix-collect-garbage -d
+      else
+        echo "🧹 Mantendo as ''$1 versões..."
+        sudo nix-env --profile /nix/var/nix/profiles/system --delete-generations "+''$1"
+        sudo nix-collect-garbage
+      fi
+      echo "⚙️ Aplicando Flake..."
+      sudo nix-store --gc
+      nh os switch /home/_-_-yakov_-_-/nixos-config
+    }
 '';
 
 };
