@@ -52,7 +52,7 @@
     enable = true;
     enable32Bit = true; # Essencial para Steam/Wine/Jogos
     extraPackages = with pkgs; [
-      vaapiVdpau
+      vaapiVdpau-drive
       libvdpau-va-gl
       amdvlk # Driver Vulkan da AMD
     ];
@@ -237,6 +237,9 @@ programs.zsh = {
   # Corretor Ortográfico Global
   # Garante que o sistema aponte para onde os dicionários estão
   #environment.variables.DICPATH = "/run/current-system/sw/share/hunspell";
+
+   # Bluetooth & WI-FI
+   hardware.enableAllFirmware = true;
 
    # Habilitar o uinput:
   hardware.uinput.enable = true;
