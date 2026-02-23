@@ -1,0 +1,4 @@
+my-gpg-backup.asc
+*.asc
+*.key
+secret.nix
