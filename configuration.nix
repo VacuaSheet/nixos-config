@@ -169,7 +169,7 @@
     libsForQt5.qtstyleplugin-kvantum
     papirus-icon-theme
     layan-gtk-theme # O tema Layan se assemelha ao visual "moderno/azul" do Zorin
-    ];zshrc
+    ];
   };
   
     # No seu configuration.nix
