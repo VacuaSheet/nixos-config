@@ -39,28 +39,15 @@
    # 
 
    virtualisation.virtualbox.guest.enable = pkgs.lib.mkForce false;  # Desativa o drive visual box
+  
+   programs.ssh.startAgent = true;
 
-
-
-  # Gráficos (Essencial para jogos de Windows/Wine)
-  hardware.graphics = {
-    enable = true;
-    enable32Bit = true;
-  };
-
-     /* # Ativa o driver AMDGPU e suporte gráfico
+      # Ativa o driver AMDGPU e suporte gráfico
   services.xserver.videoDrivers = [ "amdgpu" ];
   hardware.graphics = {
     enable = true;
     enable32Bit = true; # Essencial para Steam/Jogos
   };
-  
-  # Opcional: Ferramentas para monitorar sua GPU AMD
-  environment.systemPackages = with pkgs; [
-    amdgpu_top
-    lact # Controle de fans e overclock (Interface gráfica)  ];
-}
-*/
 
   networking.hostName = "alligare"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
@@ -90,7 +77,7 @@
 
   # Habilita o servidor de interface gráfica (X11)
   # You can disable this if you're only using the Wayland session.
-  # services.xserver.enable = true; # dasabilitar ao usar XWayland
+   services.xserver.enable = true; # Nescessario mesmo ao usar XWayland
  
    # Ativação e configuração do XWayland
    services.displayManager.sddm.wayland.enable = true;
@@ -277,13 +264,14 @@ programs.zsh = {
   home-manager
   freerdp
   
-  #  mangohud  #  Overlay para ver FPS, temperatura e uso de CPU/GPU (AMD)
+    mangohud  #  Overlay para ver FPS, temperatura e uso de CPU/GPU (AMD)
   # Adicione ferramentas úteis para monitorar o seu AMD no PC real:
- # amdgpu_top  # Se tiver GPU AMD, para ver o uso de vídeo
- # lm_sensors  # Para ver temperaturas reais (comando 'sensors')
+    amdgpu_top  # Se tiver GPU AMD, para ver o uso de vídeo
+    lm_sensors  # Para ver temperaturas reais (comando 'sensors')
+    lact # Controle de fans e overclock (Interface gráfica)
 
-    #lact # Gerenciador de energia amd
-  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+    lact # Gerenciador de energia amd
+    vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
      wget # Baixar qualquer coisa via comando
   ];
 
