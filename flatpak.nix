@@ -19,6 +19,8 @@ in
       "com.github.tchx84.Flatseal"
       "org.mozilla.firefox"
       "io.gitlab.librewolf-community"
+      "com.usebottles.bottles"
+      "net.lutris.Lutris -y"
     ];
 
   overrides = {

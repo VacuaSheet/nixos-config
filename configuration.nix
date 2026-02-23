@@ -278,6 +278,9 @@ programs.zsh = {
   freerdp
   vulkan-tools
 
+         # Antvírus
+           claav
+   	   clamtk
     mangohud  #  Overlay para ver FPS, temperatura e uso de CPU/GPU (AMD)
   # Adicione ferramentas úteis para monitorar o seu AMD no PC real:
     amdgpu_top  # Se tiver GPU AMD, para ver o uso de vídeo
@@ -295,6 +298,10 @@ programs.zsh = {
     dockerCompat = true; # Essencial para o WinBoat reconhecer o Podman
     defaultNetwork.settings.dns_enabled = true;
   };
+
+
+  # Ativa o serviço qe baixar a lista de vírus novos (Fundamental!)
+     services.clamv.enable = true;
 
   # IBus escrita rapida em português
    i18n.inputMethod = {
@@ -368,10 +375,10 @@ programs.zsh = {
   services.power-profiles-daemon.enable = true;
 
   # 4. Evita que o PC suspenda sozinho (opcional para desktops)
-  systemd.targets.sleep.enable = false;
+  /*systemd.targets.sleep.enable = false;
   systemd.targets.suspend.enable = false;
   systemd.targets.hibernate.enable = false;
-  systemd.targets.hybrid-sleep.enable = false;
+  systemd.targets.hybrid-sleep.enable = false;*/
   
   #limpesa automatica de gerações
    /* nix.gc = {
