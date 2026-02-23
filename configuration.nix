@@ -56,7 +56,6 @@
       libvdpau-va-gl
     ];
     extraPackages32 = with pkgs.pkgsi686Linux; [
-      driversi686Linux.amdvlk # Vulkan 32-bit para jogos antigos
     ];
   };
 
