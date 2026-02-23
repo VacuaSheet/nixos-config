@@ -43,6 +43,8 @@
    virtualisation.virtualbox.guest.enable = pkgs.lib.mkForce false;  # Desativa o drive visual box
   
    programs.ssh.startAgent = true;
+   services.gnome.gcr-ssh-agent.enable = false;
+
 
       # Ativa o driver AMDGPU e suporte gráfico
   services.xserver.videoDrivers = [ "amdgpu" ];
