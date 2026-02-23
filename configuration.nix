@@ -42,7 +42,7 @@
 
    virtualisation.virtualbox.guest.enable = pkgs.lib.mkForce false;  # Desativa o drive visual box
   
-   programs.ssh.startAgent = true;
+   programs.ssh.startAgent = false;
    services.gnome.gcr-ssh-agent.enable = false;
 
 
