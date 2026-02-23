@@ -392,6 +392,7 @@ programs.zsh = {
    programs.gnupg.agent = {
      enable = true;
      enableSSHSupport = true;
+     pinentryPackage = pkgs.pinentry-qt; # Versão para KDE/Qt
    };
 
   # List services that you want to enable:
