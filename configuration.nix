@@ -54,10 +54,10 @@
     extraPackages = with pkgs; [
       libva-vdpau-driver
       libvdpau-va-gl
-      amdvlk # Driver Vulkan da AMD
     ];
     extraPackages32 = with pkgs.pkgsi686Linux; [
       driversi686Linux.amdvlk # Vulkan 32-bit para jogos antigos
+      amdvlk # Driver Vulkan da AMD
     ];
   };
 
