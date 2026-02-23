@@ -301,7 +301,9 @@ programs.zsh = {
 
 
   # Ativa o serviço qe baixar a lista de vírus novos (Fundamental!)
-     services.clamav.daemon.enable = true;
+     services.clamav.daemon.enable = false; # O tempo todo ligado se true
+     services.clamav.updater.enable = true; # Atualização de vírus
+
 
   # IBus escrita rapida em português
    i18n.inputMethod = {
