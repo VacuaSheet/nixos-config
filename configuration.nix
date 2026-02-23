@@ -169,7 +169,7 @@
     libsForQt5.qtstyleplugin-kvantum
     papirus-icon-theme
     layan-gtk-theme # O tema Layan se assemelha ao visual "moderno/azul" do Zorin
-    ];
+    ];zshrc
   };
   
     # No seu configuration.nix
@@ -195,12 +195,12 @@ programs.zsh = {
          interactiveShellInit = ''
   sga() {
     # Agora aponta para a sua pasta na Home e sem sudo
-    git -C /home/_-_-yakov_-_-/nixos-config add .
+    git -C "/home/_-_-yakov_-_-/nixos-config" add .
     
     if [ -n "$1" ]; then
-      git -C /home/_-_-yakov_-_-/nixos-config commit -m "$1 - $(date +'%Y-%m-%d %H:%M')"
+      git -C "/home/_-_-yakov_-_-/nixos-config" commit -m "$1 - $(date +'%Y-%m-%d %H:%M')"
     else
-      git -C /home/_-_-yakov_-_-/nixos-config commit -m "update: $(date +'%Y-%m-%d %H:%M')"
+      git -C "/home/_-_-yakov_-_-/nixos-config" commit -m "update: $(date +'%Y-%m-%d %H:%M')"
     fi
   }
 
