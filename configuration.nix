@@ -15,6 +15,8 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelParams = [ "amd_pstate=active" ]; # # Ativa o controle fino de energia/clocks
+  # Garante que o driver carregue cedo no boot para evitar problemas de resolução
+  boot.initrd.kernelModules = [ "amdgpu" ];
 
   # Gaming: Steam e Gamemode
   programs.steam.enable = true;
@@ -36,7 +38,7 @@
    # Limpeza e Saúde do SSD
    services.fstrim.enable = true; # Mantem a velocidade do SSD e vida útil
 
-   # 
+   environment.variables.AMD_VULKAN_ICD = "RADV"; # Força o uso do driver mais estável por padrão
 
    virtualisation.virtualbox.guest.enable = pkgs.lib.mkForce false;  # Desativa o drive visual box
   
@@ -46,7 +48,15 @@
   services.xserver.videoDrivers = [ "amdgpu" ];
   hardware.graphics = {
     enable = true;
-    enable32Bit = true; # Essencial para Steam/Jogos
+    enable32Bit = true; # Essencial para Steam/Wine/Jogos
+    extraPackages = with pkgs; [
+      vaapiVdpau
+      libvdpau-va-gl
+      amdvlk # Driver Vulkan da AMD
+    ];
+    extraPackages32 = with pkgs.pkgsi686Linux; [
+      driversi686Linux.amdvlk # Vulkan 32-bit para jogos antigos
+    ];
   };
 
   networking.hostName = "alligare"; # Define your hostname.
@@ -170,31 +180,31 @@ programs.zsh = {
 
             # 	Atalhos
     shellAliases = {
-     nos = "nh os switch";
-      nosu = "nh os switch -u";
+     nos = "nh os switch /home/_-_-yakov_-_-/nixos-config";
+      nosu = "nh os switch -u /home/_-_-yakov_-_-/nixos-config";
       #hms = "home-manager switch --flake /etc/nixos#_-_-yakov_-_-";
       #hmn  = "home-manager news --flake /etc/nixos#_-_-yakov_-_-"; # Atalho para as notícias
-      gp = "sudo git -C /etc/nixos push origin main"; # Git push
+      gp = "sudo git -C home/_-_-yakov_-_-/nixos-config push origin main"; # Git push
         ls = "eza --icons --group-directories-first";
         ll = "eza -l --icons --git";
         cat = "bat";
-        c = "printf \"\\033[2J\\033[3J\\033[1;1H\"";
+        c = "printf \"\\033[2J\\033[3J\\033[1;1H\"" ;
          };  
              
      # 2. A função para o sga aceitar argumentos (FORA do bloco acima)
          interactiveShellInit = ''
-   sga() {
-      # O parâmetro -C faz o git rodar como se estivesse na pasta /etc/nixos
-      sudo git -C /etc/nixos add .
-      
-      if [ -n "$1" ]; then
-        sudo git -C /etc/nixos commit -m "$1 - $(date +'%Y-%m-%d %H:%M')"
-      else
-        sudo git -C /etc/nixos commit -m "update: $(date +'%Y-%m-%d %H:%M')"
-      fi
-     } 
+   interactiveShellInit = ''
+  sga() {
+    # Agora aponta para a sua pasta na Home e sem sudo
+    git -C /home/_-_-yakov_-_-/nixos-config add .
+    
+    if [ -n "$1" ]; then
+      git -C /home/_-_-yakov_-_-/nixos-config commit -m "$1 - $(date +'%Y-%m-%d %H:%M')"
+    else
+      git -C /home/_-_-yakov_-_-/nixos-config commit -m "update: $(date +'%Y-%m-%d %H:%M')"
+    fi
+  }
 
-         # Comando alvejante-> av
   av() {
     if [ -z "$1" ]; then
       echo "🧹 Limpando TUDO (deixando apenas a atual)..."
@@ -205,11 +215,13 @@ programs.zsh = {
       sudo nix-collect-garbage
     fi
 
-    echo "⚙️ Otimizando e aplicando Flake..."
+    echo "⚙️ Otimizando e aplicando Flake da Home..."
     sudo nix-store --gc
-    sudo nixos-rebuild switch --flake /etc/nixos/
-     }
-  '';
+    # Atualizado para usar o flake da sua Home
+    nh os switch /home/_-_-yakov_-_-/nixos-config
+  }
+'';
+
 };
 
    programs.git.config.safe.directory = [ "/etc/nixos" ];
