@@ -52,7 +52,7 @@
     enable = true;
     enable32Bit = true; # Essencial para Steam/Wine/Jogos
     extraPackages = with pkgs; [
-      vaapiVdpau-drive
+      libva-vdpau-driver
       libvdpau-va-gl
       amdvlk # Driver Vulkan da AMD
     ];
