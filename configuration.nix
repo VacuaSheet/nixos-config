@@ -193,7 +193,6 @@ programs.zsh = {
              
      # 2. A função para o sga aceitar argumentos (FORA do bloco acima)
          interactiveShellInit = ''
-   interactiveShellInit = ''
   sga() {
     # Agora aponta para a sua pasta na Home e sem sudo
     git -C /home/_-_-yakov_-_-/nixos-config add .
