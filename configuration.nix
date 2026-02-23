@@ -17,6 +17,9 @@
   boot.kernelParams = [ "amd_pstate=active" ]; # # Ativa o controle fino de energia/clocks
   # Garante que o driver carregue cedo no boot para evitar problemas de resolução
   boot.initrd.kernelModules = [ "amdgpu" ];
+  # Isso garante que os módulos de virtualização sejam carregados
+  boot.kernelModules = [ "kvm-amd" ]; # ou "kvm-intel" se seu processador for AMD
+  
 
   # Gaming: Steam e Gamemode
   programs.steam.enable = true;
