@@ -178,13 +178,13 @@ programs.zsh = {
   # entenda que deve aplicar estas configurações globais ao Zsh.
   enable = true; 
 
-            # 	Atalhos
+            # 	vulkan-toolsvulkan-toolsAtalhos
     shellAliases = {
      nos = "nh os switch /home/_-_-yakov_-_-/nixos-config";
       nosu = "nh os switch -u /home/_-_-yakov_-_-/nixos-config";
       #hms = "home-manager switch --flake /etc/nixos#_-_-yakov_-_-";
       #hmn  = "home-manager news --flake /etc/nixos#_-_-yakov_-_-"; # Atalho para as notícias
-      gp = "sudo git -C home/_-_-yakov_-_-/nixos-config push origin main"; # Git push
+      gp = "git -C home/_-_-yakov_-_-/nixos-config push origin main"; # Git push
         ls = "eza --icons --group-directories-first";
         ll = "eza -l --icons --git";
         cat = "bat";
@@ -277,7 +277,8 @@ programs.zsh = {
   nh # O executável do helper
   home-manager
   freerdp
-  
+  vulkan-tools
+
     mangohud  #  Overlay para ver FPS, temperatura e uso de CPU/GPU (AMD)
   # Adicione ferramentas úteis para monitorar o seu AMD no PC real:
     amdgpu_top  # Se tiver GPU AMD, para ver o uso de vídeo
