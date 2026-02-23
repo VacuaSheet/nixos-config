@@ -4,7 +4,7 @@
    # Baixamos o arquivo binário puro (mais estável no NixOS)
   winboat-bin = pkgs.fetchurl {
     url = "https://github.com";
-    sha256 = "sha256-DbKQVMJ5VQBehNmnp6P1AHxVQFKlZUnq4LTWX38czbE=";
+    sha256 = "sha256-mkvxX06CI54qicsW9Z77URhBovIOxWf0udTJgG2fueQ=";
       /* sha256 = "0000000000000000000000000000000000000000000000000000";
           vai dar erro e o erro vai dizer oque precisa se for diferente do atual*/
    };
