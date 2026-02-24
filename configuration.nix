@@ -163,7 +163,7 @@
     #postman             # Para testar APIs
     #docker-compose      # Orquestração de containers
     #  thunderbird
-       Obsidian # Bloco de notas e mais
+       obsidian # Bloco de notas e mais
         # Redes sociais
     telegram-desktop
     discord
