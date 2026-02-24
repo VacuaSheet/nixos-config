@@ -288,7 +288,7 @@ programs.zsh = {
   home-manager
   freerdp
   vulkan-tools
-  7zip # Descompactador
+  p7zip # Descompactador
 
          # Antvirus
            clamav
