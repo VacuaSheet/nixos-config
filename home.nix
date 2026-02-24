@@ -1,9 +1,5 @@
 { config, pkgs, inputs, ... }:
 
-  let
-  
-   };
-   in
  {
 
   home.username = "_-_-yakov_-_-";
