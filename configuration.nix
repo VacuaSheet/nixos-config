@@ -156,7 +156,6 @@
       vscode            # Ou vscodium para uma versão open source
         # Ferramentas de Terminal e Git
     git
-    git-lfs
     gh                  # GitHub CLI
     tldr                # Resumo de comandos (melhor que o 'man')
     direnv              # MÁGICA: carrega ambientes de dev ao entrar na pasta
