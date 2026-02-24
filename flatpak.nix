@@ -20,7 +20,8 @@ in
       "org.mozilla.firefox"
       "io.gitlab.librewolf-community"
       "com.usebottles.bottles"
-      "net.lutris.Lutris -y"
+      "flathub:app/net.lutris.Lutris//stable"          # Lutris
+      "flathub:app/com.heroicgameslauncher.hgl//stable" # Heroic Games Launcher
     ];
 
   overrides = {
