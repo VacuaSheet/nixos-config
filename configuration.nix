@@ -150,7 +150,7 @@
   users.users._-_-yakov_-_- = {
     isNormalUser = true;
     description = "Tiago da Silva Santos";
-    extraGroups = [ "networkmanager" "wheel" "networkmanager" "libvirtd" "microvm" "podman" "video" ];
+    extraGroups = [ "networkmanager" "wheel" "networkmanager" "libvirtd" "microvm" "podman" "docker" "video" ];
     packages = with pkgs; [
       kdePackages.kate
       vscode            # Ou vscodium para uma versão open source
