@@ -287,7 +287,7 @@ programs.zsh = {
   home-manager
   freerdp
   vulkan-tools
-  pkgs.rocm-opencl-icd # Aceleração OpenCL para AMD
+  rocmPackages.clr.icd # Caminho direto para o driver ICD
 
          # Antvirus
            clamav
