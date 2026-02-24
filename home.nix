@@ -28,6 +28,7 @@
     libvirt
     virt-viewer 
     freerdp # Necessário para o LSW exibir as janelas
+    podman-compose  # Essencial para o WinBoat subir o Windows
     hunspell
     hunspellDicts.pt_BR
   ];
