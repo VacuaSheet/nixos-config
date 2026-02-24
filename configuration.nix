@@ -58,6 +58,7 @@
     extraPackages = with pkgs; [
       libva-vdpau-driver
       libvdpau-va-gl
+      rocmPackages.clr # # Aceleração OpenCL para AMD
     ];
     extraPackages32 = with pkgs.pkgsi686Linux; [
     ];
@@ -287,7 +288,6 @@ programs.zsh = {
   home-manager
   freerdp
   vulkan-tools
-  rocmPackages.clr.icd # Caminho direto para o driver ICD
 
          # Antvirus
            clamav
