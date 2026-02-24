@@ -289,6 +289,7 @@ programs.zsh = {
   freerdp
   vulkan-tools
   p7zip # Descompactador
+  rar   # Descompactador não freeUser	
 
          # Antvirus
            clamav
