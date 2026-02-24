@@ -298,8 +298,8 @@ programs.zsh = {
    # Ativa o motor da "box" (Podman)
   virtualisation.podman = {
     enable = true;
-    dockerCompat = true; # Essencial para o WinBoat reconhecer o Podman
-    dockerSocket.enable = true; # Cria o socket que o WinBoat procura
+  #  dockerCompat = true; # Essencial para o WinBoat reconhecer o Podman
+  #  dockerSocket.enable = true; # Cria o socket que o WinBoat procura
     defaultNetwork.settings.dns_enabled = true;
   };
 

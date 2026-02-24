@@ -1,12 +1,7 @@
 { config, pkgs, inputs, ... }:
 
   let
-   # Baixamos o arquivo binário puro (mais estável no NixOS)
-  winboat-bin = pkgs.fetchurl {
-    url = "https://github.com";
-    sha256 = "sha256-mkvxX06CI54qicsW9Z77URhBovIOxWf0udTJgG2fueQ=";
-      /* sha256 = "0000000000000000000000000000000000000000000000000000";
-          vai dar erro e o erro vai dizer oque precisa se for diferente do atual*/
+  
    };
    in
  {
@@ -20,15 +15,10 @@
     git
     docker-compose
     pkgs.nerd-fonts.jetbrains-mono
-    pkgs.kitty
-    # Pacotes de jogos do nix-gaming
-   inputs.nix-gaming.packages.${pkgs.stdenv.hostPlatform.system}.wine-ge
-       # Como o WinBoat costuma ser AppImage no NixOS, usamos o appimage-run
-    appimage-run 
+    pkgs.kitty  
     libvirt
     virt-viewer 
     freerdp # Necessário para o LSW exibir as janelas
-    podman-compose  # Essencial para o WinBoat subir o Windows
     hunspell
     hunspellDicts.pt_BR
   ];
