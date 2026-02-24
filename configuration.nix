@@ -304,9 +304,6 @@ programs.zsh = {
      wget # Baixar qualquer coisa via comando
   ];
 
-  # Abilita uso unfree do p7zip
-    nixpkgs.config.allowUnfree = true;
-
   # Habilita o suporte a 32 bits para o Wine/Lutris enxergar a placa
     hardware.amdgpu.initrd.enable = true;
 
