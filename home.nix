@@ -40,18 +40,6 @@
     };
    };   
 
-    # Exemplo de como criar um atalho para o WinBoat no seu menu
-  home.file.".local/share/applications/winboat.desktop".text = ''
-    [Desktop Entry]
-    Name=WinBoat
-    Comment=Rodar Windows em contêiner seguro (Podman)
-    Exec=${pkgs.appimage-run}/bin/appimage-run ${winboat-bin}
-    Icon=distributor-logo-windows
-    Type=Application
-    Categories=System;
-    Terminal=false
-  '';
-
    # MangoHud (Contador de FPS) configurado por código
    programs.mangohud = {
     enable = true;
