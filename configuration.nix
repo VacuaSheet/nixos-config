@@ -163,6 +163,7 @@
     #postman             # Para testar APIs
     #docker-compose      # Orquestração de containers
     #  thunderbird
+       Obsidian # Bloco de notas e mais
         # Redes sociais
     telegram-desktop
     discord
@@ -238,6 +239,12 @@ programs.zsh = {
   # Garante que o sistema aponte para onde os dicionários estão
   #environment.variables.DICPATH = "/run/current-system/sw/share/hunspell";
 
+  # Gamescope
+   programs.gamescope = {
+     enable = true;
+     capSysNice = true; # Melhora a prioridade de CPU para o jogo
+   };
+
    # Bluetooth & WI-FI
    hardware.enableAllFirmware = true;
 
@@ -280,6 +287,7 @@ programs.zsh = {
   home-manager
   freerdp
   vulkan-tools
+  rocmPackages.clr-icd # Aceleração OpenCL
 
          # Antvirus
            clamav
@@ -294,6 +302,9 @@ programs.zsh = {
     vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
      wget # Baixar qualquer coisa via comando
   ];
+
+  # Habilita o suporte a 32 bits para o Wine/Lutris enxergar a placa
+    hardware.amdgpu.initrd.enable = true;
 
    # Ativa o motor da "box" (Podman)
   virtualisation.podman = {
