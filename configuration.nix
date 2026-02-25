@@ -186,7 +186,7 @@
     ];
   };
   
-    # No seu configuration.nix
+    # Atalhos
 programs.zsh = {
   # O 'enable = true' aqui no sistema é necessário para que o NixOS 
   # entenda que deve aplicar estas configurações globais ao Zsh.
