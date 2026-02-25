@@ -268,7 +268,8 @@ programs.zsh = {
     services.dbus.enable = true;
     xdg.portal = {
     enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-gtk ]; # Ou o portal específico do seu ambiente
+    extraPortals = [ pkgs.kdePackages.xdg-desktop-portal-kde ];
+    config.common.default = "kde";
    };
 
 
@@ -426,13 +427,6 @@ programs.zsh = {
   # 2. Ativa a interface gráfica do virt-manager
   programs.virt-manager.enable = true;
   
-  # O BLOCO XDG PORTAL (Pode ficar aqui, entre outras categorias)
-  xdg.portal = {
-    enable = true;
-    extraPortals = [ pkgs.kdePackages.xdg-desktop-portal-kde ];
-    config.common.default = "kde";
-  };
-
   # systemd.services.lactd.enable = true; # ativar o gerenciador de energia amd
   # 1. Habilita o gerenciamento de energia base do NixOS
   powerManagement.enable = true;
