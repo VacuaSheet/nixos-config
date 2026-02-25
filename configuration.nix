@@ -316,7 +316,16 @@ programs.zsh = {
   ];
 
   # Não permite mutar as saidas de audio da parte trazeira enquanto a da frente esta plugada
-  sound.enable = true;
+    systemd.user.services.unmute-audio = {
+     description = "Unmute Line Out on startup";
+       wantedBy = [ "default.target" ];
+     serviceConfig = {
+       Type = "oneshot";
+       ExecStart = "${pkgs.alsa-utils}/bin/amixer sset 'Line' 100% unmute";
+       RemainAfterExit = true;
+      };
+    };
+
 
   # Habilita o suporte a 32 bits para o Wine/Lutris enxergar a placa
     hardware.amdgpu.initrd.enable = true;
