@@ -260,6 +260,14 @@ programs.zsh = {
   download-buffer-size = 536870912; # 500 MB
    };
 
+   # Para programas que estão no flatpak como o steam conversar com o hardower da maquina
+    services.dbus.enable = true;
+    xdg.portal = {
+    enable = true;
+    extraPortals = [ pkgs.xdg-desktop-portal-gtk ]; # Ou o portal específico do seu ambiente
+   };
+
+
   # Corretor Ortográfico Global
   # Garante que o sistema aponte para onde os dicionários estão
   #environment.variables.DICPATH = "/run/current-system/sw/share/hunspell";
