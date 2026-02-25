@@ -98,16 +98,13 @@
     LC_MESSAGES = "pt_BR.UTF-8"; # Esta linha foca nas ajudas e erros
   };
 
-  programs.ssh = {
-  enable = true;
-  matchBlocks = {
-    "github.com" = {
-      hostname = "ssh.github.com";
-      port = 443;
-      user = "git";
-    };
-  };
-};
+  # No configuration.nix (Global para todos os usuários)
+programs.ssh.extraConfig = ''
+  Host github.com
+      Hostname ssh.github.com
+      Port 443
+      User git
+'';
 
 
   # Habilita o servidor de interface gráfica (X11)
