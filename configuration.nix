@@ -31,11 +31,19 @@
   boot.initrd.systemd.tpm2.enable = true;
   security.tpm2.enable = true;
   
+   boot.kernel.sysctl = {
+  "vm.swappiness" = 180; # Força o uso do zram antes de esgotar a RAM física
+  "vm.watermark_boost_factor" = 0;
+  "vm.watermark_scale_factor" = 125;
+  "vm.page-cluster" = 0;
+   };
+
+
    # "Zé Ram" ZRAM
    zramSwap = {
      enable = true;
-     algorithm = "zstd"; # Mais rapido para 4.2GHz
-     memoryPercent = 30; # reserva 30% de ram
+     algorithm = "lz4"; # Mais rapido para 4.2GHz
+     memoryPercent = 50; # reserva 30% de ram
    };
 
    # Limpeza e Saúde do SSD
