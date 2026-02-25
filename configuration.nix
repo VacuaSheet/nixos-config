@@ -173,6 +173,7 @@ programs.ssh.extraConfig = ''
       vscode            # Ou vscodium para uma versão open source
         # Ferramentas de Terminal e Git
     git
+    git-lfs
     gh                  # GitHub CLI
     tldr                # Resumo de comandos (melhor que o 'man')
     direnv              # MÁGICA: carrega ambientes de dev ao entrar na pasta
@@ -193,6 +194,9 @@ programs.ssh.extraConfig = ''
     layan-gtk-theme # O tema Layan se assemelha ao visual "moderno/azul" do Zorin
     ];
   };
+
+    programs.git.enable = true;
+   programs.git.lfs.enable = true;
   
     # Atalhos
 programs.zsh = {
