@@ -399,6 +399,8 @@ programs.zsh = {
     # Ativar a Transparência no KDE (Blur)
     QT_STYLE_OVERRIDE = "kvantum";
    };*/
+
+  networking.networkmanager.wifi.powersave = false;
   
   # O app do Proton funciona melhor com o gnome-keyring mesmo no KDE
   services.gnome.gnome-keyring.enable = true;
