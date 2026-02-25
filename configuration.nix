@@ -243,6 +243,14 @@ programs.zsh = {
     nix.settings = {
     experimental-features = [ "nix-command" "flakes" ];
     download-buffer-size = 134217728;
+    # Aumenta o número de conexões HTTP simultâneas
+  http-connections = 50;
+  
+  # Aumenta o número de downloads paralelos de substitutos (pacotes binários)
+  max-substitution-jobs = 20;
+
+  # Aumenta o tamanho do buffer de download para evitar avisos e lentidão em arquivos grandes
+  download-buffer-size = 536870912; # 500 MB
    };
 
   # Corretor Ortográfico Global
