@@ -22,7 +22,6 @@ in
       "com.usebottles.bottles"
       "net.lutris.Lutris"          # Lutris
       "com.heroicgameslauncher.hgl" # Heroic Games Launcher
-      "com.valvesoftware.Steam" # Steam Laucher
     ];
 
   overrides = {

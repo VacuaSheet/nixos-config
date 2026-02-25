@@ -21,8 +21,9 @@
   boot.kernelModules = [ "kvm-amd" ]; # ou "kvm-intel" se seu processador for AMD
   
 
-  # Gaming: Gamemode
+  # Gaming: Gamemode & Steam
   programs.gamemode.enable = true;
+  programs.steam.enable = true
 
   # Configuração TPM
   boot.initrd.availableKernelModules = [ "tpm_tis" ]; # Driver essencial para o TPM
