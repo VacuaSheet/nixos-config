@@ -387,9 +387,6 @@ programs.zsh = {
     XMODIFIERS = "@im=ibus";
    };*/
 
-   # 1. Garante que o dconf e dbus estão habilitados no sistema
-     services.dbus.enable = true;
-
   # Habilitar o uso do Home Manager
   #  home-manager.enable = true;
    # 2. Configuração da Escrita Rápida (Fcitx5) com a sintaxe nova
