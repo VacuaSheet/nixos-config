@@ -315,6 +315,12 @@ programs.zsh = {
     pavucontrol # controlador de audio
   ];
 
+  # Não permite mutar as saidas de audio da parte trazeira enquanto a da frente esta plugada
+   system.activationScripts.unmuteAudio = ''
+    ${pkgs.alsa-utils}/bin/amixer sset 'Master' unmute
+    ${pkgs.alsa-utils}/bin/amixer sset 'Line' 100% unmute
+   '';
+
   # Habilita o suporte a 32 bits para o Wine/Lutris enxergar a placa
     hardware.amdgpu.initrd.enable = true;
 
