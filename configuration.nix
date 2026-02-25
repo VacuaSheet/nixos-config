@@ -21,8 +21,7 @@
   boot.kernelModules = [ "kvm-amd" ]; # ou "kvm-intel" se seu processador for AMD
   
 
-  # Gaming: Steam e Gamemode
-  programs.steam.enable = true;
+  # Gaming: Gamemode
   programs.gamemode.enable = true;
 
   # Configuração TPM
