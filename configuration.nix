@@ -23,7 +23,7 @@
 
   # Gaming: Gamemode & Steam
   programs.gamemode.enable = true;
-  programs.steam.enable = true
+  programs.steam.enable = true;
 
   # Configuração TPM
   boot.initrd.availableKernelModules = [ "tpm_tis" ]; # Driver essencial para o TPM
