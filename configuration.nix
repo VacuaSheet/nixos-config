@@ -98,6 +98,18 @@
     LC_MESSAGES = "pt_BR.UTF-8"; # Esta linha foca nas ajudas e erros
   };
 
+  programs.ssh = {
+  enable = true;
+  matchBlocks = {
+    "github.com" = {
+      hostname = "ssh.github.com";
+      port = 443;
+      user = "git";
+    };
+  };
+};
+
+
   # Habilita o servidor de interface gráfica (X11)
   # You can disable this if you're only using the Wayland session.
    services.xserver.enable = true; # Nescessario mesmo ao usar XWayland
