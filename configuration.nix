@@ -254,7 +254,6 @@ programs.zsh = {
    # Configurações 
     nix.settings = {
     experimental-features = [ "nix-command" "flakes" ];
-    download-buffer-size = 134217728;
     # Aumenta o número de conexões HTTP simultâneas
   http-connections = 50;
   
