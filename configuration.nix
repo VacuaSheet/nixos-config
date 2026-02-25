@@ -312,6 +312,7 @@ programs.zsh = {
     lact # Gerenciador de energia amd
     vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
      wget # Baixar qualquer coisa via comando
+    pavucontrol # controlador de audio
   ];
 
   # Habilita o suporte a 32 bits para o Wine/Lutris enxergar a placa
