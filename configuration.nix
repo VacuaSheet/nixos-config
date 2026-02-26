@@ -348,16 +348,16 @@ programs.zsh = {
 
   # Não permite mutar as saidas de audio da parte trazeira enquanto a da frente esta plugada
     systemd.user.services.unmute-audio = {
-  description = "Unmute Line Out on startup";
-  wantedBy = [ "graphical-session.target" ]; # Garante que a interface carregou
-  partOf = [ "graphical-session.target" ];
+  description = "Unmute Headset on startup";
+  wantedBy = [ "graphical-session.target" ];
   serviceConfig = {
     Type = "oneshot";
-    ExecStartPre = "${pkgs.coreutils}/bin/sleep 5"; # Espera o PipeWire/Pulse iniciar
-    ExecStart = "${pkgs.alsa-utils}/bin/amixer sset 'Master' 100% unmute"; # 'Master' costuma ser mais eficaz que 'Line'
-    RemainAfterExit = true;
+    # O wpctl é melhor que o amixer para lidar com Headsets USB/Bluetooth/P2
+    ExecStart = "${pkgs.wireplumber}/bin/wpctl set-mute @DEFAULT_AUDIO_SINK@ 0";
+    ExecStartPost = "${pkgs.wireplumber}/bin/wpctl set-volume @DEFAULT_AUDIO_SINK@ 100%";
     };
-  };
+   };
+
 
 
    # Ativa o daemon do OpenSnitch
