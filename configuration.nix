@@ -348,17 +348,17 @@ programs.zsh = {
 
   # Não permite mutar as saidas de audio da parte trazeira enquanto a da frente esta plugada
     systemd.user.services.unmute-audio = {
-  description = "Unmute Headset on startup";
+  description = "Unmute e volume no máximo para o Headset";
   wantedBy = [ "graphical-session.target" ];
+  partOf = [ "graphical-session.target" ];
   serviceConfig = {
     Type = "oneshot";
-    # O wpctl é melhor que o amixer para lidar com Headsets USB/Bluetooth/P2
+    # Garante que o sink padrão não esteja mudo e define volume em 1.0 (100%)
     ExecStart = "${pkgs.wireplumber}/bin/wpctl set-mute @DEFAULT_AUDIO_SINK@ 0";
-    ExecStartPost = "${pkgs.wireplumber}/bin/wpctl set-volume @DEFAULT_AUDIO_SINK@ 100%";
-    };
-   };
-
-
+    ExecStartPost = "${pkgs.wireplumber}/bin/wpctl set-volume @DEFAULT_AUDIO_SINK@ 1.0";
+    RemainAfterExit = true;
+  };
+};
 
    # Ativa o daemon do OpenSnitch
      services.opensnitch.enable = true;
