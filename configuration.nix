@@ -329,6 +329,7 @@ programs.zsh = {
   vulkan-tools
   p7zip # Descompactador
   rar   # Descompactador não freeUser	
+  alsa-utils # APP mantedor do unmute
 
          # Antvirus
            clamav
@@ -369,6 +370,23 @@ programs.zsh = {
      0.0.0.0 mtls.telemetry.ros.rockstargames.com
      0.0.0.0 analytics.socialclub.rockstargames.com
     '';
+
+   # Isso instala as ferramentas de áudio permanentemente
+environment.systemPackages = [ pkgs.alsa-utils ];
+
+# Isso tenta forçar o estado do hardware no boot
+systemd.user.services.unmute-hardware-audio = {
+  description = "Unmute hardware channels";
+  wantedBy = [ "default.target" ];
+  serviceConfig = {
+    Type = "oneshot";
+    # Desmuda o Master e o Headphone no hardware
+    ExecStart = "${pkgs.alsa-utils}/bin/amixer -c 0 sset Master unmute 100%";
+    ExecStartPost = "${pkgs.alsa-utils}/bin/amixer -c 0 sset Headphone unmute 100%";
+    RemainAfterExit = true;
+  };
+};
+
 
   # Habilita o suporte a 32 bits para o Wine/Lutris enxergar a placa
     hardware.amdgpu.initrd.enable = true;
