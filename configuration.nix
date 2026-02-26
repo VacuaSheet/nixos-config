@@ -348,14 +348,17 @@ programs.zsh = {
 
   # Não permite mutar as saidas de audio da parte trazeira enquanto a da frente esta plugada
     systemd.user.services.unmute-audio = {
-     description = "Unmute Line Out on startup";
-       wantedBy = [ "default.target" ];
-     serviceConfig = {
-       Type = "oneshot";
-       ExecStart = "${pkgs.alsa-utils}/bin/amixer sset 'Line' 100% unmute";
-       RemainAfterExit = true;
-      };
+  description = "Unmute Line Out on startup";
+  wantedBy = [ "graphical-session.target" ]; # Garante que a interface carregou
+  partOf = [ "graphical-session.target" ];
+  serviceConfig = {
+    Type = "oneshot";
+    ExecStartPre = "${pkgs.coreutils}/bin/sleep 5"; # Espera o PipeWire/Pulse iniciar
+    ExecStart = "${pkgs.alsa-utils}/bin/amixer sset 'Master' 100% unmute"; # 'Master' costuma ser mais eficaz que 'Line'
+    RemainAfterExit = true;
     };
+  };
+
 
    # Ativa o daemon do OpenSnitch
      services.opensnitch.enable = true;
