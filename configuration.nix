@@ -371,9 +371,6 @@ programs.zsh = {
      0.0.0.0 analytics.socialclub.rockstargames.com
     '';
 
-   # Isso instala as ferramentas de áudio permanentemente
-environment.systemPackages = [ pkgs.alsa-utils ];
-
 # Isso tenta forçar o estado do hardware no boot
 systemd.user.services.unmute-hardware-audio = {
   description = "Unmute hardware channels";
