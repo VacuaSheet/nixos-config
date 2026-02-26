@@ -332,6 +332,8 @@ programs.zsh = {
          # Antvirus
            clamav
    	   clamtk
+         # Ante-Telemetria
+           opensnitch-ui
     mangohud  #  Overlay para ver FPS, temperatura e uso de CPU/GPU (AMD)
   # Adicione ferramentas úteis para monitorar o seu AMD no PC real:
     amdgpu_top  # Se tiver GPU AMD, para ver o uso de vídeo
@@ -355,6 +357,14 @@ programs.zsh = {
       };
     };
 
+   # Ativa o daemon do OpenSnitch
+     services.opensnitch.enable = true;
+     networking.extraHosts = ''
+     0.0.0.0 telemetry.take2games.com
+     0.0.0.0 prod.telemetry.ros.rockstargames.com
+     0.0.0.0 mtls.telemetry.ros.rockstargames.com
+     0.0.0.0 analytics.socialclub.rockstargames.com
+    '';
 
   # Habilita o suporte a 32 bits para o Wine/Lutris enxergar a placa
     hardware.amdgpu.initrd.enable = true;
