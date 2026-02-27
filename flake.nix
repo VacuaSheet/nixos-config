@@ -17,7 +17,7 @@
     nix-gaming.url = "github:fufexan/nix-gaming";
   };
 
-  outputs = { self, nixpkgs, home-manager, nix-flatpak, microvm, nix-gaming, nixpkgs-unstable, ... } @inputs: {
+  outputs = { self, nixpkgs, home-manager, nix-flatpak, microvm, nix-gaming, ... } @inputs: {
     nixosConfigurations.alligare = nixpkgs.lib.nixosSystem {
       # O inherit inputs permite que você use todos os inputs dentro do configuration.nix
       specialArgs = { inherit inputs; };
