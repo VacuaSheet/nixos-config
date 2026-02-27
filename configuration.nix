@@ -202,16 +202,6 @@ programs.ssh.extraConfig = ''
     ];
   };
 
-    # Chrome sandbox
-       programs.firejail.enable = true;
-    programs.firejail.wrappedBinaries = {
-    google-chrome = {
-      executable = "${pkgs.google-chrome}/bin/google-chrome";
-      profile = "${pkgs.firejail}/etc/firejail/google-chrome.profile";
-      };
-     };
-
-
     programs.git.enable = true;
    programs.git.lfs.enable = true;
   
@@ -233,6 +223,7 @@ programs.zsh = {
         ll = "eza -l --icons --git";
         cat = "bat";
         c = "printf \"\\033[2J\\033[3J\\033[1;1H\"" ;
+        flat = "f() { flatpak remote-add --if-not-exists flathub https://dl.flathub.org && flatpak install flathub \"$1\"; }; f";
          };  
              
      # 2. A função para o sga aceitar argumentos (FORA do bloco acima)
