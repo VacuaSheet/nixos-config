@@ -21,7 +21,7 @@
   outputs = { self, nixpkgs, home-manager, nix-flatpak, microvm, nix-gaming, ... } @inputs: {
     nixosConfigurations.alligare = nixpkgs.lib.nixosSystem {
       # O inherit inputs permite que você use todos os inputs dentro do configuration.nix
-      specialArgs = { inherit inputs; };
+      specialArgs = { inherit inputs; unstable = unstablePkgs;  };
       modules = [
 
         # 1. ADICIONE ESTA LINHA ABAIXO PARA DEFINIR A PLATAFORMA
