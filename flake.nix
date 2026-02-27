@@ -3,6 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
+    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable"; # O novo instável
     home-manager = {
       url = "github:nix-community/home-manager/release-25.11";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -15,10 +16,9 @@
     nix-flatpak.url = "github:gmodena/nix-flatpak";
     microvm.url = "github:astro/microvm.nix";
     nix-gaming.url = "github:fufexan/nix-gaming";
-    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable"; # O novo instável
   };
 
-  outputs = { self, nixpkgs, home-manager, nix-flatpak, microvm, nix-gaming, ... } @inputs: {
+  outputs = { self, nixpkgs, home-manager, nix-flatpak, microvm, nix-gaming, nixpkgs-unstable, ... } @inputs: {
     nixosConfigurations.alligare = nixpkgs.lib.nixosSystem {
       # O inherit inputs permite que você use todos os inputs dentro do configuration.nix
       specialArgs = { inherit inputs; };
