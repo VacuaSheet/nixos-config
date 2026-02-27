@@ -182,9 +182,6 @@
   home.stateVersion = "25.11";
 
   # Configuração do vscode para funcionar no linux
-  { pkgs, inputs, ... }: # Certifique-se de que 'inputs' está nos argumentos aqui
-
-{
   programs.vscode = {
     enable = true;
     # Aqui usamos o input 'unstable' que você definiu no flake
@@ -203,7 +200,6 @@
         jnoortheen.nix-ide
       ];
     };
-  };
 }
 
 
