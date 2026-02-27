@@ -172,7 +172,6 @@ programs.ssh.extraConfig = ''
     extraGroups = [ "networkmanager" "wheel" "networkmanager" "libvirtd" "microvm" "podman" "docker" "video" "kvm" ];
     packages = with pkgs; [
       kdePackages.kate
-      vscode            # Ou vscodium para uma versão open source
         # Ferramentas de Terminal e Git
     git
     git-lfs
@@ -330,6 +329,7 @@ programs.zsh = {
   p7zip # Descompactador
   rar   # Descompactador não freeUser	
   alsa-utils # APP mantedor do unmute
+  vscode
 
          # Antvirus
            clamav
