@@ -4,7 +4,7 @@
 { config, pkgs, inputs, ... }:
 let
   # 2. Crie um atalho para os pacotes unstable
-  unstable = inputs.nixpkgs-unstable.legacyPackages.${pkgs.system};
+  unstable = inputs.unstable.legacyPackages.${pkgs.system};
 in
 {
   imports =
