@@ -2,7 +2,10 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 { config, pkgs, ... }:
-
+let
+  # 2. Crie um atalho para os pacotes unstable
+  unstable = inputs.nixpkgs-unstable.legacyPackages.${pkgs.system};
+in
 {
   imports =
     [ # Include the results of the hardware scan.
@@ -299,7 +302,7 @@ programs.zsh = {
   # List packages installed in system profile. To search, run:
   # $ nix search wget
 
-  # APPs Global Estavel
+  # APPs Global
   environment.systemPackages = with pkgs; [
   pkgs.tpm2-tss # TPM seguraça
    qemu # Esqueleto da máquina virtua
@@ -329,6 +332,7 @@ programs.zsh = {
   p7zip # Descompactador
   rar   # Descompactador não freeUser	
   alsa-utils # APP mantedor do unmute
+  unstable.vscode
 
          # Antvirus
            clamav
@@ -339,27 +343,12 @@ programs.zsh = {
   # Adicione ferramentas úteis para monitorar o seu AMD no PC real:
     amdgpu_top  # Se tiver GPU AMD, para ver o uso de vídeo
     lm_sensors  # Para ver temperaturas reais (comando 'sensors')
-    lact # Controle de fans e overclock (Interface gráfica)
-
-    lact # Gerenciador de energia amd
+    lact # Controle de fans e overclock (Interface gráfica)/Gerenciador de energia amd
     vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
      wget # Baixar qualquer coisa via comando
     pavucontrol # controlador de audio
   ];
  
-# APPs Global Instavel
-let
-  # Cria uma instância da unstable com as mesmas configurações de sistema
-  pkgs-unstable = import inputs.nixpkgs-unstable {
-    system = pkgs.system;
-    config.allowUnfree = true;
-  };
-in {
-  environment.systemPackages = [
-    pkgs-unstable.vscode  # Versão unstable
-  ];
-
-
   # Não permite mutar as saidas de audio da parte trazeira enquanto a da frente esta plugada
     systemd.user.services.unmute-audio = {
   description = "Unmute e volume no máximo para o Headset";
