@@ -335,6 +335,7 @@ programs.zsh = {
   p7zip # Descompactador
   rar   # Descompactador não freeUser	
   alsa-utils # APP mantedor do unmute
+  alsa-tools 
   unstable.vscode
 
          # Antvirus
