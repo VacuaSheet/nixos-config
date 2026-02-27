@@ -325,6 +325,7 @@ programs.zsh = {
  # hunspellDicts.pt-br # Dicionário rigoroso
  # hunspell 
   nil       # O servidor LSP para Nix
+  nixd
   nixpkgs-fmt # Opcional: formatador de código para Nix
   # Para Plasma 6
   kdePackages.plasma-browser-integration
