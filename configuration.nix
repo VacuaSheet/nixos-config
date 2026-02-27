@@ -348,8 +348,6 @@ programs.zsh = {
   ];
  
 # APPs Global Instavel
-{ config, pkgs, inputs, ... }: 
-
 let
   # Cria uma instância da unstable com as mesmas configurações de sistema
   pkgs-unstable = import inputs.nixpkgs-unstable {
@@ -360,7 +358,6 @@ in {
   environment.systemPackages = [
     pkgs-unstable.vscode  # Versão unstable
   ];
-}
 
 
   # Não permite mutar as saidas de audio da parte trazeira enquanto a da frente esta plugada
