@@ -181,7 +181,7 @@
   home.stateVersion = "25.11";
 
   # Configuração do vscode para funcionar no linux
-    programs.vscode = {
+    programs.vscode.profiles.default = {
     enable = true;
     userSettings = {
      "nix.enableLanguageServer" = true;
