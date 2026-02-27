@@ -184,24 +184,23 @@
   # Configuração do vscode para funcionar no linux
   programs.vscode = {
     enable = true;
-    # Aqui usamos o input 'unstable' que você definiu no flake
-    package = inputs.unstable.legacyPackages.${pkgs.system}.vscode-fhs;
+    # Esta linha abaixo cria uma versão do 'unstable' que aceita pacotes unfree
+    package = (import inputs.unstable { 
+      system = pkgs.system; 
+      config.allowUnfree = true; 
+    }).vscode-fhs;
 
     profiles.default = {
       userSettings = {
         "nix.enableLanguageServer" = true;
         "nix.serverPath" = "nixd";
-        "nix.formatterPath" = "nixpkgs-fmt";
-        # Usando o hostname 'alligare' que vi no seu flake
-        "nixd.options.nixos.expr" = "(builtins.getFlake \"~/nixos-config\").nixosConfigurations.alligare.options";
+        "nixd.options.nixos.expr" = "(builtins.getFlake \"/etc/nixos\").nixosConfigurations.alligare.options";
       };
-      
       extensions = with pkgs.vscode-extensions; [
         jnoortheen.nix-ide
       ];
     };
-   };
-
+  };
 
 
 }
