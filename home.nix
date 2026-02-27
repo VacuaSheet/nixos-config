@@ -16,6 +16,7 @@
     freerdp # Necessário para o LSW exibir as janelas
     hunspell
     hunspellDicts.pt_BR
+    python3
   ];
 
      # 1. Habilita o dconf dentro do Home Manager
