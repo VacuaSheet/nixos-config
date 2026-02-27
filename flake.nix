@@ -18,7 +18,15 @@
     nix-gaming.url = "github:fufexan/nix-gaming";
   };
 
-  outputs = { self, nixpkgs, home-manager, nix-flatpak, microvm, nix-gaming, ... } @inputs: {
+  outputs = { self, nixpkgs, home-manager, nix-flatpak, microvm, nix-gaming, ... } @inputs: 
+  let
+    # DEFINA A VARIÁVEL AQUI (Isso resolve o erro de undefined variable)
+    unstablePkgs = import inputs.unstable {
+      system = "x86_64-linux";
+      config.allowUnfree = true;
+    };
+   in
+ {
     nixosConfigurations.alligare = nixpkgs.lib.nixosSystem {
       # O inherit inputs permite que você use todos os inputs dentro do configuration.nix
       specialArgs = { inherit inputs; unstable = unstablePkgs;  };
