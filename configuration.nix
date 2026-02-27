@@ -352,6 +352,8 @@ programs.zsh = {
      wget # Baixar qualquer coisa via comando
     pavucontrol # controlador de audio
   ];
+
+hardware.alsa.enablePersistence = true;
  
   # Não permite mutar as saidas de audio da parte trazeira enquanto a da frente esta plugada
     systemd.user.services.unmute-audio = {
