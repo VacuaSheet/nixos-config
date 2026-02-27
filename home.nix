@@ -16,6 +16,7 @@
     freerdp # Necessário para o LSW exibir as janelas
     hunspell
     hunspellDicts.pt_BR
+    vscode
   ];
 
      # 1. Habilita o dconf dentro do Home Manager
@@ -181,14 +182,24 @@
   home.stateVersion = "25.11";
 
   # Configuração do vscode para funcionar no linux
-    programs.vscode.profiles.default = {
-    enable = true;
+  programs.vscode = {
+  enable = true;
+  # Isso garante que ele use o binário da branch instável
+  package = pkgs.vscode-fhs; 
+
+  profiles.default = {
     userSettings = {
-     "nix.enableLanguageServer" = true;
-     "nix.serverPath" = "nixd";
-     "nix.formatterPath" = "nixpkgs-fmt"; # Opcional: para formatar o código ao salvar
-     "nixd.options.nixos.expr" = "(builtins.getFlake \"~/nixos-config\").nixosConfigurations.\"alligare\".options";
-   };
-};
+      "nix.enableLanguageServer" = true;
+      "nix.serverPath" = "nixd";
+      "nixd.options.nixos.expr" = "(builtins.getFlake \"/etc/nixos\").nixosConfigurations.\"SEU_HOSTNAME\".options";
+    };
+    
+    # Extensões também podem ser puxadas do pkgs (que se for unstable, trará as últimas)
+    extensions = with pkgs.vscode-extensions; [
+      jnoortheen.nix-ide
+      ];
+     };
+    };
+
 
 }
