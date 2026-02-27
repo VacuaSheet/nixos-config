@@ -190,12 +190,6 @@
     }).vscode-fhs;
 
     profiles.default = {
-        userSettings = {
-    "nix.enableLanguageServer" = true;
-    "nix.serverPath" = "nixd";
-    "nixd.options.nixos.expr" = "(builtins.getFlake \"~/nixos-config\").nixosConfigurations.SUA_CONFIG.options";
-    "workbench.editor.empty.hint" = "hidden";
-      };
       extensions = with pkgs.vscode-extensions; [
         jnoortheen.nix-ide
       ];
