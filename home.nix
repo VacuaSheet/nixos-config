@@ -193,7 +193,7 @@
       userSettings = {
         "nix.enableLanguageServer" = true;
         "nix.serverPath" = "nixd";
-        "nixd.options.nixos.expr" = "(builtins.getFlake \"/etc/nixos\").nixosConfigurations.alligare.options";
+        "nixd.options.nixos.expr" = "(builtins.getFlake \"nixos-config\").nixosConfigurations.alligare.options";
       };
       extensions = with pkgs.vscode-extensions; [
         jnoortheen.nix-ide
