@@ -190,8 +190,6 @@ programs.ssh.extraConfig = ''
     #  thunderbird
        obsidian # Bloco de notas e mais
         # Redes sociais
-    telegram-desktop
-    discord
     # Tema cmd
     eza
     bat

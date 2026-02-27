@@ -24,6 +24,7 @@ in
       "com.heroicgameslauncher.hgl" # Heroic Games Launcher
       "com.google.Chrome"
       "org.telegram.desktop"
+      "com.discordapp.Discord"
     ];
 
   overrides = {
