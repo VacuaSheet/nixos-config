@@ -367,6 +367,25 @@ programs.zsh = {
   };
 };
 
+   services.pipewire.wireplumber.extraConfig."10-disable-autoswitch" = {
+  "wireplumber.settings" = {
+    "bluetooth.autoswitch-to-headset-profile" = false; # Útil se for bluetooth
+  };
+  "monitor.alsa.rules" = [
+    {
+      matches = [
+        { "node.name" = "~alsa_output.*"; }
+      ];
+      actions = {
+        update-props = {
+          "node.pause-on-idle" = false;
+          "session.suspend-timeout-seconds" = 0; # Evita que a porta entre em repouso
+        };
+      };
+    }
+  ];
+};
+
    # Ativa o daemon do OpenSnitch
      services.opensnitch.enable = true;
      networking.extraHosts = ''
