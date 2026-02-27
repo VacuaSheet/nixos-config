@@ -7,7 +7,6 @@
 
   # Pacotes instalados
   home.packages = with pkgs; [
-    vscode
     git
     docker-compose
     pkgs.nerd-fonts.jetbrains-mono
@@ -180,4 +179,15 @@
   services.espanso.enable = true;
   programs.home-manager.enable = true;
   home.stateVersion = "25.11";
+
+  # Configuração do vscode para funcionar no linux
+    programs.vscode = {
+    enable = true;
+    userSettings = {
+     "nix.enableLanguageServer" = true;
+     "nix.serverPath" = "nixd";
+     "nix.formatterPath" = "nixpkgs-fmt"; # Opcional: para formatar o código ao salvar
+   };
+};
+
 }
