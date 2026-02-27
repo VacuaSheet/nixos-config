@@ -23,6 +23,7 @@ in
       "net.lutris.Lutris"          # Lutris
       "com.heroicgameslauncher.hgl" # Heroic Games Launcher
       "com.google.Chrome"
+      "org.telegram.desktop"
     ];
 
   overrides = {
