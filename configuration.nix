@@ -389,6 +389,9 @@ programs.zsh = {
   ];
 };
 
+    # Isso ajuda extensões do VS Code a executarem binários que esperam bibliotecas padrão em locais convencionais.
+    programs.nix-ld.enable = true;
+
    # Ativa o daemon do OpenSnitch
      services.opensnitch.enable = true;
      networking.extraHosts = ''
