@@ -185,7 +185,7 @@
     enable = true;
     # Esta linha abaixo cria uma versão do 'unstable' que aceita pacotes unfree
     package = (import inputs.unstable { 
-      system = pkgs.system; 
+      system = pkgs.stdenv.hostPlatform.system; 
       config.allowUnfree = true; 
     }).vscode-fhs;
 
