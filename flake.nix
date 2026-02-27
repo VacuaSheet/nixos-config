@@ -15,6 +15,7 @@
     nix-flatpak.url = "github:gmodena/nix-flatpak";
     microvm.url = "github:astro/microvm.nix";
     nix-gaming.url = "github:fufexan/nix-gaming";
+    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable"; # O novo instável
   };
 
   outputs = { self, nixpkgs, home-manager, nix-flatpak, microvm, nix-gaming, ... } @inputs: {
@@ -39,6 +40,7 @@
             imports = [
               ./home.nix
               inputs.plasma-manager.homeModules.plasma-manager
+              ./configuration.nix
             ];
           };
         }

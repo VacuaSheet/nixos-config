@@ -329,7 +329,7 @@ programs.zsh = {
   p7zip # Descompactador
   rar   # Descompactador não freeUser	
   alsa-utils # APP mantedor do unmute
-  vscode
+  inputs.nixpkgs-unstable.legacyPackages.${pkgs.system}.vscode
 
          # Antvirus
            clamav
