@@ -187,6 +187,7 @@
      "nix.enableLanguageServer" = true;
      "nix.serverPath" = "nixd";
      "nix.formatterPath" = "nixpkgs-fmt"; # Opcional: para formatar o código ao salvar
+     "nixd.options.nixos.expr" = "(builtins.getFlake \"~/nixos-config\").nixosConfigurations.\"alligare\".options";
    };
 };
 
