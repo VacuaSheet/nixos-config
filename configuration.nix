@@ -5,6 +5,7 @@
 let
   # 2. Crie um atalho para os pacotes unstable
   unstable = inputs.unstable.legacyPackages.${pkgs.system};
+  config.allowUnfree = true; # Isso libera Apps no canal unstable
 in
 {
   imports =
