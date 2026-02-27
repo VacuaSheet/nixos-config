@@ -194,11 +194,11 @@
         jnoortheen.nix-ide
          mkhl.direnv
       ];
-      userSettings = {
+    /*  userSettings = {
       "nix.enableLanguageServer" = true;
       "nix.serverPath" = "nixd";
       "direnv.restart.automatic" = true;
-     };
+     };*/
     };
   };
   programs.direnv = {
