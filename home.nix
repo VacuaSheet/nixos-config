@@ -192,9 +192,18 @@
     profiles.default = {
       extensions = with pkgs.vscode-extensions; [
         jnoortheen.nix-ide
+         mkhl.direnv
       ];
+      userSettings = {
+      "nix.enableLanguageServer" = true;
+      "nix.serverPath" = "nixd";
+      "direnv.restart.automatic" = true;
+     };
     };
   };
-
+  programs.direnv = {
+    enable = true;
+     nix-direnv.enable = true; # Versão mais rápida
+  };
 
 }
