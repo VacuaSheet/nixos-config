@@ -5,7 +5,7 @@
 let
   # 2. Crie um atalho para os pacotes unstable
     unstable = import inputs.unstable {
-    system = pkgs.system;
+    system = pkgs.stdenv.hostPlatform.system;
     config.allowUnfree = true;
   };
 in
