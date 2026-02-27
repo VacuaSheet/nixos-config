@@ -299,7 +299,7 @@ programs.zsh = {
   # List packages installed in system profile. To search, run:
   # $ nix search wget
 
-  # APPs Global
+  # APPs Global Estavel
   environment.systemPackages = with pkgs; [
   pkgs.tpm2-tss # TPM seguraça
    qemu # Esqueleto da máquina virtua
@@ -329,7 +329,6 @@ programs.zsh = {
   p7zip # Descompactador
   rar   # Descompactador não freeUser	
   alsa-utils # APP mantedor do unmute
-  inputs.nixpkgs-unstable.legacyPackages.${pkgs.system}.vscode
 
          # Antvirus
            clamav
@@ -347,6 +346,20 @@ programs.zsh = {
      wget # Baixar qualquer coisa via comando
     pavucontrol # controlador de audio
   ];
+ 
+# APPs Global Instavel
+let
+  # Cria uma instância da unstable com as mesmas configurações de sistema
+  pkgs-unstable = import inputs.nixpkgs-unstable {
+    system = pkgs.system;
+    config.allowUnfree = true;
+  };
+in {
+  environment.systemPackages = [
+    pkgs-unstable.vscode  # Versão unstable
+  ];
+}
+
 
   # Não permite mutar as saidas de audio da parte trazeira enquanto a da frente esta plugada
     systemd.user.services.unmute-audio = {
