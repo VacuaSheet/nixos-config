@@ -348,6 +348,8 @@ programs.zsh = {
   ];
  
 # APPs Global Instavel
+{ config, pkgs, inputs, ... }: 
+
 let
   # Cria uma instância da unstable com as mesmas configurações de sistema
   pkgs-unstable = import inputs.nixpkgs-unstable {
