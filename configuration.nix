@@ -4,10 +4,10 @@
 { config, pkgs, inputs, ... }:
 let
   # 2. Crie um atalho para os pacotes unstable
-    unstable = import inputs.nixpkgs-unstable {
+    unstable = import inputs.unstable {
     system = pkgs.system;
     config.allowUnfree = true;
-   };
+  };
 in
 {
   imports =
