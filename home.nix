@@ -183,7 +183,6 @@
   services.espanso.enable = true;
   programs.home-manager.enable = true;
   home.stateVersion = "25.11";
-  home-manager.backupFileExtension = "backup";
 
   # Configuração do vscode para funcionar no linux
   programs.vscode = {
