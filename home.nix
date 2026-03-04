@@ -167,9 +167,12 @@
       colorScheme = "BreezeDark";
       theme = "Layan";
     };
-   # Define o modificador para ações de scroll na janela
-    configFile."kwinrc"."Windows"."MouseWheelModifier" = "Meta+Shift";
-    configFile."kwinrc"."Windows"."InnerWindowMouseWheelAction" = "Opacity"; # Ajusta a Opacidade
+
+    # Atalhos de Teclado (Global Shortcuts)
+    shortcuts.kwin = {
+      "Increase Opacity" = "Meta+Alt+="; # Aumentar (Meta + Alt + =)
+      "Decrease Opacity" = "Meta+Alt+-"; # Diminuir (Meta + Alt + -)
+    };
     
     # Configuração de atalho para o Kitty
     shortcuts = {
