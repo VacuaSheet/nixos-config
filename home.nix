@@ -174,7 +174,7 @@
       "Decrease Opacity" = "Meta+Alt+-"; # Diminuir (Meta + Alt + -)
     };
 
-    mode = "times", "location"; # "constant" ou "times", "location"
+    mode = "times"; # "constant" ou "times" ou "location"
     nightTemperature = 3500;
     dayTemperature = 6500;
 
