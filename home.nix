@@ -175,12 +175,12 @@
     };
 
     # Em vez de 'nightColor', vamos direto no arquivo de config que o KDE lê:
-  configFile."kwinrc"."NightColor" = {
-    Active = true;
-    Mode = "Times"; # "constant" ou "times" ou "location"
-    NightTemperature = 3500;
-    DayTemperature = 6500;
-  };
+    configFile."kwinrc"."NightColor" = {
+     Active = true;
+     Mode = "Times"; # "constant" ou "times" ou "location"
+     NightTemperature = 3500;
+     DayTemperature = 6500;
+    };
     
     # Configuração de atalho para o Kitty
     shortcuts = {
