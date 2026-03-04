@@ -173,6 +173,12 @@
       "Increase Opacity" = "Meta+Alt+="; # Aumentar (Meta + Alt + =)
       "Decrease Opacity" = "Meta+Alt+-"; # Diminuir (Meta + Alt + -)
     };
+
+    Mode = "Times"; # Ou "Location" para automático via geolocalização
+     NightTemperature = 3500;
+     DayTemperature = 6500;
+     MorningBeginTime = "06:00";
+     EveningBeginTime = "18:00";
     
     # Configuração de atalho para o Kitty
     shortcuts = {
