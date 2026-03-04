@@ -166,6 +166,7 @@
     workspace = {
       colorScheme = "BreezeDark";
       theme = "Layan";
+    };
 
     # Define o modificador para ações de scroll na janela
     configFile."kwinrc"."Windows"."MouseWheelModifier" = "Meta+Shift";
