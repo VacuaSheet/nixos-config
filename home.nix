@@ -174,7 +174,15 @@
       "Decrease Opacity" = "Meta+Alt+-"; # Diminuir (Meta + Alt + -)
     };
 
-    mode = "times"; # "constant" ou "times" ou "location"
+    # Em vez de 'nightColor', vamos direto no arquivo de config que o KDE lê:
+  configFile."kwinrc"."NightColor" = {
+    Active = true;
+    Mode = "Times"; # "constant" ou "times" ou "location"
+    NightTemperature = 3500;
+    DayTemperature = 6500;
+  };
+
+    mode = "times"; # 
     nightTemperature = 3500;
     dayTemperature = 6500;
 
