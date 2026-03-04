@@ -181,11 +181,6 @@
     NightTemperature = 3500;
     DayTemperature = 6500;
   };
-
-    mode = "times"; # 
-    nightTemperature = 3500;
-    dayTemperature = 6500;
-
     
     # Configuração de atalho para o Kitty
     shortcuts = {
