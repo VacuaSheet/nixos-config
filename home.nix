@@ -166,6 +166,12 @@
     workspace = {
       colorScheme = "BreezeDark";
       theme = "Layan";
+
+    # Define o modificador para ações de scroll na janela
+    configFile."kwinrc"."Windows"."MouseWheelModifier" = "Meta+Shift";
+    
+    # Define que a ação desse scroll será mudar a opacidade
+    configFile."kwinrc"."Windows"."InnerWindowMouseWheelAction" = "Opacity";
     };
     
     # Configuração de atalho para o Kitty
