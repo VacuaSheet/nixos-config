@@ -350,6 +350,7 @@ programs.zsh = {
     vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
      wget # Baixar qualquer coisa via comando
     pavucontrol # controlador de audio
+    usbutils # Para consultar e gerenciar barramentos e dispositivos USB no Linux
   ];
 
   # Isso salva o estado do Alsamixer (Mute/Unmute) automaticamente
