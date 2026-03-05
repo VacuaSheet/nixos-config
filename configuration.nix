@@ -541,6 +541,8 @@ systemd.user.services.unmute-hardware-audio = {
   # Open ports in the firewall.
    networking.firewall.allowedTCPPorts = [ 80 443 3000 ];
    networking.firewall.allowedUDPPorts = [ 53 1234 ];
+  # Habilita wifi automaticamente
+   security.pam.services.sddm.enableKwallet = true;
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
 
