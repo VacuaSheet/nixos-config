@@ -353,6 +353,18 @@ programs.zsh = {
     usbutils # Para consultar e gerenciar barramentos e dispositivos USB no Linux
   ];
 
+   # Configuração VS Code
+    programs.nix-ld.enable = true;
+    programs.nix-ld.libraries = with pkgs; [
+     stdenv.cc.cc
+     zlib
+     openssl
+     curl
+     expat
+     # bibliotecas que o httpx (usado pelo bot) precisa
+    ];
+
+
   # Isso salva o estado do Alsamixer (Mute/Unmute) automaticamente
     hardware.alsa.enablePersistence = true;
  
