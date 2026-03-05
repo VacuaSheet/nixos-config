@@ -430,7 +430,7 @@ systemd.user.services.unmute-hardware-audio = {
      services.clamav.daemon.enable = false; # O tempo todo ligado se true
      services.clamav.updater.enable = true; # Atualização de vírus
 
-   services.udev.extraRules = ''
+   /*services.udev.extraRules = ''
     # 1. Desativa o despertar para todos os dispositivos USB (incluindo mouse e teclado padrão)
     ACTION=="add", SUBSYSTEM=="usb", ATTR{power/wakeup}="disabled"
 
@@ -438,7 +438,7 @@ systemd.user.services.unmute-hardware-audio = {
    # Nota: Se o seu teclado tiver dois IDs (um para teclas e outro para botões especiais), 
    # usamos o ID do hardware para garantir que o sinal de WakeUp passe.
    ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="1a2c", ATTR{idProduct}=="2d23", ATTR{power/wakeup}="enabled"
-  '';
+  '';*/
 
 
   # IBus escrita rapida em português
