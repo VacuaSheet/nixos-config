@@ -401,7 +401,6 @@ programs.zsh = {
     }
   ];
 };
-;
 
    # Ativa o daemon do OpenSnitch
      services.opensnitch.enable = true;
