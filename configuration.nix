@@ -354,7 +354,8 @@ programs.zsh = {
   ];
 
    # Configuração VS Code
-    programs.nix-ld.enable = true;
+    # Isso ajuda extensões do VS Code a executarem binários que esperam bibliotecas padrão em locais convencionais.
+    programs.nix-ld.enable = true; 
     programs.nix-ld.libraries = with pkgs; [
      stdenv.cc.cc
      zlib
@@ -400,9 +401,7 @@ programs.zsh = {
     }
   ];
 };
-
-    # Isso ajuda extensões do VS Code a executarem binários que esperam bibliotecas padrão em locais convencionais.
-    programs.nix-ld.enable = true;
+;
 
    # Ativa o daemon do OpenSnitch
      services.opensnitch.enable = true;
