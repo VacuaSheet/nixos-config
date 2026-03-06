@@ -434,7 +434,7 @@ systemd.user.services.unmute-hardware-audio = {
     enable = true;
     acceleration = false; # Habilita aceleração para GPUs AMD (incluindo integradas)
       environmentVariables = {
-    OLLAMA_ORIGINS = "app://obsidian.md.main,http://localhost,http://127.0.0.1";
+    OLLAMA_ORIGINS = "*";
     HSA_OVERRIDE_GFX_VERSION = "9.0.0";  
     };
    };
