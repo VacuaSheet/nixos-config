@@ -437,7 +437,8 @@ systemd.user.services.unmute-hardware-audio = {
 
    # Importante para iGPUs AMD (Vídeo Integrado)
    systemd.services.ollama.environment = {
-    HSA_OVERRIDE_GFX_VERSION = "10.3.0"; 
+     # Tente 9.0.0 se a 10.3.0 deu erro
+    HSA_OVERRIDE_GFX_VERSION = "9.0.0";  
    };
 
   # Habilita o suporte a 32 bits para o Wine/Lutris enxergar a placa
