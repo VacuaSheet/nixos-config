@@ -434,14 +434,7 @@ systemd.user.services.unmute-hardware-audio = {
     enable = true;
     acceleration = false; # Habilita aceleração para GPUs AMD (incluindo integradas)
       environmentVariables = {
-    OLLAMA_ORIGINS = "app://obsidian.md.main,vscode-webview://*,*";
-     };
-   };
-
-   # Importante para iGPUs AMD (Vídeo Integrado)
-   systemd.services.ollama.environment = {
-     # Tente 9.0.0 se a 10.3.0 deu erro
-    HSA_OVERRIDE_GFX_VERSION = "9.0.0";  
+    OLLAMA_ORIGINS = "app://obsidian.md.main,vscode-webview://*,*";  
    };
 
   # Habilita o suporte a 32 bits para o Wine/Lutris enxergar a placa
