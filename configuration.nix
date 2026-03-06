@@ -433,6 +433,9 @@ systemd.user.services.unmute-hardware-audio = {
    services.ollama = {
     enable = true;
     acceleration = false; # Habilita aceleração para GPUs AMD (incluindo integradas)
+      environmentVariables = {
+    OLLAMA_ORIGINS = "app://obsidian.md.main,vscode-webview://*,*";
+     };
    };
 
    # Importante para iGPUs AMD (Vídeo Integrado)
