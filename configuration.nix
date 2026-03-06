@@ -351,6 +351,7 @@ programs.zsh = {
      wget # Baixar qualquer coisa via comando
     pavucontrol # controlador de audio
     usbutils # Para consultar e gerenciar barramentos e dispositivos USB no Linux
+    direnv
   ];
 
    # Configuração VS Code
@@ -365,6 +366,10 @@ programs.zsh = {
      # bibliotecas que o httpx (usado pelo bot) precisa
     ];
 
+     # VS Code automatico
+      programs.bash.interactiveShellInit = ''
+      eval "$(direnv hook bash)"
+      '';
 
   # Isso salva o estado do Alsamixer (Mute/Unmute) automaticamente
     hardware.alsa.enablePersistence = true;
