@@ -435,6 +435,7 @@ systemd.user.services.unmute-hardware-audio = {
     acceleration = false; # Habilita aceleração para GPUs AMD (incluindo integradas)
       environmentVariables = {
     OLLAMA_ORIGINS = "app://obsidian.md.main,vscode-webview://*,*";  
+    };
    };
 
   # Habilita o suporte a 32 bits para o Wine/Lutris enxergar a placa
