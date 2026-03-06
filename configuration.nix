@@ -429,6 +429,13 @@ systemd.user.services.unmute-hardware-audio = {
   };
 };
 
+  # Habilita o serviço do Ollama
+   services.ollama = {
+    enable = true;
+    acceleration = "rocm"; # Habilita aceleração para GPUs AMD (incluindo integradas)
+    rocmDevices = [ "nodes" ]; # Ajuda a detectar iGPUs mais comuns
+   };
+
 
   # Habilita o suporte a 32 bits para o Wine/Lutris enxergar a placa
     hardware.amdgpu.initrd.enable = true;
@@ -445,43 +452,6 @@ systemd.user.services.unmute-hardware-audio = {
   # Ativa o serviço qe baixar a lista de vírus novos (Fundamental!)
      services.clamav.daemon.enable = false; # O tempo todo ligado se true
      services.clamav.updater.enable = true; # Atualização de vírus
-
-  # IBus escrita rapida em português
-   /*i18n.inputMethod = {
-   enable = true;
-   type = "ibus";
-   ibus.engines = with pkgs.ibus-engines; [ 
-    typing-booster 
-    ];
-  };*/
-
-    # Configurações específicas para garantir compatibilidade com KDE/Qt
-   /* environment.variables = {
-    GTK_IM_MODULE = "ibus";
-    QT_IM_MODULE = "ibus";
-    XMODIFIERS = "@im=ibus";
-   };*/
-
-  # Habilitar o uso do Home Manager
-  #  home-manager.enable = true;
-   # 2. Configuração da Escrita Rápida (Fcitx5) com a sintaxe nova
-  /* i18n.inputMethod = {                  # Confira se esta chave existe
-    enable = true;
-    type = "fcitx5";
-    fcitx5.addons = with pkgs;  [
-     fcitx5-gtk
-     fcitx5-lua # Suporte a scripts extras
-    ];                                  
-  };*/            
- 
-  # 3. Garante que o KDE use o Fcitx5 em vez do corretor padrão do sistema
-  /*environment.variables = {
-    GTK_IM_MODULE = "fcitx";
-    QT_IM_MODULE = "fcitx";
-    XMODIFIERS = "@im=fcitx";
-    # Ativar a Transparência no KDE (Blur)
-    QT_STYLE_OVERRIDE = "kvantum";
-   };*/
 
   networking.networkmanager.wifi.powersave = false;
   
