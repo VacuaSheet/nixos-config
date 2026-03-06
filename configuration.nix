@@ -433,9 +433,12 @@ systemd.user.services.unmute-hardware-audio = {
    services.ollama = {
     enable = true;
     acceleration = "rocm"; # Habilita aceleração para GPUs AMD (incluindo integradas)
-    rocmDevices = [ "nodes" ]; # Ajuda a detectar iGPUs mais comuns
    };
 
+   # Importante para iGPUs AMD (Vídeo Integrado)
+   systemd.services.ollama.environment = {
+    HSA_OVERRIDE_GFX_VERSION = "10.3.0"; 
+   };
 
   # Habilita o suporte a 32 bits para o Wine/Lutris enxergar a placa
     hardware.amdgpu.initrd.enable = true;
