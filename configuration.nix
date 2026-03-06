@@ -432,7 +432,7 @@ systemd.user.services.unmute-hardware-audio = {
   # Habilita o serviço do Ollama
    services.ollama = {
     enable = true;
-    acceleration = "rocm"; # Habilita aceleração para GPUs AMD (incluindo integradas)
+    acceleration = false; # Habilita aceleração para GPUs AMD (incluindo integradas)
    };
 
    # Importante para iGPUs AMD (Vídeo Integrado)
