@@ -366,6 +366,13 @@ programs.zsh = {
      # bibliotecas que o httpx (usado pelo bot) precisa
     ];
 
+    # Diretorio nixos na partição com tamanho 305
+      fileSystems."/nix" =
+      { device = "/dev/disk/by-uuid/9d2c4551-f5c1-462d-afe3-4356b25afbe4";
+      fsType = "ext4";
+      };
+
+
      # VS Code automatico
       programs.bash.interactiveShellInit = ''
       eval "$(direnv hook bash)"
