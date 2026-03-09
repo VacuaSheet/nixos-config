@@ -14,6 +14,7 @@ in
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
     ];
+
   # Define o Zen Kernel
   boot.kernelPackages = pkgs.linuxPackages_zen;
 
@@ -536,7 +537,6 @@ systemd.user.services.unmute-hardware-audio = {
     # 2. Garante que o TECLADO (ID 1a2c:2d23) tenha o Wakeup Habilitado
     ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="1a2c", ATTR{idProduct}=="2d23", ATTR{power/wakeup}="enabled"
     '';
-
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
