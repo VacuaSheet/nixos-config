@@ -21,9 +21,9 @@ in
       "io.gitlab.librewolf-community"
       "com.usebottles.bottles"
       "net.lutris.Lutris"          # Lutris
-     /* "org.freedesktop.Platform.Compat.i386"
+      "org.freedesktop.Platform.Compat.i386"
       "org.freedesktop.Platform.GL32.default"
-      "net.lutris.Lutris.Extension.cabextract"*/
+      "net.lutris.Lutris.Extension.cabextract"
       "com.heroicgameslauncher.hgl" # Heroic Games Launcher
       "com.google.Chrome"
       "org.telegram.desktop"
