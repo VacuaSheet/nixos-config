@@ -23,7 +23,6 @@ in
       "net.lutris.Lutris"          # Lutris
        "org.freedesktop.Platform.Compat.i386//25.08"
        "org.freedesktop.Platform.GL32.default//25.08"
-      # "net.lutris.Lutris.Extension.cabextract//25.08"
       "com.heroicgameslauncher.hgl" # Heroic Games Launcher
       "com.google.Chrome"
       "org.telegram.desktop"
