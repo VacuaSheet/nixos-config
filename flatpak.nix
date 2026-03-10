@@ -28,6 +28,7 @@ in
       "com.google.Chrome"
       "org.telegram.desktop"
       "com.discordapp.Discord"
+      "com.ubisoft.Connect"
     ];
 
   overrides = {
