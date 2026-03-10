@@ -20,7 +20,7 @@ in
       "org.mozilla.firefox"
       "io.gitlab.librewolf-community"
       "com.usebottles.bottles"
-      "net.lutris.Lutris"          # Lutris
+      "net.lutris.Lutris//stable"          # Lutris
        "org.freedesktop.Platform.Compat.i386//25.08"
        "org.freedesktop.Platform.GL32.default//25.08"
       "com.heroicgameslauncher.hgl" # Heroic Games Launcher
