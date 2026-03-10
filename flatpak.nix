@@ -13,7 +13,11 @@ in
 {
   services.flatpak = {
     enable = true;
-
+# Define o repositório para o Root (evita falha de ativação)
+  remotes = [{
+    name = "flathub";
+    location = "https://dl.flathub.org";
+  }];
     packages = [
       "io.github.flattool.Warehouse"
       "com.github.tchx84.Flatseal"
