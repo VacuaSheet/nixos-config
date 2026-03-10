@@ -21,6 +21,9 @@ in
       "io.gitlab.librewolf-community"
       "com.usebottles.bottles"
       "net.lutris.Lutris"          # Lutris
+      "flatpak install org.freedesktop.Platform.Compat.i386 org.freedesktop.Platform.GL32.default" # Instala o runtime do Steam (ajuda com bibliotecas de jogos)
+      "flatpak install net.lutris.Lutris.Extension.cabextract" # Garante que o Lutris tenha o "cabextract" (essencial para corefonts/EA)
+      "flatpak install org.freedesktop.Platform.GL32.default org.freedesktop.Platform.Compat.i386" # Garante as bibliotecas gráficas de 32 bits
       "com.heroicgameslauncher.hgl" # Heroic Games Launcher
       "com.google.Chrome"
       "org.telegram.desktop"
