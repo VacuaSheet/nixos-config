@@ -238,19 +238,24 @@ programs.zsh = {
     }
 
     # Função para Limpeza e Rebuild (usando o nh)
-    av() {
-      if [ -z "''$1" ]; then
-        echo "🧹 Limpando TUDO..."
-        sudo nix-collect-garbage -d
+     av() {
+      if [ -z "$1" ]; then
+         echo "🚨 Iniciando LIMPEZA PROFUNDA (Removendo TUDO exceto a atual)..."
+         # Remove todas as gerações de todos os perfis (usuário e sistema)
+         sudo nix-collect-garbage -d
+         # Otimiza o banco de dados do Nix e remove links mortos
+         sudo nix-store --optimize
+         sudo nix-store --gc
       else
-        echo "🧹 Mantendo as ''$1 versões..."
-        sudo nix-env --profile /nix/var/nix/profiles/system --delete-generations "+''$1"
-        sudo nix-collect-garbage
+         echo "🧹 Mantendo as últimas $1 versões..."
+         sudo nix-env --profile /nix/var/nix/profiles/system --delete-generations "+$1"
+         sudo nix-collect-garbage
       fi
-      echo "⚙️ Aplicando Flake..."
-      sudo nix-store --gc
+
+      echo "⚙️ Aplicando Flake e atualizando sistema..."
       nh os switch /home/_-_-yakov_-_-/nixos-config
     }
+
 '';
 
 };
