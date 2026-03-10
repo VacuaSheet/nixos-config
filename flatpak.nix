@@ -16,7 +16,7 @@ in
 # Define o repositório para o Root (evita falha de ativação)
   remotes = [{
     name = "flathub";
-    location = "https://dl.flathub.org";
+    location = "https://dl.flathub.org/repo/flathub.flatpakrepo";
   }];
     packages = [
       "io.github.flattool.Warehouse"
