@@ -22,7 +22,7 @@ in
       "com.usebottles.bottles"
       "net.lutris.Lutris"          # Lutris
       "org.freedesktop.Platform.Compat.i386//25.08"
-      "org.freedesktop.Platform.GL32.default"
+      "org.freedesktop.Platform.GL32.default//25.08"
       "net.lutris.Lutris.Extension.cabextract"
       "com.heroicgameslauncher.hgl" # Heroic Games Launcher
       "com.google.Chrome"
