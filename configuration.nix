@@ -446,6 +446,11 @@ systemd.user.services.unmute-hardware-audio = {
     };
    };
 
+   systemd.services.ollama.serviceConfig.Environment = [
+      "OLLAMA_MODELS=/srv/ollama_models"
+   ];
+
+
   # Habilita o suporte a 32 bits para o Wine/Lutris enxergar a placa
     hardware.amdgpu.initrd.enable = true;
 
