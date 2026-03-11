@@ -438,6 +438,7 @@ systemd.user.services.unmute-hardware-audio = {
   # Habilita o serviço do Ollama
    services.ollama = {
     enable = true;
+    user = "ollama"; # Garante que o serviço use o usuário dedicado
     acceleration = false; # Habilita aceleração para GPUs AMD (incluindo integradas)
       environmentVariables = {
     OLLAMA_ORIGINS = "*";
