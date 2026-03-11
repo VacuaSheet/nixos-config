@@ -442,6 +442,7 @@ systemd.user.services.unmute-hardware-audio = {
       environmentVariables = {
     OLLAMA_ORIGINS = "*";
     HSA_OVERRIDE_GFX_VERSION = "9.0.0";  
+    OLLAMA_MODELS = "/srv/ollama_models";
     };
    };
 
