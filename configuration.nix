@@ -446,9 +446,18 @@ systemd.user.services.unmute-hardware-audio = {
     };
    };
 
-   systemd.services.ollama.serviceConfig.Environment = [
-      "OLLAMA_MODELS=/srv/ollama_models"
-   ];
+   # Força o Systemd a ignorar o padrão do módulo e usar seu caminho
+     systemd.services.ollama = {
+       serviceConfig = {
+        Environment = [
+         "OLLAMA_MODELS=/srv/ollama_models"
+         "OLLAMA_ORIGINS=*"
+         "HSA_OVERRIDE_GFX_VERSION=9.0.0"
+            ];
+    # Isso permite que o serviço escreva fora de /var/lib (importante no NixOS)
+      ReadWritePaths = [ "/srv/ollama_models" ];
+      };
+    };
 
 
   # Habilita o suporte a 32 bits para o Wine/Lutris enxergar a placa
