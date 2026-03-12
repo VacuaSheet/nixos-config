@@ -367,6 +367,7 @@ programs.zsh = {
     direnv
      mpv # OBRIGATÓRIO: O GoAnime usa ele para dar o play
      yt-dlp
+     mov-cli
      go # Linguagem de programação
        gcc
        gnumake
