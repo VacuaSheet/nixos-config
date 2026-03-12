@@ -377,6 +377,13 @@ programs.zsh = {
      # bibliotecas que o httpx (usado pelo bot) precisa
     ];
 
+   # Atalho Go Anime automatico
+     environment.sessionVariables = {
+      GOPATH = "$HOME/go";
+      PATH = [ "$HOME/go/bin" ];
+     };
+
+
      # VS Code automatico
       programs.bash.interactiveShellInit = ''
       eval "$(direnv hook bash)"
