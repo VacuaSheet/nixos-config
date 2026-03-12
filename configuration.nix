@@ -360,9 +360,11 @@ programs.zsh = {
     direnv
     # Go Anime
     # pkgs.mpv  # OBRIGATÓRIO: O GoAnime usa ele para dar o play
-    (inputs.goanime.packages.${pkgs.system}.default.overrideAttrs (old: {
-        GOTOOLCHAIN = "local";
-      }))
+    (inputs.goanime.packages.${pkgs.system}.default.override {
+     buildGoModule = pkgs.buildGoModule.override {
+       go = pkgs.go_1_25;
+      };
+     })
 
   ];
 
