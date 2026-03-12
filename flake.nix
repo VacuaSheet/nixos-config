@@ -16,10 +16,9 @@
     nix-flatpak.url = "github:gmodena/nix-flatpak";
     microvm.url = "github:astro/microvm.nix";
     nix-gaming.url = "github:fufexan/nix-gaming";
-     goanime.url = "github:alvarorichard/GoAnime";
   };
 
-  outputs = { self, nixpkgs, home-manager, nix-flatpak, microvm, nix-gaming, goanime, ... } @inputs: 
+  outputs = { self, nixpkgs, home-manager, nix-flatpak, microvm, nix-gaming, ... } @inputs: 
   let
     # DEFINA A VARIÁVEL AQUI (Isso resolve o erro de undefined variable)
     unstablePkgs = import inputs.unstable {
