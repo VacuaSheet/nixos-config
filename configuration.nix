@@ -363,10 +363,6 @@ programs.zsh = {
      mpv  # OBRIGATÓRIO: O GoAnime usa ele para dar o play
   ];
 
-   # Para o Go Anime funcionar também serve para: Ambientes de desenvolvimento isolados (nix shell)
-     nix.settings.experimental-features = [ "nix-command" "flakes" ];
-
-
    # Configuração VS Code
     # Isso ajuda extensões do VS Code a executarem binários que esperam bibliotecas padrão em locais convencionais.
     programs.nix-ld.enable = true; 
