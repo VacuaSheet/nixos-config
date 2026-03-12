@@ -358,7 +358,8 @@ programs.zsh = {
     pavucontrol # controlador de audio
     usbutils # Para consultar e gerenciar barramentos e dispositivos USB no Linux
     direnv
-     pkgs.mpv  # OBRIGATÓRIO: O GoAnime usa ele para dar o play
+     mpv  # OBRIGATÓRIO: O GoAnime usa ele para dar o play
+     (builtins.getFlake "github:alvarorichard/GoAnime").packages.${pkgs.system}.default
   ];
 
    # Configuração VS Code
