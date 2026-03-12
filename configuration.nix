@@ -359,7 +359,6 @@ programs.zsh = {
     usbutils # Para consultar e gerenciar barramentos e dispositivos USB no Linux
     direnv
      mpv  # OBRIGATÓRIO: O GoAnime usa ele para dar o play
-     (builtins.getFlake "github:alvarorichard/GoAnime").packages.${pkgs.system}.default
   ];
 
    # Configuração VS Code

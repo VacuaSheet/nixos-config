@@ -17,6 +17,7 @@
     microvm.url = "github:astro/microvm.nix";
     nix-gaming.url = "github:fufexan/nix-gaming";
     goanime.url = "github:alvarorichard/GoAnime";
+    inputs.goanime.url = "github:alvarorichard/GoAnime";
   };
 
   outputs = { self, nixpkgs, home-manager, nix-flatpak, microvm, nix-gaming, goanime, ... } @inputs: 
