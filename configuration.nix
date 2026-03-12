@@ -360,7 +360,7 @@ programs.zsh = {
     direnv
     # Go Anime
      (builtins.getFlake "github:alvarorichard/GoAnime").packages.${pkgs.system}.default
-
+     mpv  # OBRIGATÓRIO: O GoAnime usa ele para dar o play
   ];
 
    # Configuração VS Code
