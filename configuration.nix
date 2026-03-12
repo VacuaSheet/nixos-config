@@ -360,6 +360,9 @@ programs.zsh = {
     direnv
      mpv # OBRIGATÓRIO: O GoAnime usa ele para dar o play
      go # Linguagem de programação
+       gcc
+       gnumake
+       pkg-config
   ];
 
    # Configuração VS Code
