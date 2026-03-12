@@ -358,6 +358,9 @@ programs.zsh = {
     pavucontrol # controlador de audio
     usbutils # Para consultar e gerenciar barramentos e dispositivos USB no Linux
     direnv
+    # Go Anime
+     (builtins.getFlake "github:alvarorichard/GoAnime").packages.${pkgs.system}.default
+
   ];
 
    # Configuração VS Code
