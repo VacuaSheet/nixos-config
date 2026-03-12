@@ -203,14 +203,17 @@ programs.ssh.extraConfig = ''
 
     programs.git.enable = true;
    programs.git.lfs.enable = true;
+
+      programs.zsh.interactiveShellInit = ''
+    export PATH="$PATH:$HOME/go/bin"
+     '';
+
   
     # Atalhos
 programs.zsh = {
   # O 'enable = true' aqui no sistema é necessário para que o NixOS 
   # entenda que deve aplicar estas configurações globais ao Zsh.
   enable = true; 
-
-   export PATH="$PATH:$HOME/go/bin"
 
             # 	vulkan-toolsvulkan-toolsAtalhos
     shellAliases = {
