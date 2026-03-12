@@ -215,6 +215,10 @@ programs.zsh = {
   # entenda que deve aplicar estas configurações globais ao Zsh.
   enable = true; 
 
+      programs.zsh.interactiveShellInit = ''
+        export PATH="$PATH:$HOME/go/bin"
+       '';
+
             # 	vulkan-toolsvulkan-toolsAtalhos
     shellAliases = {
      nos = "nh os switch /home/_-_-yakov_-_-/nixos-config";
