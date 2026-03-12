@@ -263,6 +263,7 @@ programs.zsh = {
 
  # Deixar o comando goanime verde no zsh
    environment.sessionVariables = {
+    EDITOR = "nano";
     PATH = [ "$HOME/go/bin" ];
    };
 
