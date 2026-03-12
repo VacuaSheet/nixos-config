@@ -366,6 +366,7 @@ programs.zsh = {
     usbutils # Para consultar e gerenciar barramentos e dispositivos USB no Linux
     direnv
      mpv # OBRIGATÓRIO: O GoAnime usa ele para dar o play
+     yt-dlp
      go # Linguagem de programação
        gcc
        gnumake
