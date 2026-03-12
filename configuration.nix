@@ -7,6 +7,19 @@ let
     unstable = import inputs.unstable {
     system = pkgs.stdenv.hostPlatform.system;
     config.allowUnfree = true;
+
+
+      # Criamos a "receita" do GoAnime aqui em cima para não bagunçar
+  meuGoAnime = pkgs.buildGoModule {
+    pname = "goanime";
+    version = "1.4.0"; # Versão atual
+    src = inputs.goanime;
+    vendorHash = null; # O Nix vai te dar o hash correto no erro, ou use "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+    proxyVendor = true;
+    nativeBuildInputs = [ pkgs.installShellFiles ];
+    subPackages = [ "cmd/goanime" ];
+    # Força o Go 1.25 que o app pede
+    go = pkgs.go_1_25;
   };
 in
 {
@@ -358,14 +371,8 @@ programs.zsh = {
     pavucontrol # controlador de audio
     usbutils # Para consultar e gerenciar barramentos e dispositivos USB no Linux
     direnv
-    # Go Anime
-    # pkgs.mpv  # OBRIGATÓRIO: O GoAnime usa ele para dar o play
-    (pkgs.goanime.override {
-      buildGoModule = pkgs.buildGoModule.override {
-       go = pkgs.go_1_25;
-       };
-      })
-
+     mpv        # Obrigatório para rodar o vídeo
+    meuGoAnime # O pacote que acabamos de definir lá no 'let'
   ];
 
    # Configuração VS Code
