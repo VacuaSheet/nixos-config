@@ -359,7 +359,7 @@ programs.zsh = {
     usbutils # Para consultar e gerenciar barramentos e dispositivos USB no Linux
     direnv
      mpv # OBRIGATÓRIO: O GoAnime usa ele para dar o play
-    inputs.goanime.packages.${pkgs.system}.default # Go Anim
+   inputs.goanime.packages.${pkgs.stdenv.hostPlatform.system}.default # Go Anim
      go # Linguagem de programação
   ];
 
