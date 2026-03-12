@@ -261,6 +261,11 @@ programs.zsh = {
 
 };
 
+ # Deixar o comando goanime verde no zsh
+   environment.sessionVariables = {
+    PATH = [ "$HOME/go/bin" ];
+   };
+
    programs.git.config.safe.directory = [ "/etc/nixos" ];
 
   
