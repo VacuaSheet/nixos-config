@@ -14,7 +14,7 @@ let
     pname = "goanime";
     version = "1.4.0"; # Versão atual
     src = inputs.goanime;
-    vendorHash = null; # O Nix vai te dar o hash correto no erro, ou use "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+    vendorHash = "sha256-R3N/F5fC7t4GOn8O/X8W6y+p9mO6R7V0HwM7V6IuM9A="; # O Nix vai te dar o hash correto no erro, ou use "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=" vendorHash = null;
     proxyVendor = true;
     nativeBuildInputs = [ pkgs.installShellFiles ];
     subPackages = [ "cmd/goanime" ];
