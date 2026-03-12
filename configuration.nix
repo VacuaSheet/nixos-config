@@ -265,8 +265,6 @@ programs.zsh = {
    environment.sessionVariables = {
     EDITOR = "nano";
     PATH = [ "$HOME/go/bin" ];
-    programs.zsh.interactiveShellInit = ''
-        '';
    };
 
    programs.git.config.safe.directory = [ "/etc/nixos" ];
