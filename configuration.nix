@@ -223,7 +223,7 @@ programs.zsh = {
         cat = "bat";
         c = "printf \"\\033[2J\\033[3J\\033[1;1H\"" ;
         flat = "f() { flatpak remote-add --if-not-exists flathub https://dl.flathub.org && flatpak install flathub \"$1\"; }; f";
-        goanime ='$HOME/go/bin/goanime'
+        goanime = "$HOME/go/bin/goanime";
          };  
              
      # 2. A função para o sga aceitar argumentos (FORA do bloco acima)
