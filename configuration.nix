@@ -360,7 +360,10 @@ programs.zsh = {
     direnv
     # Go Anime
     # pkgs.mpv  # OBRIGATÓRIO: O GoAnime usa ele para dar o play
-    # pkgs.goanime
+    (inputs.goanime.packages.${pkgs.system}.default.overrideAttrs (old: {
+        GOTOOLCHAIN = "local";
+      }))
+
   ];
 
    # Configuração VS Code
