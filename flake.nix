@@ -18,7 +18,7 @@
     nix-gaming.url = "github:fufexan/nix-gaming";
   };
 
-  outputs = { self, nixpkgs, home-manager, nix-flatpak, microvm, nix-gaming, goanime, ... } @inputs: 
+  outputs = { self, nixpkgs, home-manager, nix-flatpak, microvm, nix-gaming, ... } @inputs: 
   let
     # DEFINA A VARIÁVEL AQUI (Isso resolve o erro de undefined variable)
     unstablePkgs = import inputs.unstable {
