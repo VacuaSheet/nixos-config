@@ -203,11 +203,6 @@ programs.ssh.extraConfig = ''
 
     programs.git.enable = true;
    programs.git.lfs.enable = true;
-
-      programs.zsh.interactiveShellInit = ''
-    export PATH="$PATH:$HOME/go/bin"
-     '';
-
   
     # Atalhos
 programs.zsh = {
