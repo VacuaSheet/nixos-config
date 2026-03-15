@@ -27,8 +27,6 @@ in
       "com.google.Chrome"
       "org.telegram.desktop"
       "com.discordapp.Discord"
-      "com.stremio.Stremio"
-      "com.stremio.Service"
     ];
 
   overrides = {
