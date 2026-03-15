@@ -377,12 +377,6 @@ programs.zsh = {
        pkg-config
   ];
 
-   # pkgs que são consigerados inseguros por serem antigos
-     nixpkgs.config.permittedInsecurePackages = [
-     "qtwebengine-5.15.19"
-    ];
-
-
    # Configuração VS Code
     # Isso ajuda extensões do VS Code a executarem binários que esperam bibliotecas padrão em locais convencionais.
     programs.nix-ld.enable = true; 
