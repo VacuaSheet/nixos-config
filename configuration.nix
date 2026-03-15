@@ -370,7 +370,7 @@ programs.zsh = {
      ani-cli
      yt-dlp
      mov-cli
-     Stremio
+     stremio
      go # Linguagem de programação
        gcc
        gnumake
