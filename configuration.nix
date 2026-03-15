@@ -370,6 +370,7 @@ programs.zsh = {
      ani-cli
      yt-dlp
      mov-cli
+     fzf
      go # Linguagem de programação
        gcc
        gnumake
