@@ -9,14 +9,15 @@
   home.packages = with pkgs; [
     git
     docker-compose
-    pkgs.nerd-fonts.jetbrains-mono
-    pkgs.kitty  
+    nerd-fonts.jetbrains-mono
+    kitty  
     libvirt
     virt-viewer 
     freerdp # Necessário para o LSW exibir as janelas
     hunspell
     hunspellDicts.pt_BR
     spotify
+     unstable.lutris # Lutris
   ];
 
      # 1. Habilita o dconf dentro do Home Manager
