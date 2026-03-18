@@ -1,5 +1,11 @@
 { config, pkgs, lib, inputs, ... }:
 
+let 
+  unstable = import inputs.unstable {
+    system = pkgs.stdenv.hostPlatform.system;
+    config.allowUnfree = true;
+  };
+in
  {
 
   home.username = "_-_-yakov_-_-";
