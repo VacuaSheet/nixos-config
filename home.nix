@@ -25,6 +25,8 @@ in
     spotify
      unstable.lutris # Lutris
      vulkan-tools
+     vulkan-loader
+     gnutls
      wine-staging
      winetricks
   ];
