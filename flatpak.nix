@@ -27,6 +27,7 @@ in
       "com.google.Chrome"
       "org.telegram.desktop"
       "com.discordapp.Discord"
+      "net.davidotek.pupgui2"
     ];
 
   overrides = {
