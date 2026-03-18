@@ -507,7 +507,7 @@ systemd.user.services.unmute-hardware-audio = {
    fonts.packages = with pkgs; [
   nerd-fonts.jetbrains-mono
   corefonts          # Fontes básicas da Microsoft
-  vistafonts         # Fontes como Calibri e Cambria
+  vista-fonts         # Fontes como Calibri e Cambria
   liberation_ttf     # Substituto open source essencial
   ];
 
