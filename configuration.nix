@@ -506,6 +506,9 @@ systemd.user.services.unmute-hardware-audio = {
 
    fonts.packages = with pkgs; [
   nerd-fonts.jetbrains-mono
+  corefonts          # Fontes básicas da Microsoft
+  vistafonts         # Fontes como Calibri e Cambria
+  liberation_ttf     # Substituto open source essencial
   ];
 
      # 1. Ativa o daemon da virtualização (KVM/QEMU por baixo)
