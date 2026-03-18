@@ -24,6 +24,7 @@ in
     hunspellDicts.pt_BR
     spotify
      unstable.lutris # Lutris
+     vulkan-tools
   ];
 
      # 1. Habilita o dconf dentro do Home Manager
