@@ -29,6 +29,17 @@ in
      gnutls
      wine-staging
      winetricks
+     (lutris.override {
+    extraPkgs = pkgs: [
+      # Bibliotecas que o EA App precisa e não acha no NixOS
+      gnutls
+      libgpg-error
+      freetype
+      sqlite
+      libxml2
+      xml2conf
+    ];
+  })
   ];
 
      # 1. Habilita o dconf dentro do Home Manager
