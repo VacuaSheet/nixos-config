@@ -25,6 +25,8 @@ in
     spotify
      unstable.lutris # Lutris
      vulkan-tools
+     wine-staging
+     winetricks
   ];
 
      # 1. Habilita o dconf dentro do Home Manager
