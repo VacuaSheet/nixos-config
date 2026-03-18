@@ -375,17 +375,7 @@ programs.zsh = {
        gcc
        gnumake
        pkg-config
-    # Lutris conf
-      (pkgs.lutris.override {
-      extraLibraries =  pkgs: [
-        pkgs.libunwind
-        pkgs.libusb1
-        pkgs.gnutls
-        pkgs.zenity # Faz o winetricks abrir a interface
-      ];
-    })
-     pkgs.winetricks
-    pkgs.wineWowPackages.staging # Wine completo (64 e 32 bits)
+    lutris
   ];
 
    # Configuração VS Code
