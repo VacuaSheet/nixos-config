@@ -29,17 +29,14 @@ in
      gnutls
      wine-staging
      winetricks
-     (lutris.override {
+  (lutris.override {
     extraPkgs = pkgs: [
-      # Bibliotecas que o EA App precisa e não acha no NixOS
       gnutls
       libgpg-error
       freetype
       sqlite
-      xml2conf
       libxml2
-      libpulseaudio # Importante para o som não quebrar
-      libwordexp    # Ajuda em alguns scripts de instalação
+      libpulseaudio
     ];
   })
   ];
