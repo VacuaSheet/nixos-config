@@ -36,8 +36,10 @@ in
       libgpg-error
       freetype
       sqlite
-      libxml2
       xml2conf
+      libxml2
+      libpulseaudio # Importante para o som não quebrar
+      libwordexp    # Ajuda em alguns scripts de instalação
     ];
   })
   ];
