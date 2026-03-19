@@ -38,20 +38,15 @@ in
       libpulseaudio
     ];
   })
+  (pkgs.lutris.overrideAttrs (oldAttrs: {
+    src = pkgs.fetchFromGitHub {
+      owner = "lutris";
+      repo = "lutris";
+      rev = "master";
+      hash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+    };
+  }))
   ];
-
-nixpkgs.overlays = [
-  (final: prev: {
-    lutris = prev.lutris.overrideAttrs (oldAttrs: {
-      src = prev.fetchFromGitHub {
-        owner = "lutris";
-        repo = "lutris";
-        rev = "master";
-        hash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="; # O Nix vai te dar o hash real no erro de build
-      };
-    });
-  })
-];
 
      # 1. Habilita o dconf dentro do Home Manager
   dconf.enable = true;
