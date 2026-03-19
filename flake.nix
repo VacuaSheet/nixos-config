@@ -38,7 +38,7 @@
         ./configuration.nix
         ./flatpak.nix
         nix-flatpak.nixosModules.nix-flatpak
-        { ... }: {
+        ({ ... }: {
           services.flatpak.enable = true;
           services.flatpak.update.onActivation = false;
         })
