@@ -40,6 +40,15 @@ in
   })
   ];
 
+    pkgs.lutris.overrideAttrs (oldAttrs: {
+  src = pkgs.fetchFromGitHub {
+    owner = "lutris";
+    repo = "lutris";
+    rev = "master"; # ou um commit específico que corrija o erro
+    sha256 = "COLOQUE_O_HASH_AQUI"; 
+     };
+    })
+
      # 1. Habilita o dconf dentro do Home Manager
   dconf.enable = true;
 
