@@ -41,7 +41,6 @@ in
       "xdg-config/gtk-3.0:ro" 
       "xdg-config/kdeglobals:ro"
         ];
-       };
      };
     # Mantém apenas o que é estético/comum para todos
     global = {
@@ -57,7 +56,5 @@ in
   };
     update.auto.enable = true;
     uninstallUnmanaged = true;
-   };
   };
- };
 }
