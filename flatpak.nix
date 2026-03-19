@@ -33,7 +33,7 @@ in
 
   overrides = {
      # Permissões específicas apenas para o Lutris
-  services.flatpak.overrides."net.lutris.Lutris" = {
+  "net.lutris.Lutris" = {
     Context.sockets = ["x11" "wayland" "fallback-x11"];
     Context.devices = ["dri"];
     # Permite que o Lutris acesse o driver de vídeo sem expor o resto do sistema
