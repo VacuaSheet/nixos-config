@@ -41,6 +41,13 @@ in
       "xdg-config/gtk-3.0:ro" 
       "xdg-config/kdeglobals:ro"
         ];
+        # VARIÁVEIS PARA O EA APP:
+      Environment = {
+        # Impede que o Chromium da EA tente criar um sandbox dentro do sandbox
+        "WINE_DISABLE_GPU_SANDBOX" = "1";
+        # Melhora a compatibilidade de fontes e janelas
+        "WINE_LARGE_ADDRESS_AWARE" = "1";
+        };
      };
     # Mantém apenas o que é estético/comum para todos
     global = {
