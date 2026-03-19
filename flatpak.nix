@@ -32,23 +32,22 @@ in
     ];
 
   overrides = {
+     # Permissões específicas apenas para o Lutris
+  services.flatpak.overrides."net.lutris.Lutris" = {
+    Context.sockets = ["x11" "wayland" "fallback-x11"];
+    Context.devices = ["dri"];
+    # Permite que o Lutris acesse o driver de vídeo sem expor o resto do sistema
+    Context.filesystems = [
+      "xdg-config/gtk-3.0:ro" 
+      "xdg-config/kdeglobals:ro"
+        ];
+       };
+     })
     # Mantém apenas o que é estético/comum para todos
     global = {
       Context.filesystems = [ "xdg-config/kdeglobals:ro" ];
       Context.sockets = [ "wayland" "fallback-x11" ];
     };
-
-    # Permissões específicas apenas para o Lutris
-     services.flatpak.overrides."net.lutris.Lutris" = {
-      Context.sockets = ["x11" "wayland" "fallback-x11"];
-      Context.devices = ["dri"];
-       # Permite que o Lutris acesse o driver de vídeo sem expor o resto do sistema
-         Context.filesystems = [
-           "xdg-config/gtk-3.0:ro" 
-           "xdg-config/kdeglobals:ro"
-          ];
-         };
-        })
 
     # Permissão de comunicação restrita aos navegadores
      # Aqui a "mágica" acontece: a função mkMozillaApp já preenche tudo
