@@ -42,7 +42,7 @@ in
       "xdg-config/kdeglobals:ro"
         ];
        };
-     })
+     };
     # Mantém apenas o que é estético/comum para todos
     global = {
       Context.filesystems = [ "xdg-config/kdeglobals:ro" ];
