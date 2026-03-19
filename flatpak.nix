@@ -29,7 +29,6 @@ in
       "net.davidotek.pupgui2"
       "net.lutris.Lutris"
       "org.freedesktop.Platform.GL32.default//25.08"
-      #"org.freedesktop.Platform.GL.default//25.8"
     ];
 
   overrides = {
@@ -38,6 +37,18 @@ in
       Context.filesystems = [ "xdg-config/kdeglobals:ro" ];
       Context.sockets = [ "wayland" "fallback-x11" ];
     };
+
+    # Permissões específicas apenas para o Lutris
+     services.flatpak.overrides."net.lutris.Lutris" = {
+      Context.sockets = ["x11" "wayland" "fallback-x11"];
+      Context.devices = ["dri"];
+       # Permite que o Lutris acesse o driver de vídeo sem expor o resto do sistema
+         Context.filesystems = [
+           "xdg-config/gtk-3.0:ro" 
+           "xdg-config/kdeglobals:ro"
+          ];
+         };
+        })
 
     # Permissão de comunicação restrita aos navegadores
      # Aqui a "mágica" acontece: a função mkMozillaApp já preenche tudo
