@@ -40,14 +40,18 @@ in
   })
   ];
 
-    pkgs.lutris.overrideAttrs (oldAttrs: {
-  src = pkgs.fetchFromGitHub {
-    owner = "lutris";
-    repo = "lutris";
-    rev = "master"; # ou um commit específico que corrija o erro
-    sha256 = "sha256-RInN8O0z7pG35x/VnO2XzP3Z9XvYJ+3z0w8p9N7k5lM="; 
-     };
-    })
+nixpkgs.overlays = [
+  (final: prev: {
+    lutris = prev.lutris.overrideAttrs (oldAttrs: {
+      src = prev.fetchFromGitHub {
+        owner = "lutris";
+        repo = "lutris";
+        rev = "master";
+        hash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="; # O Nix vai te dar o hash real no erro de build
+      };
+    });
+  })
+];
 
      # 1. Habilita o dconf dentro do Home Manager
   dconf.enable = true;
