@@ -28,15 +28,6 @@ in
      gnutls
      wine-staging
      winetricks
-  (pkgs.lutris.overrideAttrs (oldAttrs: {
-    src = pkgs.fetchFromGitHub {
-      owner = "lutris";
-      repo = "lutris";
-      rev = "master";
-      hash = "sha256-MC9RRE+VtMSzq9ro5nbxi/NSWsuYjQvX+9ARnEnzDdU=";
-    };
-  }))
-
   ];
 
      # 1. Habilita o dconf dentro do Home Manager

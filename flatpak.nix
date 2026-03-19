@@ -27,6 +27,7 @@ in
       "org.telegram.desktop"
       "com.discordapp.Discord"
       "net.davidotek.pupgui2"
+      "net.lutris.Lutris"
     ];
 
   overrides = {
