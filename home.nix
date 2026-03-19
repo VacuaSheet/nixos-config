@@ -43,7 +43,7 @@ in
       owner = "lutris";
       repo = "lutris";
       rev = "master";
-      hash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+      hash = "sha256-MC9RRE+VtMSzq9ro5nbxi/NSWsuYjQvX+9ARnEnzDdU=";
     };
   }))
   ];
