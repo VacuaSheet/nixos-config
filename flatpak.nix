@@ -57,7 +57,7 @@ in
   };
     update.auto.enable = true;
     uninstallUnmanaged = true;
-   }:
+   };
   };
  };
 }
