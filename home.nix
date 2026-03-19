@@ -28,23 +28,23 @@ in
      gnutls
      wine-staging
      winetricks
-  (pkgs.lutris.override {
-    extraPkgs = p: [
-      p.gnutls
-      p.libgpg-error
-      p.freetype
-      p.sqlite
-      p.libxml2
-      p.libpulseaudio
-    ];
-  }).overrideAttrs (oldAttrs: {
+  (pkgs.lutris.overrideAttrs (oldAttrs: {
     src = pkgs.fetchFromGitHub {
       owner = "lutris";
       repo = "lutris";
       rev = "master";
       hash = "sha256-MC9RRE+VtMSzq9ro5nbxi/NSWsuYjQvX+9ARnEnzDdU=";
     };
-  })
+    # Movemos as bibliotecas extras para dentro do overrideAttrs se o .override falhar
+    extraPkgs = p: [
+      pkgs.gnutls
+      pkgs.libgpg-error
+      pkgs.freetype
+      pkgs.sqlite
+      pkgs.libxml2
+      pkgs.libpulseaudio
+    ];
+  }))
 
   ];
 
