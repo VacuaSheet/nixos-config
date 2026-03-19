@@ -35,15 +35,6 @@ in
       rev = "master";
       hash = "sha256-MC9RRE+VtMSzq9ro5nbxi/NSWsuYjQvX+9ARnEnzDdU=";
     };
-    # Movemos as bibliotecas extras para dentro do overrideAttrs se o .override falhar
-    extraPkgs = p: [
-      pkgs.gnutls
-      pkgs.libgpg-error
-      pkgs.freetype
-      pkgs.sqlite
-      pkgs.libxml2
-      pkgs.libpulseaudio
-    ];
   }))
 
   ];
