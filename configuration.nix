@@ -73,14 +73,12 @@ in
     extraPackages = with pkgs; [
       libva-vdpau-driver
       libvdpau-va-gl
-      amdvlk
       rocmPackages.clr # # Aceleração OpenCL para AMD
     libva
     ];
     extraPackages32 = with pkgs.pkgsi686Linux; [
       libva
       libva-vdpau-driver
-      driversi686Linux.amdvlk
     ];
   };
 
