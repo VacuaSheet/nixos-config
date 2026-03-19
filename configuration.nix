@@ -75,8 +75,6 @@ in
       libvdpau-va-gl
       rocmPackages.clr # # Aceleração OpenCL para AMD
     libva
-    vaapiVdpau-drive
-    libvdpau-va-gl
     ];
     extraPackages32 = with pkgs.pkgsi686Linux; [
       libva
