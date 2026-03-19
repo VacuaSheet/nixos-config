@@ -45,7 +45,7 @@ in
     owner = "lutris";
     repo = "lutris";
     rev = "master"; # ou um commit específico que corrija o erro
-    sha256 = "COLOQUE_O_HASH_AQUI"; 
+    sha256 = "sha256-RInN8O0z7pG35x/VnO2XzP3Z9XvYJ+3z0w8p9N7k5lM="; 
      };
     })
 
