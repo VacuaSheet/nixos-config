@@ -41,6 +41,10 @@
         ({ ... }: {
           services.flatpak.enable = true;
           services.flatpak.update.onActivation = false;
+          services.flatpak.remotes = [{
+             name = "flathub";
+             location = "https://dl.flathub.org";
+          }];
         })
         microvm.nixosModules.host
         home-manager.nixosModules.home-manager
