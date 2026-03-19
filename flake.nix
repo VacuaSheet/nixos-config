@@ -43,7 +43,7 @@
           services.flatpak.update.onActivation = false;
           services.flatpak.remotes = [{
              name = "flathub";
-             location = "https://dl.flathub.org";
+             location = "https://dl.flathub.org/repo/flathub.flatpakrepo";
           }];
         })
         microvm.nixosModules.host
