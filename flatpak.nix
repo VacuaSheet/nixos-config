@@ -28,6 +28,8 @@ in
       "com.discordapp.Discord"
       "net.davidotek.pupgui2"
       "net.lutris.Lutris"
+      "org.freedesktop.Platform.GL32.default"
+      "org.freedesktop.Platform.GL.default"
     ];
 
   overrides = {
