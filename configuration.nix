@@ -378,7 +378,7 @@ programs.zsh = {
        gcc
        gnumake
        pkg-config
-     lspci
+     pciutils
   ];
 
    # Configuração VS Code
