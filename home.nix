@@ -26,7 +26,7 @@ in
      vulkan-tools
      vulkan-loader
      gnutls
-    # unstable.lutris
+     unstable.lutris
      wine-staging
      winetricks
   ];
