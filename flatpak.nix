@@ -27,7 +27,6 @@ in
       "org.telegram.desktop"
       "com.discordapp.Discord"
       "net.davidotek.pupgui2"
-      "net.lutris.Lutris"
       "org.freedesktop.Platform.GL32.default//25.08"
     ];
 
