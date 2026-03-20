@@ -217,6 +217,7 @@ programs.zsh = {
     shellAliases = {
      nos = "nh os switch /home/_-_-yakov_-_-/nixos-config";
       nosu = "nh os switch -u /home/_-_-yakov_-_-/nixos-config";
+      n = "nano";
       forall = "nh os switch -u /home/_-_-yakov_-_-/nixos-config && flatpak update -y";
       #hms = "home-manager switch --flake /etc/nixos#_-_-yakov_-_-";
       #hmn  = "home-manager news --flake /etc/nixos#_-_-yakov_-_-"; # Atalho para as notícias
