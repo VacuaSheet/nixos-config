@@ -31,11 +31,6 @@ in
      winetricks
   ];
 
-    hardware.graphics = {
-      enable = true;
-      enable32Bit = true;
-    };
-
      # 1. Habilita o dconf dentro do Home Manager
   dconf.enable = true;
 
