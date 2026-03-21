@@ -496,7 +496,7 @@ systemd.user.services.unmute-hardware-audio = {
     HSA_OVERRIDE_GFX_VERSION = "9.0.0";  
     OLLAMA_MODELS = "/srv/ollama_models";
     OLLAMA_MAX_LOADED_MODELS = "1";    # Garante que APENAS 1 modelo carregue por vez
-    OLLAMA_KEEP_ALIVE = "0";          # Descarrega o modelo IMEDIATAMENTE após o uso
+    OLLAMA_KEEP_ALIVE = "97s";         # O modelo fica na RAM por exatamente 1min e 37s
     };
    };
 
