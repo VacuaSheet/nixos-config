@@ -384,6 +384,7 @@ programs.zsh = {
        gnumake
        pkg-config
      pciutils
+     lutris
   ];
 
    # Configuração VS Code
