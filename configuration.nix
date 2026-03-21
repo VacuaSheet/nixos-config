@@ -208,7 +208,7 @@ programs.ssh.extraConfig = ''
    programs.git.lfs.enable = true;
   
     # Atalhos
-programs.zsh = {nix-store --optimise
+programs.zsh = {
   # O 'enable = true' aqui no sistema é necessário para que o NixOS 
   # entenda que deve aplicar estas configurações globais ao Zsh.
   enable = true; 
