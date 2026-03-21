@@ -402,7 +402,7 @@ programs.zsh = {
   # Isso salva o estado do Alsamixer (Mute/Unmute) automaticamente
     hardware.alsa.enablePersistence = true;
  
-  # Não permite mutar as saidas de audio da parte trazeira enquanto a da frente esta plugada
+  # Não permite mudar as saidas de audio da parte trazeira enquanto a da frente esta plugada
     systemd.user.services.unmute-audio = {
   description = "Unmute e volume no máximo para o Headset";
   wantedBy = [ "graphical-session.target" ];
@@ -434,6 +434,23 @@ programs.zsh = {
     }
   ];
 };
+
+     # Dentro do seu configuration.nix (chamado pelo flake)
+       services.flatpak = {
+        enable = true;
+        overrides = {
+         "net.lutris.Lutris" = {
+            Context = {
+            devices = [ "all" ];
+            filesystems = [
+            "xdg-run/render:ro"
+            "/home/_-_-yakov_-_-/Games/Lutris" # Sua pasta de jogos
+             ];
+            };
+           };
+          };
+         };
+
 
    # Ativa o daemon do OpenSnitch
      services.opensnitch.enable = true;

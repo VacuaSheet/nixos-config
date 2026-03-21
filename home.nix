@@ -30,20 +30,6 @@ in
      winetricks
   ];
 
-    services.flatpak.overrides = {
-     "net.lutris.Lutris" = {
-       Context = {
-        devices = [ "all" ];
-        sockets = [ "wayland" "x11" "fallback-x11" ];
-        filesystems = [
-         "xdg-run/render:ro"
-         "/home/_-_-yakov_-_-/Games/Lutris" # Se precisar que o Lutris veja sua pasta Games
-         ];
-        };
-       };
-      };
-
-
      # 1. Habilita o dconf dentro do Home Manager
   dconf.enable = true;
 
