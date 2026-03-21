@@ -385,6 +385,13 @@ programs.zsh = {
        pkg-config
      pciutils
      lutris
+   # Games config
+     wineWowPackages.staging # Wine com suporte 32/64 bits
+     libvdpau-va-gl
+     gst_all_1.gstreamer
+     gst_all_1.gst-plugins-ugly
+     gst_all_1.gst-plugins-base
+     gst_all_1.gst-libav # Isso resolve o erro do libavfilter
   ];
 
    # Configuração VS Code
