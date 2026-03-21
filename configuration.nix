@@ -208,7 +208,7 @@ programs.ssh.extraConfig = ''
    programs.git.lfs.enable = true;
   
     # Atalhos
-programs.zsh = {
+programs.zsh = {nix-store --optimise
   # O 'enable = true' aqui no sistema é necessário para que o NixOS 
   # entenda que deve aplicar estas configurações globais ao Zsh.
   enable = true; 
@@ -218,6 +218,7 @@ programs.zsh = {
      nos = "nh os switch /home/_-_-yakov_-_-/nixos-config";
       nosu = "nh os switch -u /home/_-_-yakov_-_-/nixos-config";
       n = "nano";
+      clx = "rm -rf ~/.local/share/Trash/*"; #Limpar lixeira
       forall = "nh os switch -u /home/_-_-yakov_-_-/nixos-config && flatpak update -y";
       #hms = "home-manager switch --flake /etc/nixos#_-_-yakov_-_-";
       #hmn  = "home-manager news --flake /etc/nixos#_-_-yakov_-_-"; # Atalho para as notícias
@@ -244,6 +245,9 @@ programs.zsh = {
 
     # Função para Limpeza e Rebuild (usando o nh)
      av() {
+         echo "🗑️ Esvaziando a Lixeira do usuário..."
+         rm -rf ~/.local/share/Trash/*
+ 
       if [ -z "$1" ]; then
          echo "🚨 Iniciando LIMPEZA PROFUNDA (Removendo TUDO exceto a atual)..."
          # Remove todas as gerações de todos os perfis (usuário e sistema)
