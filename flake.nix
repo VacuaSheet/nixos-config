@@ -16,7 +16,6 @@
     nix-flatpak.url = "github:gmodena/nix-flatpak";
     microvm.url = "github:astro/microvm.nix";
     nix-gaming.url = "github:fufexan/nix-gaming";
-    inputs.nix-gaming.url = "github:fufexan/nix-gaming";
   };
 
   outputs = { self, nixpkgs, home-manager, nix-flatpak, microvm, nix-gaming, ... } @inputs: 
