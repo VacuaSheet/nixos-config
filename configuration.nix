@@ -26,6 +26,7 @@ in
   boot.initrd.kernelModules = [ "amdgpu" ];
   # Isso garante que os módulos de virtualização sejam carregados
   boot.kernelModules = [ "kvm-amd" ]; # ou "kvm-intel" se seu processador for AMD
+  boot.kernelModules = [ "ledtrig-disk" "ledtrig-activity" ];
   
 
   # Gaming: Gamemode & Steam
