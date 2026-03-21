@@ -23,7 +23,7 @@ in
        "org.freedesktop.Platform.Compat.i386//25.08"
        "org.freedesktop.Platform.GL32.default//25.08"
       "com.heroicgameslauncher.hgl" # Heroic Games Launcher
-      "net.lutris.Lutris" # Lustris
+     # "net.lutris.Lutris" # Lustris
       "com.google.Chrome"
       "org.telegram.desktop"
       "com.discordapp.Discord"
