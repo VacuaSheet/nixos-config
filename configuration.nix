@@ -25,7 +25,7 @@ in
   # Garante que o driver carregue cedo no boot para evitar problemas de resolução
   boot.initrd.kernelModules = [ "amdgpu" ];
   # Isso garante que os módulos de virtualização sejam carregados
-  boot.kernelModules = [ "kvm-amd" "ledtrig-disk" "ledtrig-activity" ]; # ou "kvm-intel" se seu processador for AMD
+  boot.kernelModules = [ "kvm-amd" "ledtrig-disk" "ledtrig-activity" "leds-pci-amd" "i2c-dev" ]; # ou "kvm-intel" se seu processador for Intel
   
 
   # Gaming: Gamemode & Steam
