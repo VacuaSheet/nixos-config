@@ -30,6 +30,8 @@ in
      winetricks
   ];
 
+   home-manager.backupFileExtension = "backup-old";
+
      # 1. Habilita o dconf dentro do Home Manager
   dconf.enable = true;
 
