@@ -11,6 +11,8 @@ in
   home.username = "_-_-yakov_-_-";
   home.homeDirectory = "/home/_-_-yakov_-_-";
 
+  home.backupFileExtension = "backup-old";
+
   # Pacotes instalados
   home.packages = with pkgs; [
     git
@@ -29,8 +31,6 @@ in
      wine-staging
      winetricks
   ];
-
-   home-manager.backupFileExtension = "backup-old";
 
      # 1. Habilita o dconf dentro do Home Manager
   dconf.enable = true;
