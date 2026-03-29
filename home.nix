@@ -11,8 +11,6 @@ in
   home.username = "_-_-yakov_-_-";
   home.homeDirectory = "/home/_-_-yakov_-_-";
 
-  home.backupFileExtension = "backup-old";
-
   # Pacotes instalados
   home.packages = with pkgs; [
     git
