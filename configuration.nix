@@ -464,7 +464,7 @@ programs.zsh = {
           };
          };
 
-   # Ativa o daemon do OpenSnitch
+/*   # Ativa o daemon do OpenSnitch
 nixpkgs.overlays = [
   (final: prev: {
     # Isso substitui o pacote problemático por um comando que não faz nada.
@@ -479,7 +479,7 @@ services.opensnitch = {
     # Força o uso do método /proc, já que o nosso ebpf agora é uma pasta vazia.
     proc_monitor_method = "proc";
   };
-};
+};*/
 
 
      networking.extraHosts = ''

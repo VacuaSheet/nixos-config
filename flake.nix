@@ -38,7 +38,7 @@
         ./configuration.nix
         ./flatpak.nix
         nix-flatpak.nixosModules.nix-flatpak
-
+#-------------------------Temporario
         ({ pkgs, ... }: {
     nixpkgs.overlays = [
       (final: prev: {
@@ -46,7 +46,7 @@
       })
     ];
   })
-
+# -------------------------------
         ({ ... }: {
           services.flatpak.enable = true;
           services.flatpak.update.onActivation = false;
