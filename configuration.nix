@@ -464,7 +464,7 @@ programs.zsh = {
           };
          };
 
-   # Ativa o daemon do OpenSnitch
+  /* # Ativa o daemon do OpenSnitch
   # Overlay para substituir o pacote quebrado por um "vazio"
   nixpkgs.overlays = [
     (final: prev: {
@@ -475,7 +475,12 @@ programs.zsh = {
   services.opensnitch = {
     enable = true;
     settings.proc_monitor_method = "proc"; # Método que não depende do Kernel 6.19
-  };
+  };*/
+
+services.opensnitch.enable = true;
+# Isso diz ao Nix para NÃO tentar baixar ou compilar o módulo de kernel
+services.opensnitch.ebpfPackage = null; 
+services.opensnitch.settings.proc_monitor_method = "proc";
 
 
      networking.extraHosts = ''
