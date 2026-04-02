@@ -475,9 +475,14 @@ programs.zsh = {
 
      nixpkgs.overlays = [
     (final: prev: {
-      # Substitui os pacotes da estável pelos da unstable
+      # 1. Pegamos a versão 1.8.0 da Unstable
+      # 2. Aplicamos o patch de flags para o Kernel 6.19
+      opensnitch-ebpf = unstable.opensnitch-ebpf.overrideAttrs (old: {
+        preBuild = (old.preBuild or "") + ''
+          makeFlagsArray+=(EXTRA_FLAGS="-Wno-microsoft-anon-tag -fms-extensions")
+        '';
+      });
       opensnitch = unstable.opensnitch;
-      opensnitch-ebpf = unstable.opensnitch-ebpf;
     })
   ];
 
