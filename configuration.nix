@@ -473,6 +473,14 @@ programs.zsh = {
      0.0.0.0 analytics.socialclub.rockstargames.com
     '';
 
+     nixpkgs.overlays = [
+    (final: prev: {
+      # Substitui os pacotes da estável pelos da unstable
+      opensnitch = unstable.opensnitch;
+      opensnitch-ebpf = unstable.opensnitch-ebpf;
+    })
+  ];
+
 # Isso tenta forçar o estado do hardware no boot
 systemd.user.services.unmute-hardware-audio = {
   description = "Unmute hardware channels";
