@@ -471,14 +471,13 @@ programs.zsh = {
      proc_monitor_method = "proc";
     };
    };
+nixpkgs.overlays = [
+  (final: prev: {
+    # Substitui o pacote que falha por um pacote vazio que "compila" instantaneamente
+    opensnitch-ebpf = pkgs.runCommand "empty" {} "mkdir -p $out";
+  })
+];
 
-  nixpkgs.overlays = [
-    (final: prev: {
-      # Substituímos o pacote que falha por um pacote vazio (null)
-      # Isso impede que o Nix tente compilar o módulo para o Kernel 6.19
-      opensnitch-ebpf = pkgs.runCommand "empty" {} "mkdir -p $out";
-    })
-  ];
      networking.extraHosts = ''
      0.0.0.0 telemetry.take2games.com
      0.0.0.0 prod.telemetry.ros.rockstargames.com
