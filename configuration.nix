@@ -483,7 +483,6 @@ programs.zsh = {
       proc_monitor_method = "proc";
     };
   };
-}
 
      networking.extraHosts = ''
      0.0.0.0 telemetry.take2games.com
