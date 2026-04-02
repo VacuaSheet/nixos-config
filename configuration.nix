@@ -467,15 +467,16 @@ programs.zsh = {
    # Ativa o daemon do OpenSnitch
 nixpkgs.overlays = [
   (final: prev: {
-    # Isso substitui o pacote problemático por um "vazio" que compila instantaneamente
-    opensnitch-ebpf = pkgs.runCommand "empty-ebpf" {} "mkdir -p $out";
+    # Substituímos o pacote que falha por um comando que não faz nada.
+    # Isso evita que o clang tente compilar contra o kernel 6.19.
+    opensnitch-ebpf = prev.runCommand "empty-opensnitch-ebpf" {} "mkdir -p $out";
   })
 ];
 
 services.opensnitch = {
   enable = true;
   settings = {
-    # Garante que o OpenSnitch use o método que não precisa do arquivo que "vaziamos" acima
+    # IMPORTANTE: Força o uso do método /proc, já que o arquivo eBPF agora está "vazio".
     proc_monitor_method = "proc";
   };
 };
