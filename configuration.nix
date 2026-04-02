@@ -465,21 +465,23 @@ programs.zsh = {
          };
 
    # Ativa o daemon do OpenSnitch
-  # 1. Overlay para "pular" o build quebrado
+  # 1. Overlay para "pular" o build que falha
   nixpkgs.overlays = [
     (final: prev: {
-      opensnitch-ebpf = pkgs.runCommand "dummy" {} "mkdir -p $out";
+      # Substituímos o pacote problemático por um comando que apenas cria uma pasta vazia
+      opensnitch-ebpf = final.runCommand "dummy-ebpf" {} "mkdir -p $out";
     })
   ];
 
-  # 2. Configuração do serviço
+  # 2. Configuração do serviço usando o método estável
   services.opensnitch = {
     enable = true;
     settings = {
-      # Isso diz ao OpenSnitch: "Não use eBPF, use o método tradicional"
+      # IMPORTANTE: Força o uso do monitoramento via /proc
       proc_monitor_method = "proc";
     };
   };
+
 
      networking.extraHosts = ''
      0.0.0.0 telemetry.take2games.com
