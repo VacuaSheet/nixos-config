@@ -480,11 +480,6 @@ programs.zsh = {
     settings.proc_monitor_method = "proc";
   };
 
- 
-# Isso diz ao Nix para NÃO tentar baixar ou compilar o módulo de kernel
-services.opensnitch.ebpfPackage = null; 
-
-
      networking.extraHosts = ''
      0.0.0.0 telemetry.take2games.com
      0.0.0.0 prod.telemetry.ros.rockstargames.com
