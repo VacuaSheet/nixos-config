@@ -465,20 +465,21 @@ programs.zsh = {
          };
 
    # Ativa o daemon do OpenSnitch
-  # 1. Overlay para "anular" o build do eBPF quebrado
+  # 1. Overlay para "pular" o build que falha no Kernel 6.19
   nixpkgs.overlays = [
     (final: prev: {
-      # Isso substitui o pacote que falha por uma pasta vazia. 
+      # Substitui o pacote que dá erro por uma pasta vazia.
       # Resolve o erro de "no member named ns_id" instantaneamente.
       opensnitch-ebpf = pkgs.runCommand "dummy-ebpf" {} "mkdir -p $out";
     })
   ];
 
-  # 2. Ativa o serviço usando o método estável
+  # 2. Configuração do serviço
   services.opensnitch = {
     enable = true;
     settings.proc_monitor_method = "proc";
   };
+
 
      networking.extraHosts = ''
      0.0.0.0 telemetry.take2games.com
