@@ -465,10 +465,12 @@ programs.zsh = {
          };
 
    # Ativa o daemon do OpenSnitch
+
   # 1. Overlay para anular o build do eBPF quebrado
   nixpkgs.overlays = [
     (final: prev: {
-      # Substituímos o pacote que falha por um comando que apenas cria uma pasta vazia
+      # Isso substitui o pacote que falha por um comando que apenas cria uma pasta vazia.
+      # Leva 0.1 segundo e não tenta compilar nada contra o kernel.
       opensnitch-ebpf = final.runCommand "dummy-ebpf" {} "mkdir -p $out";
     })
   ];
@@ -477,11 +479,11 @@ programs.zsh = {
   services.opensnitch = {
     enable = true;
     settings = {
-      # Força o uso do método /proc (estável)
+      # IMPORTANTE: Força o uso do método /proc, já que o nosso ebpf agora é "vazio".
       proc_monitor_method = "proc";
     };
   };
-
+}
 
      networking.extraHosts = ''
      0.0.0.0 telemetry.take2games.com
