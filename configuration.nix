@@ -480,8 +480,6 @@ nixpkgs.overlays = [
   })
 ];
  
-
-services.opensnitch.enable = true;
 # Isso diz ao Nix para NÃO tentar baixar ou compilar o módulo de kernel
 services.opensnitch.ebpfPackage = null; 
 
