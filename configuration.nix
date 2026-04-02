@@ -466,15 +466,12 @@ programs.zsh = {
 
    # Ativa o daemon do OpenSnitch
    services.opensnitch = {
-  enable = true;
-  # Esta é a linha principal para parar o erro de build:
-  ebpf.enable = false; 
-  
-  settings = {
-    # Garante que o monitoramento use o método que não depende de compilação
-    proc_monitor_method = "proc";
-  };
-};
+    enable = true;
+    settings = {
+     proc_monitor_method = "proc";
+    };
+   };
+
   nixpkgs.overlays = [
     (final: prev: {
       # Substituímos o pacote que falha por um pacote vazio (null)
