@@ -57,10 +57,9 @@
             imports = [
               ./home.nix
               inputs.plasma-manager.homeModules.plasma-manager
-            ];
-   {
-     nixpkgs.overlays = [
-    (final: prev: {
+    {
+      nixpkgs.overlays = [
+       (final: prev: {
       opensnitch-ebpf = prev.opensnitch-ebpf.overrideAttrs (old: {
         # O kernel 6.19+ requer estas flags para que o Clang veja os campos da struct ns_common
         preBuild = (old.preBuild or "") + ''
@@ -70,6 +69,7 @@
     })
   ];
  }
+            ];
           };
         }
       ];
