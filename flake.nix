@@ -13,16 +13,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.home-manager.follows = "home-manager";
     };	
-      nixpkgs.overlays = [
-    (final: prev: {
-      opensnitch-ebpf = prev.opensnitch-ebpf.overrideAttrs (old: {
-        # O kernel 6.19+ requer estas flags para que o Clang veja os campos da struct ns_common
-        preBuild = (old.preBuild or "") + ''
-          makeFlagsArray+=(EXTRA_FLAGS="-Wno-microsoft-anon-tag -fms-extensions")
-        '';
-      });
-    })
-  ];
     nix-flatpak.url = "github:gmodena/nix-flatpak";
     microvm.url = "github:astro/microvm.nix";
     nix-gaming.url = "github:fufexan/nix-gaming";
@@ -67,6 +57,16 @@
             imports = [
               ./home.nix
               inputs.plasma-manager.homeModules.plasma-manager
+              nixpkgs.overlays = [
+               (final: prev: {
+            opensnitch-ebpf = prev.opensnitch-ebpf.overrideAttrs (old: {
+            # O kernel 6.19+ requer estas flags para que o Clang veja os campos da struct ns_common
+            preBuild = (old.preBuild or "") + ''
+            makeFlagsArray+=(EXTRA_FLAGS="-Wno-microsoft-anon-tag -fms-extensions")
+          '';
+         });
+        })
+       ];
             ];
           };
         }
