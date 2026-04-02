@@ -466,10 +466,15 @@ programs.zsh = {
 
    # Ativa o daemon do OpenSnitch
    services.opensnitch = {
-     enable = true;
-     # Força o OpenSnitch a usar o método que não depende do kernel 6.19
-     settings.proc_monitor_method = "proc";
-    };
+  enable = true;
+  # Esta é a linha principal para parar o erro de build:
+  ebpf.enable = false; 
+  
+  settings = {
+    # Garante que o monitoramento use o método que não depende de compilação
+    proc_monitor_method = "proc";
+  };
+};
 
      networking.extraHosts = ''
      0.0.0.0 telemetry.take2games.com
