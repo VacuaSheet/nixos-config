@@ -464,23 +464,23 @@ programs.zsh = {
           };
          };
 
-/*   # Ativa o daemon do OpenSnitch
-nixpkgs.overlays = [
-  (final: prev: {
-    # Isso substitui o pacote problemático por um comando que não faz nada.
-    # Evita que o build tente rodar o compilador clang que está falhando.
-    opensnitch-ebpf = final.runCommand "dummy-ebpf" {} "mkdir -p $out";
-  })
-];
+   # Ativa o daemon do OpenSnitch
+  # 1. Overlay para "pular" o build quebrado
+  nixpkgs.overlays = [
+    (final: prev: {
+      opensnitch-ebpf = pkgs.runCommand "dummy" {} "mkdir -p $out";
+    })
+  ];
 
-services.opensnitch = {
-  enable = true;
-  settings = {
-    # Força o uso do método /proc, já que o nosso ebpf agora é uma pasta vazia.
-    proc_monitor_method = "proc";
+  # 2. Configuração do serviço
+  services.opensnitch = {
+    enable = true;
+    settings = {
+      # Isso diz ao OpenSnitch: "Não use eBPF, use o método tradicional"
+      proc_monitor_method = "proc";
+    };
   };
-};*/
-
+}
 
      networking.extraHosts = ''
      0.0.0.0 telemetry.take2games.com
