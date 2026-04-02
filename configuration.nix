@@ -465,20 +465,21 @@ programs.zsh = {
          };
 
    # Ativa o daemon do OpenSnitch
-   services.opensnitch = {
-  enable = true;
-  settings = {
-    # Isso evita que o daemon tente carregar o eBPF quebrado
-    proc_monitor_method = "proc";
-  };
-};
+  # 1. Overlay para "anular" o build do eBPF quebrado
+  nixpkgs.overlays = [
+    (final: prev: {
+      # Isso substitui o pacote que falha por uma pasta vazia. 
+      # Resolve o erro de "no member named ns_id" instantaneamente.
+      opensnitch-ebpf = pkgs.runCommand "dummy-ebpf" {} "mkdir -p $out";
+    })
+  ];
 
-# Force o Nix a não compilar o eBPF usando este overlay simples:
-nixpkgs.overlays = [
-  (final: prev: {
-    opensnitch-ebpf = pkgs.runCommand "empty" {} "mkdir -p $out";
-  })
-];
+  # 2. Ativa o serviço usando o método estável
+  services.opensnitch = {
+    enable = true;
+    settings.proc_monitor_method = "proc";
+  };
+
  
 # Isso diz ao Nix para NÃO tentar baixar ou compilar o módulo de kernel
 services.opensnitch.ebpfPackage = null; 
