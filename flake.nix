@@ -58,6 +58,7 @@
               ./home.nix
               inputs.plasma-manager.homeModules.plasma-manager
             ];
+   {
      nixpkgs.overlays = [
     (final: prev: {
       opensnitch-ebpf = prev.opensnitch-ebpf.overrideAttrs (old: {
