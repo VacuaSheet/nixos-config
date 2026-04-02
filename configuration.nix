@@ -465,18 +465,20 @@ programs.zsh = {
          };
 
    # Ativa o daemon do OpenSnitch
-   services.opensnitch = {
-    enable = true;
-    settings = {
-     proc_monitor_method = "proc";
-    };
-   };
 nixpkgs.overlays = [
   (final: prev: {
-    # Substitui o pacote que falha por um pacote vazio que "compila" instantaneamente
-    opensnitch-ebpf = pkgs.runCommand "empty" {} "mkdir -p $out";
+    # Isso substitui o pacote problemático por um "vazio" que compila instantaneamente
+    opensnitch-ebpf = pkgs.runCommand "empty-ebpf" {} "mkdir -p $out";
   })
 ];
+
+services.opensnitch = {
+  enable = true;
+  settings = {
+    # Garante que o OpenSnitch use o método que não precisa do arquivo que "vaziamos" acima
+    proc_monitor_method = "proc";
+  };
+};
 
      networking.extraHosts = ''
      0.0.0.0 telemetry.take2games.com
