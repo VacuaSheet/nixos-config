@@ -478,19 +478,6 @@ programs.zsh = {
      0.0.0.0 analytics.socialclub.rockstargames.com
     '';
 
-     nixpkgs.overlays = [
-    (final: prev: {
-      # 1. Pegamos a versão 1.8.0 da Unstable
-      # 2. Aplicamos o patch de flags para o Kernel 6.19
-      opensnitch-ebpf = unstable.opensnitch-ebpf.overrideAttrs (old: {
-        preBuild = (old.preBuild or "") + ''
-          makeFlagsArray+=(EXTRA_FLAGS="-Wno-microsoft-anon-tag -fms-extensions")
-        '';
-      });
-      opensnitch = unstable.opensnitch;
-    })
-  ];
-
 # Isso tenta forçar o estado do hardware no boot
 systemd.user.services.unmute-hardware-audio = {
   description = "Unmute hardware channels";
