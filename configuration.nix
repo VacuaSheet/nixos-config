@@ -465,7 +465,12 @@ programs.zsh = {
          };
 
    # Ativa o daemon do OpenSnitch
-     services.opensnitch.enable = true;
+   services.opensnitch = {
+     enable = true;
+     # Força o OpenSnitch a usar o método que não depende do kernel 6.19
+     settings.proc_monitor_method = "proc";
+    };
+
      networking.extraHosts = ''
      0.0.0.0 telemetry.take2games.com
      0.0.0.0 prod.telemetry.ros.rockstargames.com
