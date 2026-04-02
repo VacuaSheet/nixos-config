@@ -38,6 +38,15 @@
         ./configuration.nix
         ./flatpak.nix
         nix-flatpak.nixosModules.nix-flatpak
+
+        ({ pkgs, ... }: {
+    nixpkgs.overlays = [
+      (final: prev: {
+        opensnitch-ebpf = pkgs.runCommand "dummy" {} "mkdir -p $out";
+      })
+    ];
+  })
+
         ({ ... }: {
           services.flatpak.enable = true;
           services.flatpak.update.onActivation = false;
