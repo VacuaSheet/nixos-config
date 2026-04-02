@@ -464,7 +464,7 @@ programs.zsh = {
           };
          };
 
-   # Ativa o daemon do OpenSnitch
+ /*  # Ativa o daemon do OpenSnitch
   # 1. Overlay para "pular" o build que falha no Kernel 6.19
   nixpkgs.overlays = [
     (final: prev: {
@@ -478,8 +478,7 @@ programs.zsh = {
   services.opensnitch = {
     enable = true;
     settings.proc_monitor_method = "proc";
-  };
-
+  };*/
 
      networking.extraHosts = ''
      0.0.0.0 telemetry.take2games.com
