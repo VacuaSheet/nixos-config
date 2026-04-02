@@ -464,23 +464,26 @@ programs.zsh = {
           };
          };
 
-  /* # Ativa o daemon do OpenSnitch
-  # Overlay para substituir o pacote quebrado por um "vazio"
-  nixpkgs.overlays = [
-    (final: prev: {
-      opensnitch-ebpf = final.runCommand "dummy-ebpf" {} "mkdir -p $out";
-    })
-  ];
+   # Ativa o daemon do OpenSnitch
+   services.opensnitch = {
+  enable = true;
+  settings = {
+    # Isso evita que o daemon tente carregar o eBPF quebrado
+    proc_monitor_method = "proc";
+  };
+};
 
-  services.opensnitch = {
-    enable = true;
-    settings.proc_monitor_method = "proc"; # Método que não depende do Kernel 6.19
-  };*/
+# Force o Nix a não compilar o eBPF usando este overlay simples:
+nixpkgs.overlays = [
+  (final: prev: {
+    opensnitch-ebpf = pkgs.runCommand "empty" {} "mkdir -p $out";
+  })
+];
+ 
 
 services.opensnitch.enable = true;
 # Isso diz ao Nix para NÃO tentar baixar ou compilar o módulo de kernel
 services.opensnitch.ebpfPackage = null; 
-services.opensnitch.settings.proc_monitor_method = "proc";
 
 
      networking.extraHosts = ''
