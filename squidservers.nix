@@ -2,7 +2,7 @@
 
 {
   environment.systemPackages = with pkgs; [
-    # 1. Script de execução
+    # 1. Script de execução 
     (pkgs.writeShellScriptBin "squidservers" ''
       ${pkgs.bubblewrap}/bin/bwrap \
         --ro-bind /nix /nix \
@@ -21,7 +21,8 @@
         --proc /proc \
         --tmpfs /tmp \
         --share-net \
-        /home/_-_-yakov_-_-/Apps/SquidServersData/squidservers-latest.appimage -- --ozone-platform=wayland --disable-gpu --disable-gpu-compositing > /dev/null 2>&1 &
+        ${pkgs.appimage-run}/bin/appimage-run /home/_-_-yakov_-_-/Apps/SquidServersData/squidservers-latest.appimage \
+        -- --ozone-platform=wayland --disable-gpu --disable-gpu-compositing > /dev/null 2>&1 &
     '')
 
     # 2. Atalho do Menu (Atualizado com o novo caminho do ícone)
