@@ -397,6 +397,7 @@ programs.zsh = {
     appimage-run
     bubblewrap
       jdk17 # Java
+    crow-translate # Tradutor_D_Tela
   ];
 
    # Configuração VS Code
