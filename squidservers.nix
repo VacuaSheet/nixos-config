@@ -7,7 +7,7 @@ let
     src = pkgs.fetchurl {
       url = "https://squidservers.com";
       # O Nix confere esse código. Se o arquivo for alterado no site, ele não instala.
-      sha256 = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="; 
+      sha256 = "sha256-1fa5mcli68y3bra5q33k2d7hl6qyv9bjwrwbg97dnwh50nwbllh8"; 
     };
   };
 in
