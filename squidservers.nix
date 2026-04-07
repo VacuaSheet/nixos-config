@@ -1,12 +1,12 @@
 { pkgs, ... }:
 
 let
-  # Caminho para o ícone que você baixou
-  iconFile = "/home/_-_-yakov_-_-/Apps/squidservers.ico";
+  # Caminho exato para a sua imagem PNG
+  iconFile = "/home/_-_-yakov_-_-/Apps/squidservers.png";
 in
 {
   environment.systemPackages = with pkgs; [
-    # 1. O script que já criamos (o comando do terminal)
+    # 1. O script de execução (mantendo a segurança do Bubblewrap)
     (pkgs.writeShellScriptBin "squidservers" ''
       ${pkgs.bubblewrap}/bin/bwrap \
         --ro-bind /nix /nix \
@@ -29,14 +29,17 @@ in
         -- --ozone-platform=wayland --disable-gpu --disable-gpu-compositing > /dev/null 2>&1 &
     '')
 
-    # 2. O atalho para o Menu de Aplicativos (com o ícone!)
+    # 2. O item que cria o ícone no Menu Iniciar (KDE Plasma)
     (pkgs.makeDesktopItem {
       name = "squidservers";
       desktopName = "SquidServers";
+      genericName = "Servidor de Minecraft";
       exec = "squidservers";
       icon = iconFile;
       comment = "Gerenciador de Servidores Minecraft";
       categories = [ "Game" "Network" ];
+      terminal = false;
     })
   ];
 }
+
