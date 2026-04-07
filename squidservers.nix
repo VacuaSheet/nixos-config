@@ -23,7 +23,6 @@
         --share-net \
         --ro-bind /usr/bin/xdg-open /usr/bin/xdg-open \
         --ro-bind /run/current-system/sw/bin/xdg-open /run/current-system/sw/bin/xdg-open \
-
         ${pkgs.appimage-run}/bin/appimage-run /home/_-_-yakov_-_-/Apps/SquidServersData/squidservers-latest.appimage \
         -- --ozone-platform=wayland --disable-gpu --disable-gpu-compositing > /dev/null 2>&1 &
     '')
