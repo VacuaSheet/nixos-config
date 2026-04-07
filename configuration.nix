@@ -13,6 +13,7 @@ in
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
+      ./squidservers.nix
     ];
 
   # Define o Zen Kernel
