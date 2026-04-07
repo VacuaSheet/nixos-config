@@ -19,7 +19,7 @@ pkgs.writeShellScriptBin "squidservers" ''
     --proc /proc \
     --dev /dev \
     --tmpfs /tmp \
-    --bind $HOME/SquidServersData $HOME \
+    --bind $HOME/Apps/SquidServersData $HOME \
     --unshare-all \
     --share-net \
     ${appImage}/bin/squidservers-raw
