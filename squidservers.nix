@@ -30,7 +30,7 @@
       name = "squidservers";
       desktopName = "SquidServers";
       exec = "squidservers";
-      icon = iconFile = "/home/_-_-yakov_-_-/Apps/squidservers.ico";
+      icon = "/home/_-_-yakov_-_-/Apps/squidservers.ico";
       comment = "Gerenciador de Servidores Minecraft";
       categories = [ "Game" ];
     })
