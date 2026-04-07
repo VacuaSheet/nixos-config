@@ -396,8 +396,7 @@ programs.zsh = {
     anydesk # Gerenciador de outro pc
     appimage-run
     bubblewrap
-      (callPackage ./squidservers.nix {})
-      jdk17
+      jdk17 # Java
   ];
 
    # Configuração VS Code
