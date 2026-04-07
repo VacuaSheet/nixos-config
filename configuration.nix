@@ -230,7 +230,7 @@ programs.zsh = {
         flat = "f() { flatpak remote-add --if-not-exists flathub https://dl.flathub.org && flatpak install flathub \"$1\"; }; f";
         goanime = "$HOME/go/bin/goanime";
        # Servidor Minecraft
-       squidservers = "bubblewrap --ro-bind /nix /nix --ro-bind /etc /etc --bind ~/Apps ~/ --dev /dev --proc /proc --tmpfs /tmp --share-net appimage-run ~/Apps/squidservers-latest.appimage";
+       squidservers = "bwrap --ro-bind /nix /nix --ro-bind /etc /etc --bind ~/Apps ~/ --dev /dev --proc /proc --tmpfs /tmp --share-net appimage-run ~/Apps/squidservers-latest.appimage";
          };  
              
      # 2. A função para o sga aceitar argumentos (FORA do bloco acima)
