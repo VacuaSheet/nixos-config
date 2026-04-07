@@ -2,7 +2,7 @@
 
 {
   environment.systemPackages = with pkgs; [
-    # 1. Script de execução 
+    # 1. Script de execução corrigido
     (pkgs.writeShellScriptBin "squidservers" ''
       ${pkgs.bubblewrap}/bin/bwrap \
         --ro-bind /nix /nix \
@@ -21,13 +21,12 @@
         --proc /proc \
         --tmpfs /tmp \
         --share-net \
-        --ro-bind /usr/bin/xdg-open /usr/bin/xdg-open \
         --ro-bind /run/current-system/sw/bin/xdg-open /run/current-system/sw/bin/xdg-open \
         ${pkgs.appimage-run}/bin/appimage-run /home/_-_-yakov_-_-/Apps/SquidServersData/squidservers-latest.appimage \
         -- --ozone-platform=wayland --disable-gpu --disable-gpu-compositing > /dev/null 2>&1 &
     '')
 
-    # 2. Atalho do Menu (Atualizado com o novo caminho do ícone)
+    # 2. Atalho do Menu
     (pkgs.makeDesktopItem {
       name = "squidservers";
       desktopName = "SquidServers";
