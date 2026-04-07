@@ -1,7 +1,12 @@
 { pkgs, ... }:
 
+let
+  # Caminho para o ícone que você baixou
+  iconFile = "/home/_-_-yakov_-_-/Apps/squidservers.ico";
+in
 {
   environment.systemPackages = with pkgs; [
+    # 1. O script que já criamos (o comando do terminal)
     (pkgs.writeShellScriptBin "squidservers" ''
       ${pkgs.bubblewrap}/bin/bwrap \
         --ro-bind /nix /nix \
@@ -23,5 +28,15 @@
         ${pkgs.appimage-run}/bin/appimage-run /home/_-_-yakov_-_-/Apps/squidservers-latest.appimage \
         -- --ozone-platform=wayland --disable-gpu --disable-gpu-compositing > /dev/null 2>&1 &
     '')
+
+    # 2. O atalho para o Menu de Aplicativos (com o ícone!)
+    (pkgs.makeDesktopItem {
+      name = "squidservers";
+      desktopName = "SquidServers";
+      exec = "squidservers";
+      icon = iconFile;
+      comment = "Gerenciador de Servidores Minecraft";
+      categories = [ "Game" "Network" ];
+    })
   ];
 }
