@@ -1,9 +1,5 @@
 { pkgs, ... }:
 
-let
-  # Caminho para o ícone que você baixou
-  iconFile = "/home/_-_-yakov_-_-/Apps/squidservers.ico";
-in
 {
   environment.systemPackages = with pkgs; [
     # 1. O script que já criamos (o comando do terminal)
@@ -34,7 +30,7 @@ in
       name = "squidservers";
       desktopName = "SquidServers";
       exec = "squidservers";
-      icon = iconFile;
+      icon =  "/home/_-_-yakov_-_-/Apps/squidservers.png";
       comment = "Gerenciador de Servidores Minecraft";
       categories = [ "Game" ];
     })
