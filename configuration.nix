@@ -395,7 +395,7 @@ programs.zsh = {
      gst_all_1.gst-libav # Isso resolve o erro do libavfilter
     anydesk # Gerenciador de outro pc
     appimage-run
-    wrap
+    bubblewrap
   ];
 
    # Configuração VS Code
