@@ -230,7 +230,7 @@ programs.zsh = {
         flat = "f() { flatpak remote-add --if-not-exists flathub https://dl.flathub.org && flatpak install flathub \"$1\"; }; f";
         goanime = "$HOME/go/bin/goanime";
        # Servidor Minecraft
-       squidservers = "bwrap --ro-bind /nix /nix --ro-bind /etc /etc --ro-bind /run/current-system /run/current-system --ro-bind /run/wrappers /run/wrappers --ro-bind /run/dbus /run/dbus --ro-bind /run/user/$(id -u)/wayland-0 /run/user/$(id -u)/wayland-0 --setenv WAYLAND_DISPLAY wayland-0 --setenv DISPLAY :0 --bind /home/_-_-yakov_-_-/Apps /home/_-_-yakov_-_-/Apps --bind /home/_-_-yakov_-_-/.cache /home/_-_-yakov_-_-/.cache --dev /dev --proc /proc --tmpfs /tmp --share-net appimage-run /home/_-_-yakov_-_-/Apps/squidservers-latest.appimage";
+       squidservers = "bwrap --ro-bind /nix /nix --ro-bind /etc /etc --ro-bind /run/current-system /run/current-system --ro-bind /run/wrappers /run/wrappers --ro-bind /run/dbus /run/dbus --ro-bind /run/user/1000 /run/user/1000 --setenv WAYLAND_DISPLAY wayland-0 --setenv DISPLAY :0 --bind /home/_-_-yakov_-_-/Apps /home/_-_-yakov_-_-/Apps --bind /home/_-_-yakov_-_-/.cache /home/_-_-yakov_-_-/.cache --dev /dev --proc /proc --tmpfs /tmp --share-net appimage-run /home/_-_-yakov_-_-/Apps/squidservers-latest.appimage";
          };  
              
      # 2. A função para o sga aceitar argumentos (FORA do bloco acima)
