@@ -22,9 +22,8 @@
         --tmpfs /tmp \
         --share-net \
         /* ${pkgs.appimage-run}/bin/appimage-run /home/_-_-yakov_-_-/Apps/SquidServersData/squidservers-latest.appimage \
-        -- --ozone-platform=wayland --disable-gpu --disable-gpu-compositing > /dev/null 2>&1 & */ # Isso coloca uma bolha dentro dia uma bolha não quer dizer mais seguro só mais lento
-        /home/_-_-yakov_-_-/Apps/SquidServersData/squidservers-latest.appimage \
-        -- --ozone-platform=wayland --disable-gpu --disable-gpu-compositing > /dev/null 2>&1 &
+        -- --ozone-platform=wayland --disable-gpu --disable-gpu-compositing > /dev/null 2>&1 & */ # Isso coloca uma bolha dentro dia uma bolha não quer dizer mais seguro só mais lento        
+        /home/_-_-yakov_-_-/Apps/SquidServersData/squidservers-latest.appimage -- --ozone-platform=wayland --disable-gpu --disable-gpu-compositing > /dev/null 2>&1 &
     '')
 
     # 2. Atalho do Menu (Atualizado com o novo caminho do ícone)
