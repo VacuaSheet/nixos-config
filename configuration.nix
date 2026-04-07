@@ -229,6 +229,7 @@ programs.zsh = {
         c = "printf \"\\033[2J\\033[3J\\033[1;1H\"" ;
         flat = "f() { flatpak remote-add --if-not-exists flathub https://dl.flathub.org && flatpak install flathub \"$1\"; }; f";
         goanime = "$HOME/go/bin/goanime";
+       squidservers = "appimage-run ~/Apps/squidservers-latest.appimage"; # Servidor minecraft
          };  
              
      # 2. A função para o sga aceitar argumentos (FORA do bloco acima)
@@ -393,6 +394,7 @@ programs.zsh = {
      gst_all_1.gst-plugins-base
      gst_all_1.gst-libav # Isso resolve o erro do libavfilter
     anydesk # Gerenciador de outro pc
+    appimage-run
   ];
 
    # Configuração VS Code
