@@ -32,7 +32,7 @@ let
     desktopName = "SquidServers";
     genericName = "Servidor de Minecraft";
     exec = "squidservers"; # Aqui ele chama o nome do script acima
-    icon = iconFile;
+    icon = "${iconFile}";
     categories = [ "Game" ];
     terminal = false;
   };
