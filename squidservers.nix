@@ -36,4 +36,5 @@ in
         -- --ozone-platform=wayland --disable-gpu --disable-gpu-compositing > /dev/null 2>&1 &
     '')
   ];
+  services.xserver.desktopManager.runConfig = "export XDG_DATA_DIRS=$XDG_DATA_DIRS:${squidDesktopItem}/share";
 }
