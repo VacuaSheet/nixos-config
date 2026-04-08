@@ -1,5 +1,15 @@
 { pkgs, ... }:
-
+let
+  # Definimos o item do desktop em uma variável para facilitar
+  squidDesktopItem = pkgs.makeDesktopItem {
+    name = "squidservers";
+    desktopName = "SquidServers";
+    exec = "squidservers";
+    icon = "/home/_-_-yakov_-_-/Apps/SquidServersData/squidservers.png";
+    comment = "Gerenciador de Servidores Minecraft";
+    categories = [ "Game" ];
+  };
+in
 {
   environment.systemPackages = with pkgs; [
     # 1. Script de execução corrigido
@@ -25,15 +35,5 @@
         ${pkgs.appimage-run}/bin/appimage-run /home/_-_-yakov_-_-/Apps/SquidServersData/squidservers-latest.appimage \
         -- --ozone-platform=wayland --disable-gpu --disable-gpu-compositing > /dev/null 2>&1 &
     '')
-
-    # 2. Atalho do Menu
-    (pkgs.makeDesktopItem {
-      name = "squidservers";
-      desktopName = "SquidServers";
-      exec = "squidservers";
-      icon = "/home/_-_-yakov_-_-/Apps/SquidServersData/squidservers.png";
-      comment = "Gerenciador de Servidores Minecraft";
-      categories = [ "Game" ];
-    })
   ];
 }
