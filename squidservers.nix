@@ -37,7 +37,7 @@ let
         genericName = "Servidor de Minecraft";
         exec = "squidservers";
         icon = "${iconFile}";
-        categories = [ "Game" "ActionGame" ];
+        categories = [ "Game" "ActionGame" "Jogos" ];
 	keywords = [ "minecraft" "server" "squid" ];
         terminal = false;
       })
