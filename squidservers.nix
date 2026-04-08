@@ -26,7 +26,7 @@ in
         --tmpfs /tmp \
         --share-net \
         ${pkgs.appimage-run}/bin/appimage-run /home/_-_-yakov_-_-/Apps/SquidServersData/squidservers-latest.appimage \
-        -- --ozone-platform=wayland --disable-gpu --disable-gpu-compositing > /dev/null 2>&1 &
+        -- --ozone-platform=wayland --ignore-gpu-blocklist --enable-gpu-rasterization --enable-zero-copy --disable-gpu-compositing > /dev/null 2>&1 &
     '')
 
     # 2. O atalho para o Menu de Aplicativos (com o ícone!)
