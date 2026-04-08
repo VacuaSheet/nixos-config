@@ -2,7 +2,7 @@
 
 let
   # Caminho para o ícone que você baixou
-  iconFile = "/home/_-_-yakov_-_-/Apps/squidservers.ico";
+  iconFile = "/home/_-_-yakov_-_-/Apps/SquidServersData/squidservers.png";
 in
 {
   environment.systemPackages = with pkgs; [
@@ -25,7 +25,7 @@ in
         --proc /proc \
         --tmpfs /tmp \
         --share-net \
-        ${pkgs.appimage-run}/bin/appimage-run /home/_-_-yakov_-_-/Apps/squidservers-latest.appimage \
+        ${pkgs.appimage-run}/bin/appimage-run /home/_-_-yakov_-_-/Apps/SquidServersData/squidservers-latest.appimage \
         -- --ozone-platform=wayland --disable-gpu --disable-gpu-compositing > /dev/null 2>&1 &
     '')
 
@@ -33,10 +33,12 @@ in
     (pkgs.makeDesktopItem {
       name = "squidservers";
       desktopName = "SquidServers";
+	      genericName = "Servidor de Minecraft";
       exec = "squidservers";
       icon = iconFile;
       comment = "Gerenciador de Servidores Minecraft";
-      categories = [ "Game" "Network" ];
+      categories = [ "Game" ];
+      terminal = false;
     })
   ];
 }
