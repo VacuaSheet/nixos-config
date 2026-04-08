@@ -1,6 +1,8 @@
 { pkgs, ... }:
 
 let
+  iconFile = "/home/_-_-yakov_-_-/Apps/SquidServersData/squidservers.png";
+
   # Criamos um pacote único que contém TUDO
   squidPackage = pkgs.symlinkJoin {
     name = "squidservers-app";
@@ -34,7 +36,7 @@ let
         desktopName = "SquidServers";
         genericName = "Servidor de Minecraft";
         exec = "squidservers";
-        icon = "/home/_-_-yakov_-_-/Apps/SquidServersData/squidservers.png";
+        icon = "${iconFile}";
         categories = [ "Game" ];
         terminal = false;
       })
