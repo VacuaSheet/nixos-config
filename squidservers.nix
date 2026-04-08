@@ -33,7 +33,7 @@ in
       name = "squidservers";
       desktopName = "SquidServers";
       exec = "squidservers";
-      icon = inconFile;
+      icon = iconFile;
       comment = "Gerenciador de Servidores Minecraft";
       categories = [ "Game" ];
     })
