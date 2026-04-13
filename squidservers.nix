@@ -9,6 +9,7 @@ let
     paths = [
       # 1. O Script executável
       (pkgs.writeShellScriptBin "squidservers" ''
+        export NIX_LD_LIBRARY_PATH="/run/current-system/sw/share/nix-ld/lib"
 	export NIX_LD=$(cat ${pkgs.stdenv.cc}/nix-support/dynamic-linker)
         export NIX_LD_LIBRARY_PATH=/run/current-system/sw/share/nix-ld/lib
 
