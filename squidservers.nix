@@ -21,6 +21,7 @@ let
           --ro-bind /etc /etc \
           --ro-bind /run /run \
           --ro-bind /usr /usr \
+          --symlink /run/current-system/sw/lib64 /lib64 \
           --dev-bind /dev /dev \
           --symlink /run/current-system/sw/lib64 /lib64 \
           --bind /run/user/1000 /run/user/1000 \
