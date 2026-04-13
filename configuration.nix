@@ -410,6 +410,9 @@ programs.zsh = {
      openssl
      curl
      expat
+     libuuid
+     libxml2
+     glibc
      # bibliotecas que o httpx (usado pelo bot) precisa
     ];
 
