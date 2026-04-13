@@ -413,6 +413,7 @@ programs.zsh = {
      libuuid
      libxml2
      glibc
+     icu
      # bibliotecas que o httpx (usado pelo bot) precisa
     ];
 
