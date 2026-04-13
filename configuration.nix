@@ -474,6 +474,12 @@ programs.zsh = {
           };
          };
 
+      # Permisão de usuario squidservers
+	system.activationScripts.squidPerms = ''
+         chown -R seu-usuario:users /home/_-_-yakov_-_-/Apps/SquidServersData
+         chmod -R 755 /home/_-_-yakov_-_-/Apps/SquidServersData
+       '';
+
  /*  # Ativa o daemon do OpenSnitch
   # 1. Overlay para "pular" o build que falha no Kernel 6.19
   nixpkgs.overlays = [
