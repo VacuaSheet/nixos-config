@@ -476,8 +476,9 @@ programs.zsh = {
 
       # Permisão de usuario squidservers
 	system.activationScripts.squidPerms = ''
-         chown -R seu-usuario:users /home/_-_-yakov_-_-/Apps/SquidServersData
+         sudo chown -R "_-_-yakov_-_":users /home/_-_-yakov_-_-/Apps/SquidServersData
          chmod -R 755 /home/_-_-yakov_-_-/Apps/SquidServersData
+
        '';
 
  /*  # Ativa o daemon do OpenSnitch
