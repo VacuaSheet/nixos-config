@@ -7,6 +7,11 @@ let
   squidPackage = pkgs.symlinkJoin {
     name = "squidservers-app";
     paths = [
+
+    pkgs.unzip
+    pkgs.gnutar
+    pkgs.curl
+    pkgs.xz
       # 1. O Script executável corrigido
       (pkgs.writeShellScriptBin "squidservers" ''
         export NIX_LD=$(cat ${pkgs.stdenv.cc}/nix-support/dynamic-linker)
