@@ -407,7 +407,8 @@ programs.zsh = {
     programs.nix-ld.libraries = with pkgs; [
      stdenv.cc.cc
      zlib
-     openssl
+     # openssl
+     openssl_1_1
      curl
      expat
      libuuid
