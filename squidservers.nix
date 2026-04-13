@@ -16,6 +16,7 @@ let
           --ro-bind /nix /nix \
           --ro-bind /etc /etc \
 	  --ro-bind /run/current-system/sw /run/current-system/sw \
+          --symlink /run/current-system/sw/lib64 /lib64 \
           --ro-bind /run/current-system /run/current-system \
           --ro-bind /run/wrappers /run/wrappers \
           --ro-bind /run/opengl-driver /run/opengl-driver \
