@@ -358,6 +358,7 @@ programs.zsh = {
   rar   # Descompactador não freeUser	
   alsa-utils # APP mantedor do unmute
   alsa-tools 
+  steamtinkerlaunch
 
          # Antvirus
            clamav
