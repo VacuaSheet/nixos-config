@@ -22,6 +22,7 @@ let
           --ro-bind /etc /etc \
           --ro-bind /run /run \
           --ro-bind /usr /usr \
+          --ro-bind /etc/ssl/certs /etc/ssl/certs
           --symlink /run/current-system/sw/lib64 /lib64 \
           --bind /run/user/1000 /run/user/1000 \
           --dev-bind /dev /dev \
