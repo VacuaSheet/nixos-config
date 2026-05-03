@@ -30,8 +30,6 @@ in
   boot.kernelModules = [ "kvm-amd" "ledtrig-disk" "ledtrig-activity" "leds-pci-amd" "i2c-dev" ]; # ou "kvm-intel" se seu processador for Intel  
   # Ignora a espera pela rede para abrir o login (Opcional, acelera o carregamento do Plasma)
   systemd.services.NetworkManager-wait-online.enable = false;
-  # Otimização do Initrd (Ganha tempo no carregamento inicial)
-  boot.initrd.systemd.enable = true; # Usa systemd no initrd para maior paralelismo
 
   # Gaming: Gamemode & Steam
   programs.gamemode.enable = true;
@@ -39,7 +37,8 @@ in
 
   # Configuração TPM
   boot.initrd.availableKernelModules = [ "tpm_tis" ]; # Driver essencial para o TPM
-  boot.initrd.systemd.enable = true;
+  # Otimização do Initrd (Ganha tempo no carregamento inicial)
+  boot.initrd.systemd.enable = true; # Usa systemd no initrd para maior paralelismo
   boot.initrd.systemd.tpm2.enable = true;
   security.tpm2.enable = true;
   
