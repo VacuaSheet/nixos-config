@@ -22,13 +22,12 @@ in
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-  boot.kernelParams = [ "amd_pstate=active" ]; # # Ativa o controle fino de energia/clocks
+  # "boot.kernelParams"  Remove a espera pelas portas seriais inúteis que tem mais de 30 anos (Ganha ~5 segundos de timeout)
+  boot.kernelParams = [ "amd_pstate=active" "8250.nr_uarts=0" ]; #"amd_pstate=active" Ativa o controle fino de energia/clocks 
   # Garante que o driver carregue cedo no boot para evitar problemas de resolução
   boot.initrd.kernelModules = [ "amdgpu" ];
   # Isso garante que os módulos de virtualização sejam carregados
-  boot.kernelModules = [ "kvm-amd" "ledtrig-disk" "ledtrig-activity" "leds-pci-amd" "i2c-dev" ]; # ou "kvm-intel" se seu processador for Intel
-  # Remove a espera pelas portas seriais inúteis que tem mais de 30 anos (Ganha ~5 segundos de timeout)  
-  boot.kernelParams = [ "8250.nr_uarts=0" ];
+  boot.kernelModules = [ "kvm-amd" "ledtrig-disk" "ledtrig-activity" "leds-pci-amd" "i2c-dev" ]; # ou "kvm-intel" se seu processador for Intel  
   # Ignora a espera pela rede para abrir o login (Opcional, acelera o carregamento do Plasma)
   systemd.services.NetworkManager-wait-online.enable = false;
   # Otimização do Initrd (Ganha tempo no carregamento inicial)
