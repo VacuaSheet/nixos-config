@@ -30,6 +30,8 @@ in
   boot.kernelModules = [ "kvm-amd" "ledtrig-disk" "ledtrig-activity" "leds-pci-amd" "i2c-dev" ]; # ou "kvm-intel" se seu processador for Intel  
   # Ignora a espera pela rede para abrir o login (Opcional, acelera o carregamento do Plasma)
   systemd.services.NetworkManager-wait-online.enable = false;
+  # Reduz o tempo de espera no menu do NixOS 
+  boot.loader.timeout = 2;
 
   # Gaming: Gamemode & Steam
   programs.gamemode.enable = true;
