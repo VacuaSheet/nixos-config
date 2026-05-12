@@ -116,9 +116,17 @@ in
 
   # Ativa o Interception Tools para gerenciar periféricos de forma nativa e limpa no Wayland
     services.interception-tools = {
-       enable = true;
-       plugins = [ ]; # Não precisamos de plugins extras, apenas do gerenciamento bruto do barramento
+  enable = true;
+  # Configuração pura que apenas intercepta e repassa os eventos raw (brutos),
+  # forçando o barramento de LEDs a se estabilizar no Wayland
+    udevmonConfig = ''
+      - JOB: "intercept -g $DEVNODE | uinput -d $DEVNODE"
+        DEVICE:
+          EVENTS:
+            EV_KEY: [KEY_CAPSLOCK, KEY_NUMLOCK]
+      '';
      };
+
 
   # No configuration.nix (Global para todos os usuários)
 programs.ssh.extraConfig = ''
