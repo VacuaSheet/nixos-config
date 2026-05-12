@@ -178,11 +178,16 @@ in
     workspace = {
       colorScheme = "BreezeDark";
       theme = "Layan";
-      # Injeta a configuração do widget diretamente nas preferências de usuário do KDE
-    configFile = {
-    "plasmarc"."Plugins"."org.kde.plasma.lockkeysEnabled" = true;
-    "kdeglobals"."Keyboard"."NumLock" = 0; # Garante o sincronismo de inicialização
-  };
+  # Configura os itens que aparecem na Bandeja do Sistema (System Tray)
+  configFile = {
+    # Força tanto o Caps Lock quanto o Num Lock a ficarem sempre visíveis na barra
+    "plasma-org.kde.plasma.desktop-appletsrc"."XWaylandKeys"."show" = true;
+    
+    # Define a ordem e exibição explícita dos applets de status de travas
+    "plasmanotifyrc"."Applications"]["org.kde.plasma.lockkeys" = {
+      "ShowInSystemTray" = true;
+       };
+      };
     };
 
     # Atalhos de Teclado (Global Shortcuts)
