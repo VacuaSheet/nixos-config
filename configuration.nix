@@ -528,6 +528,11 @@ programs.zsh = {
   };
 };
 
+services.udev.extraRules = ''
+  KERNEL=="event*", SUBSYSTEM=="input", MODE="0660", GROUP="input"
+  SUBSYSTEM=="leds", ACTION=="add", RUN+="${pkgs.coreutils}/bin/chmod -R 666 /sys/class/leds/%k/brightness"
+'';
+
 
  /*  # Ativa o daemon do OpenSnitch
   # 1. Overlay para "pular" o build que falha no Kernel 6.19
