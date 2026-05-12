@@ -137,7 +137,7 @@ programs.ssh.extraConfig = ''
   # Habilita o ambiente de desktop KDE Plasma 6
   services.desktopManager.plasma6.enable = true;
   # Garante que o driver moderno de inputs gerencie o teclado no Wayland
-    hardware.libinput.enable = true;
+    services.libinput.enable = true;
   # Configure keymap in X11
      services.xserver.xkb = {
        layout = "br";
@@ -178,9 +178,6 @@ programs.ssh.extraConfig = ''
     # no need to redefine it in your config for now)
     #media-session.enable = true;
   };
-
-  # Enable touchpad support (enabled default in most desktopManager).
-  # services.xserver.libinput.enable = true;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users._-_-yakov_-_- = {
