@@ -178,6 +178,11 @@ in
     workspace = {
       colorScheme = "BreezeDark";
       theme = "Layan";
+      # Injeta a configuração do widget diretamente nas preferências de usuário do KDE
+    configFile = {
+    "plasmarc"."Plugins"."org.kde.plasma.lockkeysEnabled" = true;
+    "kdeglobals"."Keyboard"."NumLock" = 0; # Garante o sincronismo de inicialização
+  };
     };
 
     # Atalhos de Teclado (Global Shortcuts)
