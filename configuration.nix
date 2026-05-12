@@ -417,6 +417,8 @@ programs.zsh = {
     bubblewrap
       jdk17 # Java
     crow-translate # Tradutor_D_Tela
+     pkgs.evtest
+     pkgs.brightnessctl 
   ];
 
    # Configuração VS Code
