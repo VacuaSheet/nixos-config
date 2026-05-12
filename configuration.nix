@@ -116,6 +116,12 @@ in
     LC_MESSAGES = "pt_BR.UTF-8"; # Esta linha foca nas ajudas e erros
   };
 
+  # Ativa o Interception Tools para gerenciar periféricos de forma nativa e limpa no Wayland
+    services.interception-tools = {
+       enable = true;
+       plugins = [ ]; # Não precisamos de plugins extras, apenas do gerenciamento bruto do barramento
+     };
+
   # No configuration.nix (Global para todos os usuários)
 programs.ssh.extraConfig = ''
   Host github.com
