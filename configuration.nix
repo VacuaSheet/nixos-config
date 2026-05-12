@@ -143,7 +143,7 @@ programs.ssh.extraConfig = ''
        layout = "br";
        variant = "";
        # Adiciona opções para forçar o comportamento correto dos LEDs e modificadores
-       options = "grp:alt_shift_toggle,compat:complete";1
+       options = "grp:alt_shift_toggle,compat:complete";
       };
 
   # Configure console keymap
