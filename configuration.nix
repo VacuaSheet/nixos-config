@@ -693,15 +693,6 @@ systemd.user.services.unmute-hardware-audio = {
     !include /etc/nix/access-tokens
    '';
 
-    # Configuração para pc só acordar da hibernação com o WakeUp mas só funciona para o dispositivo especifico
-     services.udev.extraRules = ''
-    # 1. Desabilita o Wakeup especificamente para o seu MOUSE (ID 30fa:0400)
-    ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="30fa", ATTR{idProduct}=="0400", ATTR{power/wakeup}="disabled"
-
-    # 2. Garante que o TECLADO (ID 1a2c:2d23) tenha o Wakeup Habilitado
-    ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="1a2c", ATTR{idProduct}=="2d23", ATTR{power/wakeup}="enabled"
-    '';
-
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
   # on your system were taken. It‘s perfectly fine and recommended to leave
