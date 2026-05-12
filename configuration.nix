@@ -501,10 +501,6 @@ programs.zsh = {
       package = pkgs.openrgb;
     };
 
-  # Garante que as regras udev de periféricos RGB sejam carregadas no boot
-    hardware.services.openrgb.enable = true; # (Se sua versão do NixOS exigir essa flag extra)
-
-
   # Processo persistente em segundo plano que força a ativação física das luzes do teclado:
     systemd.user.services.fix-keyboard-leds = {
   description = "Forçar sincronização de LEDs do teclado no Wayland";
