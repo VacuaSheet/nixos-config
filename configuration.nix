@@ -142,6 +142,8 @@ programs.ssh.extraConfig = ''
      services.xserver.xkb = {
        layout = "br";
        variant = "";
+       # Adiciona opções para forçar o comportamento correto dos LEDs e modificadores
+       options = "grp:alt_shift_toggle,compat:complete";1
       };
 
   # Configure console keymap
