@@ -147,6 +147,9 @@ programs.ssh.extraConfig = ''
   # Configure console keymap
   console.keyMap = "br-abnt2";
 
+  # Libera o controle de LEDs e uinput do Kernel para o usuário comum
+    hardware.uinput.enable = true;
+
   # Define a variável de ambiente globalmente
   environment.sessionVariables = {
     nh_FLAKE = "/etc/nixos";
@@ -183,7 +186,7 @@ programs.ssh.extraConfig = ''
   users.users._-_-yakov_-_- = {
     isNormalUser = true;
     description = "Tiago da Silva Santos";
-    extraGroups = [ "networkmanager" "wheel" "networkmanager" "libvirtd" "microvm" "podman" "docker" "video" "kvm" ];
+    extraGroups = [ "networkmanager" "wheel" "networkmanager" "libvirtd" "microvm" "podman" "docker" "video" "kvm" "input" ];
     packages = with pkgs; [
       kdePackages.kate
         # Ferramentas de Terminal e Git
