@@ -32,6 +32,12 @@ in
     crudini
   ];
 
+   # Ativa exclusivamente o ícone do Num Lock ao lado do Caps Lock padrão
+     home.activation.configure-kde-numlock = lib.hm.dag.entryAfter ["writeBoundary"] ''
+  # Injeta apenas o comportamento do Num Lock no applet de travas existente
+    ${pkgs.crudini}/bin/crudini --set ~/.config/plasma-org.kde.plasma.desktop-appletsrc "Applets][Configuration][General" showNumLock true
+    '';
+
      # 1. Habilita o dconf dentro do Home Manager
   dconf.enable = true;
 
@@ -80,13 +86,6 @@ in
     "ctrl+shift+tab" = "previous_tab";
     "ctrl+w" = "close_tab";
     };  
-
-   # Ativa exclusivamente o ícone do Num Lock ao lado do Caps Lock padrão
-     home.activation.configure-kde-numlock = lib.hm.dag.entryAfter ["writeBoundary"] ''
-  # Injeta apenas o comportamento do Num Lock no applet de travas existente
-    ${pkgs.crudini}/bin/crudini --set ~/.config/plasma-org.kde.plasma.desktop-appletsrc "Applets][Configuration][General" showNumLock true
-    '';
-
  
     settings = {
       style = "numbers,changes";
