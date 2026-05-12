@@ -136,12 +136,13 @@ programs.ssh.extraConfig = ''
   services.displayManager.sddm.enable = true;
   # Habilita o ambiente de desktop KDE Plasma 6
   services.desktopManager.plasma6.enable = true;
-  # Habilitar Flatpak
-    # Configure keymap in X11
-  services.xserver.xkb = {
-    layout = "br";
-    variant = "";
-  };
+  # Garante que o driver moderno de inputs gerencie o teclado no Wayland
+    hardware.libinput.enable = true;
+  # Configure keymap in X11
+     services.xserver.xkb = {
+       layout = "br";
+       variant = "";
+      };
 
   # Configure console keymap
   console.keyMap = "br-abnt2";
