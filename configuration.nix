@@ -147,9 +147,6 @@ programs.ssh.extraConfig = ''
   # Configure console keymap
   console.keyMap = "br-abnt2";
 
-  # Libera o controle de LEDs e uinput do Kernel para o usuário comum
-    hardware.uinput.enable = true;
-
   # Define a variável de ambiente globalmente
   environment.sessionVariables = {
     nh_FLAKE = "/etc/nixos";
