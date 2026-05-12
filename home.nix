@@ -178,15 +178,13 @@ in
     workspace = {
       colorScheme = "BreezeDark";
       theme = "Layan";
-  # Configura os itens que aparecem na Bandeja do Sistema (System Tray)
-  configFile = {
-    # Força tanto o Caps Lock quanto o Num Lock a ficarem sempre visíveis na barra
-    "plasma-org.kde.plasma.desktop-appletsrc"."XWaylandKeys"."show" = true;
+
+     configFile = {
+      # Força a exibição do Caps Lock e do Num Lock na barra de tarefas do Wayland
+        "plasma-org.kde.plasma.desktop-appletsrc"."XWaylandKeys"."show" = true;
     
-    # Define a ordem e exibição explícita dos applets de status de travas
-    "plasmanotifyrc"."Applications"]["org.kde.plasma.lockkeys" = {
-      "ShowInSystemTray" = true;
-       };
+      # Habilita explicitamente o applet lockkeys na bandeja do sistema
+        "plasmanotifyrc"."Applications"."org.kde.plasma.lockkeys"."ShowInSystemTray" = true;
       };
     };
 
