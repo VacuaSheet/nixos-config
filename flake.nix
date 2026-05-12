@@ -42,7 +42,7 @@
         ({ pkgs, ... }: {
     nixpkgs.overlays = [
       (final: prev: {
-        opensnitch-ebpf = pkgs.runCommand "dummy" {} "mkdir -p $out";
+        
         valkey = prev.valkey.overrideAttrs (old: {
               doCheck = false;
             });
