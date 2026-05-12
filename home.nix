@@ -28,6 +28,7 @@ in
      gnutls
      wine-staging
      winetricks
+    pkgs.espanso-wayland
   ];
 
      # 1. Habilita o dconf dentro do Home Manager
@@ -202,7 +203,6 @@ in
     configFile."kdeglobals"."General"."TerminalApplication" = "kitty";
   };
 
-  services.espanso.enable = true;
   programs.home-manager.enable = true;
   home.stateVersion = "25.11";
 
