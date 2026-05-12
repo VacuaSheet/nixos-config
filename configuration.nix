@@ -143,7 +143,7 @@ programs.ssh.extraConfig = ''
        layout = "br";
        variant = "";
        # Adiciona opções para forçar o comportamento correto dos LEDs e modificadores
-       options = "grp:alt_shift_toggle,compat:complete";
+       	options = "compat:complete,grp:alt_shift_toggle";
       };
 
   # Configure console keymap
@@ -320,7 +320,7 @@ programs.zsh = {
    hardware.enableAllFirmware = true;
 
    # Habilitar o uinput:
-  hardware.uinput.enable = true;
+   hardware.uinput.enable = true;
 	
    # Ativa o Docker
    # virtualisation.docker.enable = true;
