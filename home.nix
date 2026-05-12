@@ -28,7 +28,8 @@ in
      gnutls
      wine-staging
      winetricks
-    pkgs.espanso-wayland
+    espanso-wayland
+    crudini
   ];
 
      # 1. Habilita o dconf dentro do Home Manager
@@ -79,6 +80,13 @@ in
     "ctrl+shift+tab" = "previous_tab";
     "ctrl+w" = "close_tab";
     };  
+
+   # Ativa exclusivamente o ícone do Num Lock ao lado do Caps Lock padrão
+     home.activation.configure-kde-numlock = lib.hm.dag.entryAfter ["writeBoundary"] ''
+  # Injeta apenas o comportamento do Num Lock no applet de travas existente
+    ${pkgs.crudini}/bin/crudini --set ~/.config/plasma-org.kde.plasma.desktop-appletsrc "Applets][Configuration][General" showNumLock true
+    '';
+
  
     settings = {
       style = "numbers,changes";
@@ -178,14 +186,6 @@ in
     workspace = {
       colorScheme = "BreezeDark";
       theme = "Layan";
-
-     configFile = {
-      # Força a exibição do Caps Lock e do Num Lock na barra de tarefas do Wayland
-        "plasma-org.kde.plasma.desktop-appletsrc"."XWaylandKeys"."show" = true;
-    
-      # Habilita explicitamente o applet lockkeys na bandeja do sistema
-        "plasmanotifyrc"."Applications"."org.kde.plasma.lockkeys"."ShowInSystemTray" = true;
-      };
     };
 
     # Atalhos de Teclado (Global Shortcuts)
