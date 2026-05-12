@@ -23,9 +23,7 @@ in
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   # "boot.kernelParams"  Remove a espera pelas portas seriais inúteis que tem mais de 30 anos (Ganha ~5 segundos de timeout)
-  boot.kernelParams = [ "amd_pstate=active" "8250.nr_uarts=0" 
-  "usbcore.autosuspend=-1" "usbcore.quirks=0218:0001:g" "acpi_enforce_resources=lax"
-  ]; #"amd_pstate=active" Ativa o controle fino de energia/clocks 
+  boot.kernelParams = [ "amd_pstate=active" "8250.nr_uarts=0" "usbcore.autosuspend=-1" ]; #"amd_pstate=active" Ativa o controle fino de energia/clocks 
   # Garante que o driver carregue cedo no boot para evitar problemas de resolução
   boot.initrd.kernelModules = [ "amdgpu" ];
   # Isso garante que os módulos de virtualização sejam carregados
