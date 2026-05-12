@@ -494,6 +494,41 @@ programs.zsh = {
           };
          };
 
+  # Processo persistente em segundo plano que força a ativação física das luzes do teclado:
+    systemd.user.services.fix-keyboard-leds = {
+  description = "Forçar sincronização de LEDs do teclado no Wayland";
+  wantedBy = [ "graphical-session.target" ];
+  serviceConfig = {
+    ExecStart = let
+      script = pkgs.writeShellScript "led-sync" ''
+        # Monitora os eventos do teclado e força o brilho do LED correspondente
+        ${pkgs.evtest}/bin/evtest /dev/input/by-path/*-kbd | while read -r line; do
+          if echo "$line" | grep -q "code 58 (KEY_CAPSLOCK), value 1"; then
+            # Aguarda o Wayland processar e força o LED do Caps a ligar/desligar
+            sleep 0.05
+            current=$(${pkgs.brightnessctl}/bin/brightnessctl --device='*::capslock' get)
+            if [ "$current" -eq 0 ]; then
+              ${pkgs.brightnessctl}/bin/brightnessctl --device='*::capslock' set 1
+            else
+              ${pkgs.brightnessctl}/bin/brightnessctl --device='*::capslock' set 0
+            fi
+          elif echo "$line" | grep -q "code 69 (KEY_NUMLOCK), value 1"; then
+            sleep 0.05
+            current=$(${pkgs.brightnessctl}/bin/brightnessctl --device='*::numlock' get)
+            if [ "$current" -eq 0 ]; then
+              ${pkgs.brightnessctl}/bin/brightnessctl --device='*::numlock' set 1
+            else
+              ${pkgs.brightnessctl}/bin/brightnessctl --device='*::numlock' set 0
+            fi
+          fi
+        done
+      '';
+    in "${script}";
+    Restart = "always";
+  };
+};
+
+
  /*  # Ativa o daemon do OpenSnitch
   # 1. Overlay para "pular" o build que falha no Kernel 6.19
   nixpkgs.overlays = [
