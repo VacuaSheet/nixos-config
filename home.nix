@@ -33,10 +33,14 @@ in
   ];
 
   home.activation.configure-kde-numlock = lib.hm.dag.entryAfter ["writeBoundary"] ''
-    # Ativa de forma forçada o Num Lock no applet de travas usando a API do KDE 6
-    ${pkgs.kdePackages.kconfig}/bin/kwriteconfig6 --file plasma-org.kde.plasma.desktop-appletsrc --group "Applets" --group "Configuration" --group "General" --key "showNumLock" "true"
-    ${pkgs.kdePackages.kconfig}/bin/kwriteconfig6 --file plasma-org.kde.plasma.desktop-appletsrc --group "Applets" --group "Configuration" --group "General" --key "showCapsLock" "true"
-  '';
+    # Força a adição da linha do Num Lock direto no arquivo do painel se ela não existir
+    if [ -f ~/.config/plasma-org.kde.plasma.desktop-appletsrc ]; then
+      if ! grep -q "showNumLock=true" ~/.config/plasma-org.kde.plasma.desktop-appletsrc; then
+        # Adiciona a configuração logo abaixo do cabeçalho geral do applet de travas
+        sed -i '/\[Applets\]\[Configuration\]\[General\]/a showNumLock=true' ~/.config/plasma-org.kde.plasma.desktop-appletsrc
+        fi
+      fi
+    '';
 
 
      # 1. Habilita o dconf dentro do Home Manager
