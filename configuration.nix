@@ -611,39 +611,58 @@ systemd.user.services.unmute-hardware-audio = {
     };
 
  #teclado
-systemd.services.teclado-evolut-led = {
-  description = "Forçar ativação do LED via Python Evdev";
+systemd.services.teclado-led-trigger = {
+  description = "Gatilho de LED para Caps Lock - Teclado Evolut";
   after = [ "local-fs.target" "systemd-udevd.service" ];
   wantedBy = [ "multi-user.target" ];
-
-  # Adiciona o python com a biblioteca evdev necessária
   path = [ (pkgs.python3.withPackages (ps: [ ps.evdev ])) ];
 
   serviceConfig = {
-    Type = "oneshot";
-    ExecStart = pkgs.writeScript "ligar-led-python" ''
+    Type = "simple";
+    # O script roda como root para ter permissão total no hardware do teclado
+    ExecStart = pkgs.writeScript "caps-trigger-python" ''
       #!${pkgs.python3.withPackages (ps: [ ps.evdev ])}/bin/python
       import evdev
       from evdev import ecodes
       import time
 
-      # Procura todos os dispositivos que tenham o nome do chip
-      devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
-      for device in devices:
-          if "ZXWMicroChip" in device.name:
+      def monitorar_teclado():
+          while True:
               try:
-                  # O truque que você descobriu: garante que o estado mude
-                  device.set_led(ecodes.LED_CAPSL, 1)
-                  time.sleep(0.1)
-                  device.set_led(ecodes.LED_SCROLLL, 1)
-                  # Se quiser desligar o caps logo após:
-                  # device.set_led(ecodes.LED_CAPSL, 0)
-              except:
-                  pass
+                  # Procura o teclado específico
+                  devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
+                  kbd = None
+                  for dev in devices:
+                      if "ZXWMicroChip" in dev.name:
+                          kbd = dev
+                          break
+                  
+                  if kbd:
+                      print(f"Monitorando: {kbd.name}")
+                      # Lê os eventos de tecla em tempo real
+                      for event in kbd.read_loop():
+                          if event.type == ecodes.EV_KEY:
+                              data = evdev.categorize(event)
+                              # 58 é o código do Caps Lock. keystate 1 é 'pressionado'
+                              if data.scancode == 58 and data.keystate == 1:
+                                  # Espera um milissegundo para o sistema processar o clique
+                                  time.sleep(0.05)
+                                  # Verifica se o Caps Lock ficou ligado ou desligado
+                                  # Se estiver ligado (LED_CAPSL ativo), a gente força o Scroll Lock
+                                  luzes = kbd.leds()
+                                  if ecodes.LED_CAPSL in luzes:
+                                      kbd.set_led(ecodes.LED_SCROLLL, 1)
+                                  else:
+                                      kbd.set_led(ecodes.LED_SCROLLL, 0)
+              except Exception as e:
+                  print(f"Erro: {e}. Tentando reconectar em 5s...")
+                  time.sleep(5)
+
+      monitorar_teclado()
     '';
-    RemainAfterExit = true;
+    Restart = "always";
   };
-};
+}
 #Teclado
 
   # Habilita o suporte a 32 bits para o Wine/Lutris enxergar a placa
