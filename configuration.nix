@@ -611,6 +611,15 @@ systemd.user.services.unmute-hardware-audio = {
     };
 
  #teclado
+  systemd.services.teclado-led-trigger = {
+    description = "Gatilho de LED para Caps Lock - Teclado Evolut";
+    after = [ "local-fs.target" "systemd-udevd.service" ];
+    wantedBy = [ "multi-user.target" ];
+    path = [ (pkgs.python3.withPackages (ps: [ ps.evdev ])) ];
+
+    serviceConfig = {
+      Type = "simple";
+      Restart = "always";
       ExecStart = pkgs.writeScript "caps-trigger-python" ''
         #!${pkgs.python3.withPackages (ps: [ ps.evdev ])}/bin/python
         import evdev
@@ -623,7 +632,6 @@ systemd.user.services.unmute-hardware-audio = {
             sys.stdout.flush()
             while True:
                 try:
-                    # Pega todos os dispositivos do chip
                     all_devs = [evdev.InputDevice(path) for path in evdev.list_devices()]
                     zxw_devs = [d for d in all_devs if "ZXWMicroChip" in d.name]
                     
@@ -631,38 +639,29 @@ systemd.user.services.unmute-hardware-audio = {
                         time.sleep(5)
                         continue
 
-                    print(f"Monitorando {len(zxw_devs)} interfaces do teclado.")
-                    sys.stdout.flush()
-
-                    # Usamos o primeiro dispositivo para 'ouvir' as teclas
+                    # Escuta a primeira interface que for um teclado real
                     for event in zxw_devs[0].read_loop():
                         if event.type == ecodes.EV_KEY:
                             data = evdev.categorize(event)
                             if data.scancode == 58 and data.keystate == 1:
                                 time.sleep(0.1)
-                                
-                                # Checa se o Caps Lock está ligado (em qualquer interface)
                                 is_on = ecodes.LED_CAPSL in zxw_devs[0].leds()
                                 
-                                # Manda o comando de LED para TODAS as interfaces encontradas
                                 for d in zxw_devs:
                                     try:
                                         d.set_led(ecodes.LED_SCROLLL, 1 if is_on else 0)
-                                        # Tenta o código 3 também, por segurança
                                         d.set_led(3, 1 if is_on else 0)
-                                    except:
-                                        pass
+                                    except: pass
                                 
                                 print(f"COMANDO: {'LIGAR' if is_on else 'DESLIGAR'}")
                                 sys.stdout.flush()
                 except Exception as e:
-                    print(f"Erro: {e}")
-                    sys.stdout.flush()
                     time.sleep(2)
 
         monitorar_teclado()
       '';
-
+    }; # <--- Este fecha o serviceConfig
+  }; # <--- Este fecha o teclado-led-trigger
 #Teclado
 
   # Habilita o suporte a 32 bits para o Wine/Lutris enxergar a placa
