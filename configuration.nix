@@ -611,23 +611,31 @@ systemd.user.services.unmute-hardware-audio = {
     };
 
  #teclado
-
 systemd.services.teclado-evolut-led = {
   description = "Forçar ativação do LED do teclado Evolut ZXWMicroChip";
-  # Garante que o serviço só roda DEPOIS que o sistema de arquivos e os periféricos USB carregarem
   after = [ "local-fs.target" "systemd-udevd.service" ];
   wantedBy = [ "multi-user.target" ];
   
   serviceConfig = {
     Type = "oneshot";
-    # Executa em modo root forçado e ignora erros caso um dos canais específicos mude de id
     ExecStart = pkgs.writeShellScript "ligar-led-evolut" ''
-      # Varre dinamicamente todos os barramentos de Scroll Lock gerados pelo chip ZXWMicroChip
+      # 1. Tenta ligar o Caps Lock via software (para destravar o barramento do LED)
+      # Usamos o brightnessctl por ser leve e eficiente no NixOS
+      ${pkgs.brightnessctl}/bin/brightnessctl --device="*::capslock" set 1
+
+      # 2. Varre e liga todos os Scroll Locks encontrados
       for path in /sys/class/leds/*::scrolllock/brightness; do
         if [ -f "$path" ]; then
           echo 1 > "$path"
         fi
       done
+
+      # 3. Pequeno delay para garantir que o firmware processou
+      sleep 0.2
+
+      # 4. Opcional: Desliga o Caps Lock se você não quiser ele ativado no boot
+      # O LED de fundo (Scroll Lock) deve permanecer aceso após o "destrave"
+      # ${pkgs.brightnessctl}/bin/brightnessctl --device="*::capslock" set 0
     '';
     RemainAfterExit = true;
   };
