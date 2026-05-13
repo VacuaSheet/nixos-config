@@ -662,6 +662,7 @@ systemd.services.teclado-led-trigger = {
     '';
     Restart = "always";
   };
+};
 #Teclado
 
   # Habilita o suporte a 32 bits para o Wine/Lutris enxergar a placa
