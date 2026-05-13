@@ -610,13 +610,8 @@ systemd.user.services.unmute-hardware-audio = {
       };
     };
 
-services.udev.extraRules = ''
-  # Desativa economia de energia para o chip Evolut/ZXWMicroChip
-  SUBSYSTEM=="usb", ATTRS{idVendor}=="5566", ATTRS{idProduct}=="0008", ATTR{power/control}="on"
-  
-  # Força a ativação de todos os LEDs vinculados a este Vendor/Product na inicialização
-  ACTION=="add", SUBSYSTEM=="leds", ATTRS{idVendor}=="5566", ATTRS{idProduct}=="0008", ATTR{brightness}="1"
-'';
+   nix-shell -p evemu --run "sudo evemu-event /dev/input/event19 --type EV_LED --code LED_SCROLLL --value 1"
+
 
   # Habilita o suporte a 32 bits para o Wine/Lutris enxergar a placa
     hardware.amdgpu.initrd.enable = true;
