@@ -612,30 +612,34 @@ systemd.user.services.unmute-hardware-audio = {
 
  #teclado
 systemd.services.teclado-evolut-led = {
-  description = "Forçar ativação do LED do teclado Evolut ZXWMicroChip";
+  description = "Forçar ativação do LED via Python Evdev";
   after = [ "local-fs.target" "systemd-udevd.service" ];
   wantedBy = [ "multi-user.target" ];
-  
+
+  # Adiciona o python com a biblioteca evdev necessária
+  path = [ (pkgs.python3.withPackages (ps: [ ps.evdev ])) ];
+
   serviceConfig = {
     Type = "oneshot";
-    ExecStart = pkgs.writeShellScript "ligar-led-evolut" ''
-      # 1. Tenta ligar o Caps Lock via software (para destravar o barramento do LED)
-      # Usamos o brightnessctl por ser leve e eficiente no NixOS
-      ${pkgs.brightnessctl}/bin/brightnessctl --device="*::capslock" set 1
+    ExecStart = pkgs.writeScript "ligar-led-python" ''
+      #!${pkgs.python3.withPackages (ps: [ ps.evdev ])}/bin/python
+      import evdev
+      from evdev import ecodes
+      import time
 
-      # 2. Varre e liga todos os Scroll Locks encontrados
-      for path in /sys/class/leds/*::scrolllock/brightness; do
-        if [ -f "$path" ]; then
-          echo 1 > "$path"
-        fi
-      done
-
-      # 3. Pequeno delay para garantir que o firmware processou
-      sleep 0.2
-
-      # 4. Opcional: Desliga o Caps Lock se você não quiser ele ativado no boot
-      # O LED de fundo (Scroll Lock) deve permanecer aceso após o "destrave"
-      # ${pkgs.brightnessctl}/bin/brightnessctl --device="*::capslock" set 0
+      # Procura todos os dispositivos que tenham o nome do chip
+      devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
+      for device in devices:
+          if "ZXWMicroChip" in device.name:
+              try:
+                  # O truque que você descobriu: garante que o estado mude
+                  device.set_led(ecodes.LED_CAPSL, 1)
+                  time.sleep(0.1)
+                  device.set_led(ecodes.LED_SCROLLL, 1)
+                  # Se quiser desligar o caps logo após:
+                  # device.set_led(ecodes.LED_CAPSL, 0)
+              except:
+                  pass
     '';
     RemainAfterExit = true;
   };
