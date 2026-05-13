@@ -629,53 +629,59 @@ systemd.user.services.unmute-hardware-audio = {
         import sys
         import threading
 
-        # Mapeamento de Scancodes para seus respectivos códigos de LED do Kernel
-        TECLAS_LED = {
-            58:  (ecodes.LED_CAPSL, "Caps Lock"),   # Tecla Caps Lock
-            69:  (ecodes.LED_NUML, "Num Lock"),     # Tecla Num Lock
-            70:  (ecodes.LED_SCROLLL, "Scroll Lock") # Tecla Scroll Lock
+        # Gerenciamento de estados locais (NumLock inicia True)
+        ESTADOS_LED = {
+            58: {"led": ecodes.LED_CAPSL, "status": False, "nome": "Caps Lock"},
+            69: {"led": ecodes.LED_NUML, "status": True, "nome": "Num Lock"},
+            70: {"led": ecodes.LED_SCROLLL, "status": False, "nome": "Scroll Lock"}
         }
 
-        def monitorar_interface(dev, todos_os_devs):
-            print(f"DEBUG: Ouvindo interface {dev.path} ({dev.name})")
+        lock_evento = threading.Lock()
+
+        # Função dedicada exclusivamente a INJETAR as luzes nos canais corretos
+        def aplicar_leds_no_hardware():
+            try:
+                # Procura todos os barramentos novamente para garantir envio limpo
+                todos_os_dispositivos = [evdev.InputDevice(path) for path in evdev.list_devices()]
+                zxw_outputs = [d for d in todos_os_dispositivos if "ZXWMicroChip" in d.name]
+                
+                for d in zxw_outputs:
+                    for codigo_tecla, info in ESTADOS_LED.items():
+                        estado = 1 if info["status"] else 0
+                        try:
+                            d.write(ecodes.EV_LED, info["led"], estado)
+                            d.write(ecodes.EV_SYN, ecodes.SYN_REPORT, 0)
+                        except: pass
+            except Exception as e:
+                print(f"Erro ao aplicar LEDs: {e}")
+                sys.stdout.flush()
+
+        # Função dedicada exclusivamente a OUVIR as teclas de digitação
+        def monitorar_teclas(dev):
+            print(f"DEBUG: Escutando entradas em {dev.path} ({dev.name})")
             sys.stdout.flush()
             try:
                 for event in dev.read_loop():
                     if event.type == ecodes.EV_KEY:
                         data = evdev.categorize(event)
                         
-                        # Verifica se a tecla pressionada (keystate 1) é Caps, Num ou Scroll Lock
-                        if data.scancode in TECLAS_LED and data.keystate == 1:
-                            time.sleep(0.05) # Pequeno delay para o kernel atualizar o estado interno do LED
-                            
-                            led_alvo, nome_led = TECLAS_LED[data.scancode]
-                            
-                            # Verifica o estado lógico real desse LED específico no sistema
-                            is_on = False
-                            for d in todos_os_devs:
-                                try:
-                                    if led_alvo in d.leds():
-                                        is_on = True
-                                        break
-                                except: pass
-                            
-                            estado = 1 if is_on else 0
-                            
-                            # Injeta o estado correto em todas as sub-interfaces do chip ZXWMicroChip
-                            for d in todos_os_devs:
-                                try:
-                                    d.write(ecodes.EV_LED, led_alvo, estado)
-                                    d.write(ecodes.EV_SYN, ecodes.SYN_REPORT, 0)
-                                except: pass
-                            
-                            print(f"EVENTO: {nome_led} detectado! LED -> {'LIGADA' if is_on else 'DESLIGADA'}")
-                            sys.stdout.flush()
+                        # Verifica se a tecla foi pressionada (keystate 1)
+                        if data.scancode in ESTADOS_LED and data.keystate == 1:
+                            with lock_evento:
+                                # Inverte o estado lógico no dicionário global
+                                ESTADOS_LED[data.scancode]["status"] = not ESTADOS_LED[data.scancode]["status"]
+                                nome = ESTADOS_LED[data.scancode]["nome"]
+                                print(f"TECLA DETECTADA: {nome} pressionado.")
+                                sys.stdout.flush()
+                                
+                                # Aplica a atualização de luzes imediatamente
+                                aplicar_leds_no_hardware()
             except Exception as e:
-                print(f"Interface {dev.path} desconectada: {e}")
+                print(f"Interface de escuta {dev.path} desconectada: {e}")
                 sys.stdout.flush()
 
         def iniciar():
-            print("--- Iniciando Serviço de Sincronização de LEDs Evolut ---")
+            print("--- Iniciando Serviço Separado de Entrada/Saída Evolut ---")
             sys.stdout.flush()
             while True:
                 try:
@@ -683,11 +689,16 @@ systemd.user.services.unmute-hardware-audio = {
                     zxw_devs = [d for d in devices if "ZXWMicroChip" in d.name]
                     
                     if zxw_devs:
-                        print(f"Sucesso: {len(zxw_devs)} interfaces encontradas.")
+                        print(f"Sucesso: {len(zxw_devs)} sub-interfaces mapeadas do chip.")
                         sys.stdout.flush()
+                        
+                        # Aplica os estados iniciais de luz (Num Lock ligado)
+                        aplicar_leds_no_hardware()
+                        
+                        # Cria threads de escuta para todas as sub-interfaces (garante pegar os inputs do teclado)
                         threads = []
                         for d in zxw_devs:
-                            t = threading.Thread(target=monitorar_interface, args=(d, zxw_devs))
+                            t = threading.Thread(target=monitorar_teclas, args=(d,))
                             t.daemon = True
                             t.start()
                             threads.append(t)
@@ -698,7 +709,7 @@ systemd.user.services.unmute-hardware-audio = {
                         print("Aguardando teclado ser conectado...")
                         sys.stdout.flush()
                 except Exception as e:
-                    print(f"Erro no loop principal: {e}")
+                    print(f"Erro no loop de varredura: {e}")
                     sys.stdout.flush()
                 
                 time.sleep(5)
