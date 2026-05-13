@@ -609,32 +609,30 @@ systemd.user.services.unmute-hardware-audio = {
         ];
       };
     };
-	# Erro teclado
-	systemd.services.teclado-evolut-led = {
-	  description = "Forçar ativação do LED do teclado Evolut ZXWMicroChip";
-	  wantedBy = [ "multi-user.target" ];
-	  # Garante que o Python com o pacote evdev estará disponível para o serviço
-	  path = [ 
-	    (pkgs.python3.withPackages (ps: [ ps.evdev ])) 
-	  ];
-	  serviceConfig = {
-	    Type = "oneshot";
-	    ExecStart = pkgs.writeShellScript "ligar-led-evolut" ''
-	      python3 -c '
-	import evdev
-	for path in ["/dev/input/event0", "/dev/input/event18"]:
-	    try:
-        	device = evdev.InputDevice(path)
-	        device.write(evdev.ecodes.EV_LED, evdev.ecodes.LED_SCROLLL, 1)
-	        device.write(evdev.ecodes.EV_SYN, evdev.ecodes.SYN_REPORT, 0)
-	    except Exception:
-	        pass
-	'
-	    '';
-	    RemainAfterExit = true;
-	  };
-	};
 
+ #teclado
+
+systemd.services.teclado-evolut-led = {
+  description = "Forçar ativação do LED do teclado Evolut ZXWMicroChip";
+  # Garante que o serviço só roda DEPOIS que o sistema de arquivos e os periféricos USB carregarem
+  after = [ "local-fs.target" "systemd-udevd.service" ];
+  wantedBy = [ "multi-user.target" ];
+  
+  serviceConfig = {
+    Type = "oneshot";
+    # Executa em modo root forçado e ignora erros caso um dos canais específicos mude de id
+    ExecStart = pkgs.writeShellScript "ligar-led-evolut" ''
+      # Varre dinamicamente todos os barramentos de Scroll Lock gerados pelo chip ZXWMicroChip
+      for path in /sys/class/leds/*::scrolllock/brightness; do
+        if [ -f "$path" ]; then
+          echo 1 > "$path"
+        fi
+      done
+    '';
+    RemainAfterExit = true;
+  };
+};
+#Teclado
 
   # Habilita o suporte a 32 bits para o Wine/Lutris enxergar a placa
     hardware.amdgpu.initrd.enable = true;
