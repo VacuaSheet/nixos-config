@@ -496,12 +496,16 @@ programs.zsh = {
           };
          };
 
+      services.udev.extraRules = ''
+   # Corrige o travamento de LED do teclado ZXWMicroChip
+   ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="5566", ATTR{idProduct}=="0008", ATTR{remove}=="1"
+
    # Ativa o serviço e o pacote do OpenRGB com regras de hardware injetadas
      services.hardware.openrgb = {
       enable = true;
       package = pkgs.openrgb;
     };
-
+/*
   # Processo persistente em segundo plano que força a ativação física das luzes do teclado:
     systemd.user.services.fix-keyboard-leds = {
   description = "Forçar sincronização de LEDs do teclado no Wayland";
@@ -539,7 +543,7 @@ programs.zsh = {
 services.udev.extraRules = ''
   KERNEL=="event*", SUBSYSTEM=="input", MODE="0660", GROUP="input"
   SUBSYSTEM=="leds", ACTION=="add", RUN+="${pkgs.coreutils}/bin/chmod -R 666 /sys/class/leds/%k/brightness"
-'';
+''; */
 
 
  /*  # Ativa o daemon do OpenSnitch
