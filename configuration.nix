@@ -611,9 +611,9 @@ systemd.user.services.unmute-hardware-audio = {
     };
 
  #teclado
-  # Serviço para transformar o Caps Lock no interruptor da luz de fundo (Teclado Evolut/ZXW)
+  # Serviço para normalizar o funcionamento dos LEDs (Caps, Num e Scroll Lock) no Teclado Evolut/ZXW
   systemd.services.teclado-led-trigger = {
-    description = "Gatilho de LED para Caps Lock - Teclado Evolut";
+    description = "Correção nativa para LEDs de Caps, Num e Scroll Lock - Teclado Evolut";
     after = [ "local-fs.target" "systemd-udevd.service" ];
     wantedBy = [ "multi-user.target" ];
     path = [ (pkgs.python3.withPackages (ps: [ ps.evdev ])) ];
@@ -621,7 +621,7 @@ systemd.user.services.unmute-hardware-audio = {
     serviceConfig = {
       Type = "simple";
       Restart = "always";
-      ExecStart = pkgs.writeScript "caps-trigger-python" ''
+      ExecStart = pkgs.writeScript "led-trigger-python" ''
         #!${pkgs.python3.withPackages (ps: [ ps.evdev ])}/bin/python
         import evdev
         from evdev import ecodes
@@ -629,7 +629,13 @@ systemd.user.services.unmute-hardware-audio = {
         import sys
         import threading
 
-        # Função que monitora cada interface individualmente
+        # Mapeamento de Scancodes para seus respectivos códigos de LED do Kernel
+        TECLAS_LED = {
+            58:  (ecodes.LED_CAPSL, "Caps Lock"),   # Tecla Caps Lock
+            69:  (ecodes.LED_NUML, "Num Lock"),     # Tecla Num Lock
+            70:  (ecodes.LED_SCROLLL, "Scroll Lock") # Tecla Scroll Lock
+        }
+
         def monitorar_interface(dev, todos_os_devs):
             print(f"DEBUG: Ouvindo interface {dev.path} ({dev.name})")
             sys.stdout.flush()
@@ -637,47 +643,43 @@ systemd.user.services.unmute-hardware-audio = {
                 for event in dev.read_loop():
                     if event.type == ecodes.EV_KEY:
                         data = evdev.categorize(event)
-                        # Detecta Caps Lock (scancode 58) pressionado (keystate 1)
-                        if data.scancode == 58 and data.keystate == 1:
-                            time.sleep(0.1)
+                        
+                        # Verifica se a tecla pressionada (keystate 1) é Caps, Num ou Scroll Lock
+                        if data.scancode in TECLAS_LED and data.keystate == 1:
+                            time.sleep(0.05) # Pequeno delay para o kernel atualizar o estado interno do LED
                             
-                            # Verifica o estado real do Caps Lock no sistema
+                            led_alvo, nome_led = TECLAS_LED[data.scancode]
+                            
+                            # Verifica o estado lógico real desse LED específico no sistema
                             is_on = False
                             for d in todos_os_devs:
                                 try:
-                                    if ecodes.LED_CAPSL in d.leds():
+                                    if led_alvo in d.leds():
                                         is_on = True
                                         break
                                 except: pass
                             
-                            # Dispara o comando de LED para TODAS as portas do chip
+                            estado = 1 if is_on else 0
+                            
+                            # Injeta o estado correto em todas as sub-interfaces do chip ZXWMicroChip
                             for d in todos_os_devs:
                                 try:
-                                    # Reset rápido no NumLock para 'acordar' o barramento do chip
-                                    d.set_led(ecodes.LED_NUML, 0)
-                                    time.sleep(0.02)
-                                    d.set_led(ecodes.LED_NUML, 1)
-
-                                    # Envia comando para o Scroll Lock (Luz de fundo)
-                                    estado = 1 if is_on else 0
-                                    d.set_led(ecodes.LED_SCROLLL, estado)
-                                    d.set_led(3, estado) # ID alternativo para iluminação
+                                    d.write(ecodes.EV_LED, led_alvo, estado)
+                                    d.write(ecodes.EV_SYN, ecodes.SYN_REPORT, 0)
                                 except: pass
                             
-                            print(f"EVENTO: Caps Lock detectado! Luz -> {'LIGADA' if is_on else 'DESLIGADA'}")
+                            print(f"EVENTO: {nome_led} detectado! LED -> {'LIGADA' if is_on else 'DESLIGADA'}")
                             sys.stdout.flush()
             except Exception as e:
                 print(f"Interface {dev.path} desconectada: {e}")
                 sys.stdout.flush()
 
         def iniciar():
-            print("--- Iniciando Serviço de LED Evolut (Ouvido Total) ---")
+            print("--- Iniciando Serviço de Sincronização de LEDs Evolut ---")
             sys.stdout.flush()
             while True:
                 try:
-                    # Lista todos os dispositivos de entrada
                     devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
-                    # Filtra apenas os que pertencem ao chip do seu teclado
                     zxw_devs = [d for d in devices if "ZXWMicroChip" in d.name]
                     
                     if zxw_devs:
@@ -690,7 +692,6 @@ systemd.user.services.unmute-hardware-audio = {
                             t.start()
                             threads.append(t)
                         
-                        # Mantém o script rodando enquanto as threads estiverem vivas
                         for t in threads:
                             t.join()
                     else:
