@@ -377,7 +377,7 @@ programs.zsh = {
   alsa-utils # APP mantedor do unmute
   alsa-tools 
   steamtinkerlaunch
-  Waydroid
+  waydroid
 
          # Antvirus
            clamav
