@@ -421,6 +421,7 @@ programs.zsh = {
      evtest
      brightnessctl 
      openrgb
+     iptables-nft
   ];
 
    virtualisation.waydroid.enable = true; # Android
@@ -697,6 +698,12 @@ systemd.user.services.unmute-hardware-audio = {
    security.pam.services.sddm.enableKwallet = true;
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
+
+  # Força o NixOS a usar a camada nftables e ativa o pacote de compatibilidade iptables-nft
+networking.nftables.enable = true;
+
+# Mantém a interface do Waydroid liberada no firewall
+networking.firewall.trustedInterfaces = [ "waydroid0" ];
 
    # Token (classic)
     nix.extraOptions = ''
