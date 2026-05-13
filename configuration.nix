@@ -611,15 +611,6 @@ systemd.user.services.unmute-hardware-audio = {
     };
 
  #teclado
-systemd.services.teclado-led-trigger = {
-  description = "Gatilho de LED para Caps Lock - Teclado Evolut";
-  after = [ "local-fs.target" "systemd-udevd.service" ];
-  wantedBy = [ "multi-user.target" ];
-  path = [ (pkgs.python3.withPackages (ps: [ ps.evdev ])) ];
-
-  serviceConfig = {
-    Type = "simple";
-    # O script roda como root para ter permissão total no hardware do teclado
     ExecStart = pkgs.writeScript "caps-trigger-python" ''
       #!${pkgs.python3.withPackages (ps: [ ps.evdev ])}/bin/python
       import evdev
@@ -629,40 +620,33 @@ systemd.services.teclado-led-trigger = {
       def monitorar_teclado():
           while True:
               try:
-                  # Procura o teclado específico
                   devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
                   kbd = None
                   for dev in devices:
+                      # Se o nome no seu ls /dev/input/by-id/ for diferente, mude aqui
                       if "ZXWMicroChip" in dev.name:
                           kbd = dev
                           break
                   
                   if kbd:
-                      print(f"Monitorando: {kbd.name}")
-                      # Lê os eventos de tecla em tempo real
                       for event in kbd.read_loop():
                           if event.type == ecodes.EV_KEY:
                               data = evdev.categorize(event)
-                              # 58 é o código do Caps Lock. keystate 1 é 'pressionado'
+                              # 58 é o código decimal para 0x3a
                               if data.scancode == 58 and data.keystate == 1:
-                                  # Espera um milissegundo para o sistema processar o clique
-                                  time.sleep(0.05)
-                                  # Verifica se o Caps Lock ficou ligado ou desligado
-                                  # Se estiver ligado (LED_CAPSL ativo), a gente força o Scroll Lock
+                                  time.sleep(0.2)
                                   luzes = kbd.leds()
                                   if ecodes.LED_CAPSL in luzes:
                                       kbd.set_led(ecodes.LED_SCROLLL, 1)
+                                      kbd.set_led(3, 1)
                                   else:
                                       kbd.set_led(ecodes.LED_SCROLLL, 0)
-              except Exception as e:
-                  print(f"Erro: {e}. Tentando reconectar em 5s...")
+                                      kbd.set_led(3, 0)
+              except:
                   time.sleep(5)
 
       monitorar_teclado()
     '';
-    Restart = "always";
-  };
-};
 #Teclado
 
   # Habilita o suporte a 32 bits para o Wine/Lutris enxergar a placa
