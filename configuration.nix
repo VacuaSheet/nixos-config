@@ -611,6 +611,7 @@ systemd.user.services.unmute-hardware-audio = {
     };
 
  #teclado
+  # Serviço para transformar o Caps Lock no interruptor da luz de fundo (Teclado Evolut/ZXW)
   systemd.services.teclado-led-trigger = {
     description = "Gatilho de LED para Caps Lock - Teclado Evolut";
     after = [ "local-fs.target" "systemd-udevd.service" ];
@@ -626,48 +627,83 @@ systemd.user.services.unmute-hardware-audio = {
         from evdev import ecodes
         import time
         import sys
+        import threading
 
-        def monitorar_teclado():
-            print("Iniciando monitoramento total (ZXW)...")
+        # Função que monitora cada interface individualmente
+        def monitorar_interface(dev, todos_os_devs):
+            print(f"DEBUG: Ouvindo interface {dev.path} ({dev.name})")
+            sys.stdout.flush()
+            try:
+                for event in dev.read_loop():
+                    if event.type == ecodes.EV_KEY:
+                        data = evdev.categorize(event)
+                        # Detecta Caps Lock (scancode 58) pressionado (keystate 1)
+                        if data.scancode == 58 and data.keystate == 1:
+                            time.sleep(0.1)
+                            
+                            # Verifica o estado real do Caps Lock no sistema
+                            is_on = False
+                            for d in todos_os_devs:
+                                try:
+                                    if ecodes.LED_CAPSL in d.leds():
+                                        is_on = True
+                                        break
+                                except: pass
+                            
+                            # Dispara o comando de LED para TODAS as portas do chip
+                            for d in todos_os_devs:
+                                try:
+                                    # Reset rápido no NumLock para 'acordar' o barramento do chip
+                                    d.set_led(ecodes.LED_NUML, 0)
+                                    time.sleep(0.02)
+                                    d.set_led(ecodes.LED_NUML, 1)
+
+                                    # Envia comando para o Scroll Lock (Luz de fundo)
+                                    estado = 1 if is_on else 0
+                                    d.set_led(ecodes.LED_SCROLLL, estado)
+                                    d.set_led(3, estado) # ID alternativo para iluminação
+                                except: pass
+                            
+                            print(f"EVENTO: Caps Lock detectado! Luz -> {'LIGADA' if is_on else 'DESLIGADA'}")
+                            sys.stdout.flush()
+            except Exception as e:
+                print(f"Interface {dev.path} desconectada: {e}")
+                sys.stdout.flush()
+
+        def iniciar():
+            print("--- Iniciando Serviço de LED Evolut (Ouvido Total) ---")
             sys.stdout.flush()
             while True:
                 try:
-                    all_devs = [evdev.InputDevice(path) for path in evdev.list_devices()]
-                    zxw_devs = [d for d in all_devs if "ZXWMicroChip" in d.name]
+                    # Lista todos os dispositivos de entrada
+                    devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
+                    # Filtra apenas os que pertencem ao chip do seu teclado
+                    zxw_devs = [d for d in devices if "ZXWMicroChip" in d.name]
                     
-                    if not zxw_devs:
-                        time.sleep(5)
-                        continue
-
-                    # Escuta a primeira interface do teclado
-                    for event in zxw_devs[0].read_loop():
-                        if event.type == ecodes.EV_KEY:
-                            data = evdev.categorize(event)
-                            # 58 é o Caps Lock
-                            if data.scancode == 58 and data.keystate == 1:
-                                time.sleep(0.1)
-                                is_on = ecodes.LED_CAPSL in zxw_devs[0].leds()
-                                
-                                for d in zxw_devs:
-                                    try:
-                                        # Força o reset do Num Lock (que está sempre aceso) 
-                                        # para obrigar o chip a atualizar o barramento
-                                        d.set_led(ecodes.LED_NUML, 0)
-                                        time.sleep(0.05)
-                                        d.set_led(ecodes.LED_NUML, 1)
-
-                                        # Agora tenta ligar/desligar a luz de fundo
-                                        d.set_led(ecodes.LED_SCROLLL, 1 if is_on else 0)
-                                        d.set_led(3, 1 if is_on else 0)
-                                    except:
-                                        pass
-                                
-                                print(f"CAPS {'ON' if is_on else 'OFF'} -> SINAL ENVIADO")
-                                sys.stdout.flush()
+                    if zxw_devs:
+                        print(f"Sucesso: {len(zxw_devs)} interfaces encontradas.")
+                        sys.stdout.flush()
+                        threads = []
+                        for d in zxw_devs:
+                            t = threading.Thread(target=monitorar_interface, args=(d, zxw_devs))
+                            t.daemon = True
+                            t.start()
+                            threads.append(t)
+                        
+                        # Mantém o script rodando enquanto as threads estiverem vivas
+                        for t in threads:
+                            t.join()
+                    else:
+                        print("Aguardando teclado ser conectado...")
+                        sys.stdout.flush()
                 except Exception as e:
-                    time.sleep(2)
+                    print(f"Erro no loop principal: {e}")
+                    sys.stdout.flush()
+                
+                time.sleep(5)
 
-        monitorar_teclado()
+        if __name__ == "__main__":
+            iniciar()
       '';
     };
   };
