@@ -23,7 +23,7 @@ in
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   # "boot.kernelParams"  Remove a espera pelas portas seriais inúteis que tem mais de 30 anos (Ganha ~5 segundos de timeout)
-  boot.kernelParams = [ "amd_pstate=active" "8250.nr_uarts=0" "usbcore.autosuspend=-1" ]; #"amd_pstate=active" Ativa o controle fino de energia/clocks 
+  boot.kernelParams = [ "amd_pstate=active" "8250.nr_uarts=0" "usbcore.autosuspend=-1" "usbhid.quirks=0x5566:0x0008:0x0004" ]; #"amd_pstate=active" Ativa o controle fino de energia/clocks 
   # Garante que o driver carregue cedo no boot para evitar problemas de resolução
   boot.initrd.kernelModules = [ "amdgpu" ];
   # Isso garante que os módulos de virtualização sejam carregados
@@ -497,11 +497,6 @@ programs.zsh = {
            };
           };
          };
-
-       services.udev.extraRules = ''
-       # Alternativa menos agressiva caso a de cima desative o teclado todo:
-       ACTION=="add", SUBSYSTEM=="leds", KERNELS=="*:5566:0008.*", ATTR{brightness}="0"
-       '';
 
    # Ativa o serviço e o pacote do OpenRGB com regras de hardware injetadas
      services.hardware.openrgb = {
