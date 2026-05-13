@@ -423,6 +423,8 @@ programs.zsh = {
      openrgb
   ];
 
+   virtualisation.waydroid.enable = true; # Android
+
    # Configuração VS Code
     # Isso ajuda extensões do VS Code a executarem binários que esperam bibliotecas padrão em locais convencionais.
     programs.nix-ld.enable = true; 
