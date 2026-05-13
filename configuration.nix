@@ -421,7 +421,7 @@ programs.zsh = {
      evtest
      brightnessctl 
      openrgb
-     iptables-nft
+     iptables
   ];
 
    virtualisation.waydroid.enable = true; # Android
