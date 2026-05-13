@@ -496,9 +496,10 @@ programs.zsh = {
           };
          };
 
-      services.udev.extraRules = ''
-   # Corrige o travamento de LED do teclado ZXWMicroChip
-   ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="5566", ATTR{idProduct}=="0008", ATTR{remove}=="1"
+       services.udev.extraRules = ''
+       # Alternativa menos agressiva caso a de cima desative o teclado todo:
+       ACTION=="add", SUBSYSTEM=="leds", KERNELS=="*:5566:0008.*", ATTR{brightness}="0"
+       '';
 
    # Ativa o serviço e o pacote do OpenRGB com regras de hardware injetadas
      services.hardware.openrgb = {
