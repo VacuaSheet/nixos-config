@@ -639,29 +639,38 @@ systemd.user.services.unmute-hardware-audio = {
                         time.sleep(5)
                         continue
 
-                    # Escuta a primeira interface que for um teclado real
+                    # Escuta a primeira interface do teclado
                     for event in zxw_devs[0].read_loop():
                         if event.type == ecodes.EV_KEY:
                             data = evdev.categorize(event)
+                            # 58 é o Caps Lock
                             if data.scancode == 58 and data.keystate == 1:
                                 time.sleep(0.1)
                                 is_on = ecodes.LED_CAPSL in zxw_devs[0].leds()
                                 
                                 for d in zxw_devs:
                                     try:
+                                        # Força o reset do Num Lock (que está sempre aceso) 
+                                        # para obrigar o chip a atualizar o barramento
+                                        d.set_led(ecodes.LED_NUML, 0)
+                                        time.sleep(0.05)
+                                        d.set_led(ecodes.LED_NUML, 1)
+
+                                        # Agora tenta ligar/desligar a luz de fundo
                                         d.set_led(ecodes.LED_SCROLLL, 1 if is_on else 0)
                                         d.set_led(3, 1 if is_on else 0)
-                                    except: pass
+                                    except:
+                                        pass
                                 
-                                print(f"COMANDO: {'LIGAR' if is_on else 'DESLIGAR'}")
+                                print(f"CAPS {'ON' if is_on else 'OFF'} -> SINAL ENVIADO")
                                 sys.stdout.flush()
                 except Exception as e:
                     time.sleep(2)
 
         monitorar_teclado()
       '';
-    }; # <--- Este fecha o serviceConfig
-  }; # <--- Este fecha o teclado-led-trigger
+    };
+  };
 #Teclado
 
   # Habilita o suporte a 32 bits para o Wine/Lutris enxergar a placa
