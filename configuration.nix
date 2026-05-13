@@ -617,7 +617,6 @@ systemd.user.services.unmute-hardware-audio = {
     wantedBy = [ "multi-user.target" ];
     path = [ (pkgs.python3.withPackages (ps: [ ps.evdev ])) ];
 
-    # O ExecStart TEM que estar aqui dentro:
     serviceConfig = {
       Type = "simple";
       Restart = "always";
@@ -626,37 +625,49 @@ systemd.user.services.unmute-hardware-audio = {
         import evdev
         from evdev import ecodes
         import time
+        import sys
 
         def monitorar_teclado():
+            print("Iniciando monitoramento de hardware...")
+            sys.stdout.flush()
             while True:
                 try:
                     devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
                     kbd = None
                     for dev in devices:
-                        if "ZXWMicroChip" in dev.name:
+                        # Isso vai imprimir no seu log todos os nomes que ele achar
+                        print(f"DEBUG: Dispositivo encontrado: {dev.name}")
+                        sys.stdout.flush()
+                        
+                        if "ZXWMicroChip" in dev.name or "Keyboard" in dev.name:
                             kbd = dev
                             break
                     
                     if kbd:
+                        print(f"TECLADO SELECIONADO: {kbd.name}")
+                        sys.stdout.flush()
                         for event in kbd.read_loop():
                             if event.type == ecodes.EV_KEY:
                                 data = evdev.categorize(event)
                                 if data.scancode == 58 and data.keystate == 1:
-                                    time.sleep(0.2)
+                                    time.sleep(0.1)
                                     luzes = kbd.leds()
                                     if ecodes.LED_CAPSL in luzes:
                                         kbd.set_led(ecodes.LED_SCROLLL, 1)
-                                        kbd.set_led(3, 1)
+                                        print("LED ON")
                                     else:
                                         kbd.set_led(ecodes.LED_SCROLLL, 0)
-                                        kbd.set_led(3, 0)
-                except:
+                                        print("LED OFF")
+                                    sys.stdout.flush()
+                except Exception as e:
+                    print(f"Erro: {e}")
+                    sys.stdout.flush()
                     time.sleep(5)
 
         monitorar_teclado()
       '';
-    }; # Fecha serviceConfig
-  }; # Fecha teclado-led-trigger
+    };
+  };
 #Teclado
 
   # Habilita o suporte a 32 bits para o Wine/Lutris enxergar a placa
