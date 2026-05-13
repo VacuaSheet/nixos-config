@@ -609,8 +609,31 @@ systemd.user.services.unmute-hardware-audio = {
         ];
       };
     };
-
-   nix-shell -p evemu --run "sudo evemu-event /dev/input/event19 --type EV_LED --code LED_SCROLLL --value 1"
+	# Erro teclado
+	systemd.services.teclado-evolut-led = {
+	  description = "Forçar ativação do LED do teclado Evolut ZXWMicroChip";
+	  wantedBy = [ "multi-user.target" ];
+	  # Garante que o Python com o pacote evdev estará disponível para o serviço
+	  path = [ 
+	    (pkgs.python3.withPackages (ps: [ ps.evdev ])) 
+	  ];
+	  serviceConfig = {
+	    Type = "oneshot";
+	    ExecStart = pkgs.writeShellScript "ligar-led-evolut" ''
+	      python3 -c '
+	import evdev
+	for path in ["/dev/input/event0", "/dev/input/event18"]:
+	    try:
+        	device = evdev.InputDevice(path)
+	        device.write(evdev.ecodes.EV_LED, evdev.ecodes.LED_SCROLLL, 1)
+	        device.write(evdev.ecodes.EV_SYN, evdev.ecodes.SYN_REPORT, 0)
+	    except Exception:
+	        pass
+	'
+	    '';
+	    RemainAfterExit = true;
+	  };
+	};
 
 
   # Habilita o suporte a 32 bits para o Wine/Lutris enxergar a placa
