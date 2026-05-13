@@ -610,6 +610,14 @@ systemd.user.services.unmute-hardware-audio = {
       };
     };
 
+   systemd.services.keyboard-leds = {
+  description = "Liga os LEDs do teclado ZXW";
+  wantedBy = [ "multi-user.target" ];
+  serviceConfig = {
+    Type = "oneshot";
+    ExecStart = "${pkgs.bash}/bin/bash -c 'for i in /sys/class/leds/*::scrolllock/brightness; do echo 1 > \"$i\"; done'";
+  };
+};
 
 
   # Habilita o suporte a 32 bits para o Wine/Lutris enxergar a placa
