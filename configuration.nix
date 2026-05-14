@@ -611,32 +611,57 @@ systemd.user.services.unmute-hardware-audio = {
     };
 
  #teclado
-  # Serviço definitivo e blindado contra loops para os LEDs (Caps, Num e Scroll Lock) - Teclado Evolut/ZXW
+  # Serviço de controle híbrido (Escuta via Python / Injeção via Brightnessctl) - Teclado Evolut/ZXW
   systemd.services.teclado-led-trigger = {
-    description = "Sincronização Isolada e Sem Loops de LEDs - Teclado Evolut";
+    description = "Controle Híbrido Anti-Saturação de LEDs - Teclado Evolut";
     after = [ "local-fs.target" "systemd-udevd.service" ];
     wantedBy = [ "multi-user.target" ];
-    path = [ (pkgs.python3.withPackages (ps: [ ps.evdev ])) ];
+    # Disponibiliza tanto o Python para escuta quanto o brightnessctl para injeção sem concorrência
+    path = [ 
+      (pkgs.python3.withPackages (ps: [ ps.evdev ])) 
+      pkgs.brightnessctl 
+    ];
 
     serviceConfig = {
       Type = "simple";
       Restart = "always";
-      ExecStart = pkgs.writeScript "led-trigger-blindado" ''
+      ExecStart = pkgs.writeScript "led-trigger-hibrido" ''
         #!${pkgs.python3.withPackages (ps: [ ps.evdev ])}/bin/python
         import evdev
         from evdev import ecodes
         import time
         import sys
         import threading
+        import subprocess
 
         MAPA_TECLAS = {
-            58: (ecodes.LED_CAPSL, "Caps Lock"),
-            69: (ecodes.LED_NUML, "Num Lock"),
-            70: (ecodes.LED_SCROLLL, "Scroll Lock")
+            58: ("capslock", "Caps Lock"),
+            69: ("numlock", "Num Lock"),
+            70: ("scrolllock", "Scroll Lock")
         }
 
         lock_global = threading.Lock()
         ultimo_evento_tempo = 0.0
+
+        def aplicar_led_sistema(nome_led, estado):
+            """
+            Injeta o sinal via brightnessctl usando máscara genérica (input*).
+            Isso força todas as portas físicas do chip a mudarem de estado ao mesmo tempo,
+            sem usar a biblioteca evdev, evitando loops de re-entrada de dados.
+            """
+            try:
+                dispositivo_alvo = f"input*::{nome_led}"
+                subprocess.run(
+                    ["brightnessctl", "--device", dispositivo_alvo, "set", str(estado)],
+                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+                )
+                
+                # O Scroll Lock do Evolut necessita de um pulso de alimentação nas portas de energia física (input0 e input1)
+                if nome_led == "scrolllock":
+                    subprocess.run(["brightnessctl", "--device", "input0::scrolllock", "set", str(estado)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    subprocess.run(["brightnessctl", "--device", "input1::scrolllock", "set", str(estado)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            except Exception:
+                pass
 
         def monitorar_interface(dev, todos_os_devs):
             global ultimo_evento_tempo
@@ -649,49 +674,37 @@ systemd.user.services.unmute-hardware-audio = {
                             now = time.time()
                             
                             with lock_global:
-                                # Filtro Anti-Bouncer/Debounce: Ignora múltiplos sinais fantasmas num intervalo de 250ms
-                                if (now - ultimo_evento_tempo) < 0.25:
+                                # Filtro estável de Debounce (200 milissegundos)
+                                if (now - ultimo_evento_tempo) < 0.20:
                                     continue
                                 ultimo_evento_tempo = now
                                 
-                                time.sleep(0.08) # Aguarda o Linux consolidar o estado interno da trava
-                                led_alvo, nome_tecla = MAPA_TECLAS[data.scancode]
+                                time.sleep(0.05) # Delay curto para o kernel mudar a flag
+                                nome_led, nome_tecla = MAPA_TECLAS[data.scancode]
                                 
-                                # Verifica o estado oficial e real do sistema para este LED específico
+                                # Verifica o estado lógico oficial usando a primeira interface disponível
                                 is_on = False
                                 for d in todos_os_devs:
                                     try:
-                                        if led_alvo in d.leds():
+                                        # Mapeia dinamicamente os códigos internos do evdev para checagem
+                                        codigo_verificacao = getattr(ecodes, f"LED_{nome_led.upper().replace('LOCK', 'L')}")
+                                        if codigo_verificacao in d.leds():
                                             is_on = True
                                             break
                                     except: pass
                                 
                                 estado = 1 if is_on else 0
                                 
-                                # Atualiza os periféricos mitigando loops recursivos
-                                for d in todos_os_devs:
-                                    try:
-                                        # O truque de piscar o NumLock SÓ deve ocorrer se a tecla clicada NÃO for o próprio NumLock
-                                        if data.scancode != 69:
-                                            d.set_led(ecodes.LED_NUML, 0)
-                                            time.sleep(0.01)
-                                            d.set_led(ecodes.LED_NUML, 1)
-
-                                        # Envia o comando correto isolado para o respectivo LED
-                                        d.set_led(led_alvo, estado)
-                                        
-                                        # Se for Scroll Lock, alimenta a trilha física RGB secundária do chip
-                                        if led_alvo == ecodes.LED_SCROLLL:
-                                            d.set_led(3, estado)
-                                    except: pass
+                                # Executa a injeção via subprocesso externo isolado
+                                aplicar_led_sistema(nome_led, estado)
                                 
-                                print(f"SINCRO BLINDADA: {nome_tecla} -> {'LIGADO' if is_on else 'DESLIGADA'}")
+                                print(f"HIBRIDO: {nome_tecla} sincronizado para estado {estado}")
                                 sys.stdout.flush()
             except Exception:
                 pass
 
         def iniciar():
-            print("--- Iniciando Serviço Isolado Anti-Loop Evolut ---")
+            print("--- Iniciando Serviço Híbrido Isento de Saturação Evolut ---")
             sys.stdout.flush()
             while True:
                 try:
@@ -699,6 +712,9 @@ systemd.user.services.unmute-hardware-audio = {
                     zxw_devs = [d for d in devices if "ZXWMicroChip" in d.name]
                     
                     if zxw_devs:
+                        # Inicializa o NumLock ativado via brightnessctl no carregamento
+                        aplicar_led_sistema("numlock", 1)
+                        
                         threads = []
                         for d in zxw_devs:
                             t = threading.Thread(target=monitorar_interface, args=(d, zxw_devs))
