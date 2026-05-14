@@ -611,9 +611,9 @@ systemd.user.services.unmute-hardware-audio = {
     };
 
  #teclado
-  # Serviço definitivo e unificado para os LEDs (Caps, Num e Scroll Lock) - Teclado Evolut/ZXW
+  # Serviço definitivo e blindado contra loops para os LEDs (Caps, Num e Scroll Lock) - Teclado Evolut/ZXW
   systemd.services.teclado-led-trigger = {
-    description = "Sincronização Independente de LEDs - Teclado Evolut";
+    description = "Sincronização Isolada e Sem Loops de LEDs - Teclado Evolut";
     after = [ "local-fs.target" "systemd-udevd.service" ];
     wantedBy = [ "multi-user.target" ];
     path = [ (pkgs.python3.withPackages (ps: [ ps.evdev ])) ];
@@ -621,7 +621,7 @@ systemd.user.services.unmute-hardware-audio = {
     serviceConfig = {
       Type = "simple";
       Restart = "always";
-      ExecStart = pkgs.writeScript "led-trigger-consolidado" ''
+      ExecStart = pkgs.writeScript "led-trigger-blindado" ''
         #!${pkgs.python3.withPackages (ps: [ ps.evdev ])}/bin/python
         import evdev
         from evdev import ecodes
@@ -629,33 +629,35 @@ systemd.user.services.unmute-hardware-audio = {
         import sys
         import threading
 
-        # Mapeamento de Scancodes para seus respectivos códigos de LED do sistema
         MAPA_TECLAS = {
             58: (ecodes.LED_CAPSL, "Caps Lock"),
             69: (ecodes.LED_NUML, "Num Lock"),
             70: (ecodes.LED_SCROLLL, "Scroll Lock")
         }
 
-        # Trava global para impedir que o clique seja processado por múltiplas interfaces ao mesmo tempo
         lock_global = threading.Lock()
+        ultimo_evento_tempo = 0.0
 
         def monitorar_interface(dev, todos_os_devs):
-            print(f"DEBUG: Ouvindo interface {dev.path} ({dev.name})")
-            sys.stdout.flush()
+            global ultimo_evento_tempo
             try:
                 for event in dev.read_loop():
                     if event.type == ecodes.EV_KEY:
                         data = evdev.categorize(event)
                         
-                        # Processa apenas se for uma das 3 teclas modificadoras e se foi PRESSIONADA (keystate 1)
                         if data.scancode in MAPA_TECLAS and data.keystate == 1:
-                            # O Lock global impede o entrelaçamento e duplicidade de eventos
+                            now = time.time()
+                            
                             with lock_global:
-                                time.sleep(0.1) # Aguarda o Linux atualizar o estado lógico interno
+                                # Filtro Anti-Bouncer/Debounce: Ignora múltiplos sinais fantasmas num intervalo de 250ms
+                                if (now - ultimo_evento_tempo) < 0.25:
+                                    continue
+                                ultimo_evento_tempo = now
                                 
+                                time.sleep(0.08) # Aguarda o Linux consolidar o estado interno da trava
                                 led_alvo, nome_tecla = MAPA_TECLAS[data.scancode]
                                 
-                                # Verifica o estado oficial e real do sistema para o LED pressionado
+                                # Verifica o estado oficial e real do sistema para este LED específico
                                 is_on = False
                                 for d in todos_os_devs:
                                     try:
@@ -666,30 +668,30 @@ systemd.user.services.unmute-hardware-audio = {
                                 
                                 estado = 1 if is_on else 0
                                 
-                                # Dispara a atualização usando a lógica bem-sucedida do primeiro script
+                                # Atualiza os periféricos mitigando loops recursivos
                                 for d in todos_os_devs:
                                     try:
-                                        # Executa o reset rápido que acorda o barramento do chip ZXW
-                                        d.set_led(ecodes.LED_NUML, 0)
-                                        time.sleep(0.01)
-                                        d.set_led(ecodes.LED_NUML, 1)
+                                        # O truque de piscar o NumLock SÓ deve ocorrer se a tecla clicada NÃO for o próprio NumLock
+                                        if data.scancode != 69:
+                                            d.set_led(ecodes.LED_NUML, 0)
+                                            time.sleep(0.01)
+                                            d.set_led(ecodes.LED_NUML, 1)
 
-                                        # Envia o comando nativo set_led que o firmware aceitou no CapsLock
+                                        # Envia o comando correto isolado para o respectivo LED
                                         d.set_led(led_alvo, estado)
                                         
-                                        # Se a tecla for o Scroll Lock, também garante a injeção na trilha alternativa de luz
+                                        # Se for Scroll Lock, alimenta a trilha física RGB secundária do chip
                                         if led_alvo == ecodes.LED_SCROLLL:
                                             d.set_led(3, estado)
                                     except: pass
                                 
-                                print(f"EVENTO: {nome_tecla} sincronizado! Estado físico -> {'LIGADO' if is_on else 'DESLIGADO'}")
+                                print(f"SINCRO BLINDADA: {nome_tecla} -> {'LIGADO' if is_on else 'DESLIGADA'}")
                                 sys.stdout.flush()
-            except Exception as e:
-                print(f"Interface {dev.path} desconectada: {e}")
-                sys.stdout.flush()
+            except Exception:
+                pass
 
         def iniciar():
-            print("--- Iniciando Serviço Unificado de LEDs Evolut ---")
+            print("--- Iniciando Serviço Isolado Anti-Loop Evolut ---")
             sys.stdout.flush()
             while True:
                 try:
@@ -697,24 +699,16 @@ systemd.user.services.unmute-hardware-audio = {
                     zxw_devs = [d for d in devices if "ZXWMicroChip" in d.name]
                     
                     if zxw_devs:
-                        print(f"Sucesso: {len(zxw_devs)} interfaces encontradas.")
-                        sys.stdout.flush()
                         threads = []
                         for d in zxw_devs:
                             t = threading.Thread(target=monitorar_interface, args=(d, zxw_devs))
                             t.daemon = True
                             t.start()
                             threads.append(t)
-                        
                         for t in threads:
                             t.join()
-                    else:
-                        print("Aguardando teclado ser conectado...")
-                        sys.stdout.flush()
-                except Exception as e:
-                    print(f"Erro no loop principal: {e}")
-                    sys.stdout.flush()
-                
+                except Exception:
+                    pass
                 time.sleep(5)
 
         if __name__ == "__main__":
