@@ -611,9 +611,9 @@ systemd.user.services.unmute-hardware-audio = {
     };
 
  #teclado
-  # Serviço com trava por ciclo completo (Sinal mantido e isolado) - Teclado Evolut/ZXW
+  # Serviço com regra estrita de uma alteração por ciclo de clique completo - Teclado Evolut/ZXW
   systemd.services.teclado-led-trigger = {
-    description = "Controle de LEDs com Trava por Ciclo de Clique - Teclado Evolut";
+    description = "Controle de LEDs com Regra Estrita de Clique Único - Teclado Evolut";
     after = [ "local-fs.target" "systemd-udevd.service" ];
     wantedBy = [ "multi-user.target" ];
     path = [ 
@@ -624,7 +624,7 @@ systemd.user.services.unmute-hardware-audio = {
     serviceConfig = {
       Type = "simple";
       Restart = "always";
-      ExecStart = pkgs.writeScript "teclado-trigger-ciclo-puro" ''
+      ExecStart = pkgs.writeScript "teclado-trigger-clique-estrito" ''
         #!${pkgs.python3.withPackages (ps: [ ps.evdev ])}/bin/python
         import evdev
         from evdev import ecodes
@@ -645,16 +645,19 @@ systemd.user.services.unmute-hardware-audio = {
             "scrolllock": False
         }
 
-        # Rastreador de segurança para saber se a tecla fisicamente ainda está abaixada
-        TECLAS_PRESSIONADAS = {58: False, 69: False, 70: False}
+        # Controladores de trava física para impedir repetições enquanto o dedo está pressionado
+        TECLAS_TRAVADAS = {58: False, 69: False, 70: False}
+        
+        # Registra o tempo em que a tecla foi solta para ignorar rebotes elétricos do chip
+        ultimo_tempo_solto = {58: 0.0, 69: 0.0, 70: 0.0}
 
         def sincronizar_hardware(nome_sysfs, estado_booleano):
             estado_str = "1" if estado_booleano else "0"
             try:
-                # Envia o comando isolado para o barramento global do chip ZXW
+                # Força a injeção do sinal via ferramenta de sistema de forma isolada
                 subprocess.run(["brightnessctl", "--device", f"input*::{nome_sysfs}", "set", estado_str], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 
-                # Alimenta continuamente as trilhas de energia da iluminação traseira (Scroll Lock)
+                # Se for o Scroll Lock (Luz de fundo), garante alimentação nas trilhas físicas de energia
                 if nome_sysfs == "scrolllock":
                     for porta in ["input0", "input1", "input19", "input20"]:
                         subprocess.run(["brightnessctl", "--device", f"{porta}::scrolllock", "set", estado_str], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -662,10 +665,10 @@ systemd.user.services.unmute-hardware-audio = {
                 pass
 
         def iniciar():
-            print("--- Iniciando Serviço de Trava por Ciclo Físico Evolut ---")
+            print("--- Iniciando Serviço com Regra Estrita de Clique Único ---")
             sys.stdout.flush()
             
-            global TECLAS_PRESSIONADAS
+            global TECLAS_TRAVADAS, ultimo_tempo_solto
 
             while True:
                 try:
@@ -673,7 +676,7 @@ systemd.user.services.unmute-hardware-audio = {
                     
                     if caminhos:
                         caminho_teclado = caminhos[0]
-                        print(f"Sucesso: Monitorando ciclo único em {caminho_teclado}")
+                        print(f"Sucesso: Aplicando regra de clique estrito em {caminho_teclado}")
                         sys.stdout.flush()
                         
                         # Alinhamento estável inicial do boot
@@ -688,28 +691,41 @@ systemd.user.services.unmute-hardware-audio = {
                                 
                                 if data.scancode in MAPA_TECLAS:
                                     nome_sysfs = MAPA_TECLAS[data.scancode]
+                                    now = time.time()
                                     
-                                    # 1. CASO: Tecla foi APERTADA (keystate == 1) e NÃO estava pressionada antes
-                                    if data.keystate == 1 and not TECLAS_PRESSIONADAS[data.scancode]:
-                                        TECLAS_PRESSIONADAS[data.scancode] = True # Ativa a trava física
+                                    # 1. REGRA DO CLIQUE (Tecla afundou: keystate == 1)
+                                    if data.keystate == 1:
+                                        # Se a tecla já foi processada neste clique, ignora completamente
+                                        if TECLAS_TRAVADAS[data.scancode]:
+                                            continue
+                                            
+                                        # Proteção contra rebotes rápidos após soltar a tecla (Filtro de 250ms)
+                                        if (now - ultimo_tempo_solto[data.scancode]) < 0.25:
+                                            continue
+                                            
+                                        # Ativa o bloqueio rígido na memória
+                                        TECLAS_TRAVADAS[data.scancode] = True
                                         
-                                        # Inverte o estado e atualiza o LED uma única vez
+                                        # Altera o estado apenas UMA vez por clique
                                         ESTADOS_LOCAIS[nome_sysfs] = not ESTADOS_LOCAIS[nome_sysfs]
                                         sincronizar_hardware(nome_sysfs, ESTADOS_LOCAIS[nome_sysfs])
                                         
-                                        print(f"CICLO: {nome_sysfs} alternado para {ESTADOS_LOCAIS[nome_sysfs]}")
+                                        print(f"REGRA ESTRITA: {nome_sysfs} mudou para {ESTADOS_LOCAIS[nome_sysfs]}")
                                         sys.stdout.flush()
                                     
-                                    # 2. CASO: Tecla foi SOLTA (keystate == 0) pelo usuário
+                                    # 2. REGRA DA LIBERAÇÃO (Tecla subiu: keystate == 0)
                                     elif data.keystate == 0:
-                                        TECLAS_PRESSIONADAS[data.scancode] = False # Remove a trava, liberando para o próximo clique
+                                        # Registra o momento exato em que o dedo deixou a tecla
+                                        ultimo_tempo_solto[data.scancode] = now
+                                        # Desativa a trava, permitindo que um NOVO clique futuro seja aceito
+                                        TECLAS_TRAVADAS[data.scancode] = False
                                         
-                                    # NOTA: O estado de tecla mantida (keystate == 2) cai no "else" e é sumariamente IGNORADO.
+                                    # O estado de tecla mantida pressionada (keystate == 2) é sumariamente descartado.
                     else:
-                        print("Aguardando teclado USB ser conectado...")
+                        print("Aguardando teclado ser detectado...")
                         sys.stdout.flush()
                 except Exception as e:
-                    print(f"Conexão reiniciada no barramento: {e}")
+                    print(f"Reconectando barramento: {e}")
                     sys.stdout.flush()
                 
                 time.sleep(5)
