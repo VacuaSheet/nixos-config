@@ -611,59 +611,123 @@ systemd.user.services.unmute-hardware-audio = {
     };
 
  #teclado
-  # Injeta o script de varredura passo a passo sem mexer na lista principal de pacotes
-  services.udev.packages = [
-    (pkgs.writeShellScriptBin "testar-teclado-led" ''
-      echo "========================================================"
-      echo "  INICIANDO VARREDURA PASSO A PASSO: TECLADO EVOLUT     "
-      echo "========================================================"
-      echo "Este script vai testar cada barramento físico e virtual,"
-      echo "mostrando na tela até encontrar o valor real que acende o LED."
-      echo "--------------------------------------------------------"
+  # Serviço baseado estritamente no código original funcional para Caps, Num e Scroll Lock - Teclado Evolut/ZXW
+  systemd.services.teclado-led-trigger = {
+    description = "Gatilho de LED para Caps, Num e Scroll Lock - Teclado Evolut";
+    after = [ "local-fs.target" "systemd-udevd.service" ];
+    wantedBy = [ "multi-user.target" ];
+    path = [ (pkgs.python3.withPackages (ps: [ ps.evdev ])) ];
 
-      LEDS_DISPONIVEIS=$(ls -1 /sys/class/leds/input*::*/brightness 2>/dev/null)
+    serviceConfig = {
+      Type = "simple";
+      Restart = "always";
+      ExecStart = pkgs.writeScript "teclado-trigger-python" ''
+        #!${pkgs.python3.withPackages (ps: [ ps.evdev ])}/bin/python
+        import evdev
+        from evdev import ecodes
+        import time
+        import sys
+        import threading
 
-      if [ -z "$LEDS_DISPONIVEIS" ]; then
-          echo "🚨 Nenhum barramento de LED encontrado em /sys/class/leds/input*"
-          exit 1
-      fi
+        # Mapeamento de Scancodes para seus respectivos códigos de LED do Kernel
+        MAPA_TECLAS = {
+            58: (ecodes.LED_CAPSL, "Caps Lock"),
+            69: (ecodes.LED_NUML, "Num Lock"),
+            70: (ecodes.LED_SCROLLL, "Scroll Lock")
+        }
 
-      echo "🔍 Interfaces de LED detectadas no sistema:"
-      echo "$LEDS_DISPONIVEIS"
-      echo "--------------------------------------------------------"
+        # Evita concorrência entre threads processando o mesmo evento
+        lock_global = threading.Lock()
 
-      for led_path in $LEDS_DISPONIVEIS; do
-          NOME_AMIGAVEL=$(echo "$led_path" | cut -d'/' -f5)
-          
-          echo ""
-          echo "➔ TESTANDO AGORA: [$NOME_AMIGAVEL]"
-          echo "Caminho real do sistema: $led_path"
-          
-          VALOR_ATUAL=$(cat "$led_path")
-          echo "Valor lógico atual no Linux: $VALOR_ATUAL"
-          
-          echo "Injetando sinal de ativação (Valor: 1) via Sysfs..."
-          echo 1 | sudo tee "$led_path" > /dev/null
-          
-          echo "Injetando sinal de ativação em lote via Brightnessctl..."
-          sudo brightnessctl --device="$NOME_AMIGAVEL" set 1 >/dev/null 2>&1
-          
-          NOVO_VALOR=$(cat "$led_path")
-          echo "Valor verificado após o teste: $NOVO_VALOR"
-          
-          echo "❓ O LED FÍSICO DO TECLADO ACENDEU? (pressione ENTER para testar o próximo...)"
-          read -r
-          
-          echo 0 | sudo tee "$led_path" > /dev/null
-          sudo brightnessctl --device="$NOME_AMIGAVEL" set 0 >/dev/null 2>&1
-      done
+        # Função que monitora cada interface individualmente
+        def monitorar_interface(dev, todos_os_devs):
+            print(f"DEBUG: Ouvindo interface {dev.path} ({dev.name})")
+            sys.stdout.flush()
+            try:
+                for event in dev.read_loop():
+                    if event.type == ecodes.EV_KEY:
+                        data = evdev.categorize(event)
+                        
+                        # Detecta se foi Caps(58), Num(69) ou Scroll(70) pressionado (keystate 1)
+                        if data.scancode in MAPA_TECLAS and data.keystate == 1:
+                            with lock_global:
+                                time.sleep(0.1)
+                                led_alvo, nome_tecla = MAPA_TECLAS[data.scancode]
+                                
+                                # Verifica o estado real da tecla pressionada no sistema
+                                is_on = False
+                                for d in todos_os_devs:
+                                    try:
+                                        if led_alvo in d.leds():
+                                            is_on = True
+                                            break
+                                    except: pass
+                                
+                                estado = 1 if is_on else 0
+                                
+                                # Dispara o comando de LED para TODAS as portas do chip
+                                for d in todos_os_devs:
+                                    try:
+                                        # GATILHO DE INICIALIZAÇÃO (O segredo do chip ZXW):
+                                        # Se a tecla apertada NÃO for NumLock, pisca o NumLock para acordar o chip.
+                                        if data.scancode != 69:
+                                            d.set_led(ecodes.LED_NUML, 0)
+                                            time.sleep(0.02)
+                                            d.set_led(ecodes.LED_NUML, 1)
+                                        # Se a tecla apertada FOR o NumLock, pisca o CapsLock para acordar o chip sem dar loop.
+                                        else:
+                                            d.set_led(ecodes.LED_CAPSL, 0)
+                                            time.sleep(0.02)
+                                            d.set_led(ecodes.LED_CAPSL, 1)
 
-      echo "========================================================"
-      echo "Varredura concluída! Anote qual nome de dispositivo"
-      echo "reagiu visualmente no seu teclado físico."
-      echo "========================================================"
-    '')
-  ];
+                                        # Envia o comando real que o firmware precisa consolidar
+                                        d.set_led(led_alvo, estado)
+                                        
+                                        # Se for Scroll Lock, também garante a injeção na trilha alternativa
+                                        if led_alvo == ecodes.LED_SCROLLL:
+                                            d.set_led(3, estado)
+                                    except: pass
+                                
+                                print(f"EVENTO: {nome_tecla} detectado! Luz -> {'LIGADA' if is_on else 'DESLIGADA'}")
+                                sys.stdout.flush()
+            except Exception as e:
+                print(f"Interface {dev.path} desconectada: {e}")
+                sys.stdout.flush()
+
+        def iniciar():
+            print("--- Iniciando Serviço de LED Evolut Expandido ---")
+            sys.stdout.flush()
+            while True:
+                try:
+                    devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
+                    zxw_devs = [d for d in devices if "ZXWMicroChip" in d.name]
+                    
+                    if zxw_devs:
+                        print(f"Sucesso: {len(zxw_devs)} interfaces encontradas.")
+                        sys.stdout.flush()
+                        threads = []
+                        for d in zxw_devs:
+                            t = threading.Thread(target=monitorar_interface, args=(d, zxw_devs))
+                            t.daemon = True
+                            t.start()
+                            threads.append(t)
+                        
+                        for t in threads:
+                            t.join()
+                    else:
+                        print("Aguardando teclado ser conectado...")
+                        sys.stdout.flush()
+                except Exception as e:
+                    print(f"Erro no loop principal: {e}")
+                    sys.stdout.flush()
+                
+                time.sleep(5)
+
+        if __name__ == "__main__":
+            iniciar()
+      '';
+    };
+  };
 #Teclado
 
   # Habilita o suporte a 32 bits para o Wine/Lutris enxergar a placa
