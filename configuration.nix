@@ -611,9 +611,9 @@ systemd.user.services.unmute-hardware-audio = {
     };
 
  #teclado
-  # Serviço com Debounce Global Centralizado contra cliques múltiplos - Teclado Evolut/ZXW
+  # Serviço definitivo com controle por software sem checagem de hardware lenta - Teclado Evolut/ZXW
   systemd.services.teclado-led-trigger = {
-    description = "Gatilho de LED para Caps, Num e Scroll Lock - Teclado Evolut";
+    description = "Gatilho de LED Instantâneo por Software - Teclado Evolut";
     after = [ "local-fs.target" "systemd-udevd.service" ];
     wantedBy = [ "multi-user.target" ];
     path = [ (pkgs.python3.withPackages (ps: [ ps.evdev ])) ];
@@ -629,54 +629,45 @@ systemd.user.services.unmute-hardware-audio = {
         import sys
         import threading
 
-        MAPA_TECLAS = {
-            58: (ecodes.LED_CAPSL, "Caps Lock"),
-            69: (ecodes.LED_NUML, "Num Lock"),
-            70: (ecodes.LED_SCROLLL, "Scroll Lock")
+        # Mapeamento de Scancodes para seus respectivos códigos de LED e estados lógicos em memória
+        # NumLock inicia como True pois a BIOS geralmente o ativa no boot
+        ESTADOS_LED = {
+            58: {"led": ecodes.LED_CAPSL, "status": False, "nome": "Caps Lock"},
+            69: {"led": ecodes.LED_NUML, "status": True, "nome": "Num Lock"},
+            70: {"led": ecodes.LED_SCROLLL, "status": False, "nome": "Scroll Lock"}
         }
 
         lock_global = threading.Lock()
-        
-        # Variável global centralizada compartilhada por todas as threads
-        # Evita colisões entre interfaces diferentes
         ultimo_clique_global = {58: 0.0, 69: 0.0, 70: 0.0}
 
         def monitorar_interface(dev, todos_os_devs):
-            global ultimo_clique_global
-            print(f"DEBUG: Ouvindo interface {dev.path} ({dev.name})")
-            sys.stdout.flush()
+            global ultimo_clique_global, ESTADOS_LED
             try:
                 for event in dev.read_loop():
                     if event.type == ecodes.EV_KEY:
                         data = evdev.categorize(event)
                         
                         # Captura o clique inicial (keystate 1) das teclas mapeadas
-                        if data.scancode in MAPA_TECLAS and data.keystate == 1:
+                        if data.scancode in ESTADOS_LED and data.keystate == 1:
                             now = time.time()
                             
                             with lock_global:
-                                # FILTRO DE COOLDOWN GLOBAL: Bloqueia reentradas de outras interfaces por 300ms
-                                if (now - ultimo_clique_global[data.scancode]) < 0.30:
+                                # Filtro Debounce: Ignora repetições de outras interfaces em menos de 180ms
+                                if (now - ultimo_clique_global[data.scancode]) < 0.18:
                                     continue
                                 ultimo_clique_global[data.scancode] = now
                                 
-                                time.sleep(0.12) # Tempo necessário para o kernel estabilizar o estado lógico
-                                led_alvo, nome_tecla = MAPA_TECLAS[data.scancode]
+                                # ALTERNA O ESTADO IMEDIATAMENTE VIA MEMÓRIA (Removeu a lentidão do d.leds())
+                                ESTADOS_LED[data.scancode]["status"] = not ESTADOS_LED[data.scancode]["status"]
                                 
-                                is_on = False
-                                for d in todos_os_devs:
-                                    try:
-                                        if led_alvo in d.leds():
-                                            is_on = True
-                                            break
-                                    except: pass
-                                
-                                estado = 1 if is_on else 0
+                                led_alvo = ESTADOS_LED[data.scancode]["led"]
+                                estado = 1 if ESTADOS_LED[data.scancode]["status"] else 0
+                                nome_tecla = ESTADOS_LED[data.scancode]["nome"]
                                 
                                 # Envia os sinais de controle em lote para o hardware
                                 for d in todos_os_devs:
                                     try:
-                                        # Pulso rápido modificado para evitar saturação do chip
+                                        # Gatilho do barramento do chip ZXW
                                         if data.scancode != 69:
                                             d.set_led(ecodes.LED_NUML, 0)
                                             time.sleep(0.01)
@@ -686,22 +677,21 @@ systemd.user.services.unmute-hardware-audio = {
                                             time.sleep(0.01)
                                             d.set_led(ecodes.LED_CAPSL, 1)
 
-                                        # Consolda o estado real no hardware
+                                        # Consolida o estado real no hardware
                                         d.set_led(led_alvo, estado)
                                         
-                                        # Força o acendimento do circuito de backlight geral (Scroll Lock)
+                                        # Trilha alternativa para o Scroll Lock / Iluminação traseira
                                         if led_alvo == ecodes.LED_SCROLLL:
                                             d.set_led(3, estado)
                                     except: pass
                                 
-                                print(f"EVENTO UNIFICADO: {nome_tecla} -> {'LIGADA' if is_on else 'DESLIGADA'}")
+                                print(f"EVENTO MEMORIA: {nome_tecla} -> {'LIGADA' if estado == 1 else 'DESLIGADA'}")
                                 sys.stdout.flush()
-            except Exception as e:
-                print(f"Interface {dev.path} desconectada: {e}")
-                sys.stdout.flush()
+            except Exception:
+                pass
 
         def iniciar():
-            print("--- Iniciando Serviço de LED Evolut com Trava Unificada ---")
+            print("--- Iniciando Serviço de LED Evolut Sem Checagem de Hardware ---")
             sys.stdout.flush()
             while True:
                 try:
@@ -709,8 +699,11 @@ systemd.user.services.unmute-hardware-audio = {
                     zxw_devs = [d for d in devices if "ZXWMicroChip" in d.name]
                     
                     if zxw_devs:
-                        print(f"Sucesso: {len(zxw_devs)} interfaces encontradas.")
-                        sys.stdout.flush()
+                        # Sincroniza o hardware inicializando com o NumLock ligado
+                        for d in zxw_devs:
+                            try: d.set_led(ecodes.LED_NUML, 1)
+                            except: pass
+                        
                         threads = []
                         for d in zxw_devs:
                             t = threading.Thread(target=monitorar_interface, args=(d, zxw_devs))
@@ -720,13 +713,8 @@ systemd.user.services.unmute-hardware-audio = {
                         
                         for t in threads:
                             t.join()
-                    else:
-                        print("Aguardando teclado ser conectado...")
-                        sys.stdout.flush()
-                except Exception as e:
-                    print(f"Erro no loop principal: {e}")
-                    sys.stdout.flush()
-                
+                except Exception:
+                    pass
                 time.sleep(5)
 
         if __name__ == "__main__":
