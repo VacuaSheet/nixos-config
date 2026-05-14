@@ -611,90 +611,83 @@ systemd.user.services.unmute-hardware-audio = {
     };
 
  #teclado
-  # Serviço de controle híbrido otimizado (Escuta via Python / Injeção via Brightnessctl com Estados por Software)
-  systemd.services.teclado-led-trigger = {
-    description = "Controle Instantâneo de LEDs - Teclado Evolut";
-    after = [ "local-fs.target" "systemd-udevd.service" ];
-    wantedBy = [ "multi-user.target" ];
-    path = [ 
-      (pkgs.python3.withPackages (ps: [ ps.evdev ])) 
-      pkgs.brightnessctl 
-    ];
+  # Serviço embutido em Python para controle dos LEDs (Caps, Num e Scroll Lock) - Teclado Evolut/ZXW
+  systemd.user.services.teclado-led-trigger = {
+    description = "Sincronizador de LEDs do Usuário - Teclado Evolut";
+    # Garante que o serviço roda vinculado à sua sessão gráfica (X11/Wayland), liberando os sinais USB
+    wantedBy = [ "graphical-session.target" ];
+    
+    # Injeta automaticamente o pacote evdev no ambiente isolado do serviço
+    path = [ (pkgs.python3.withPackages (ps: [ ps.evdev ])) ];
 
     serviceConfig = {
       Type = "simple";
       Restart = "always";
-      ExecStart = pkgs.writeScript "led-trigger-instantaneo" ''
+      RestartSec = 3;
+      # Executa o script Python gerado dinamicamente pelo Nix
+      ExecStart = pkgs.writeScript "led-trigger-user-python" ''
         #!${pkgs.python3.withPackages (ps: [ ps.evdev ])}/bin/python
         import evdev
         from evdev import ecodes
         import time
         import sys
         import threading
-        import subprocess
 
-        # Gerenciamento de estados locais via software (Inicia com NumLock ligado e os outros desligados)
-        ESTADOS_LED = {
-            58: {"nome_sysfs": "capslock", "status": False, "nome": "Caps Lock"},
-            69: {"nome_sysfs": "numlock", "status": True, "nome": "Num Lock"},
-            70: {"nome_sysfs": "scrolllock", "status": False, "nome": "Scroll Lock"}
+        # Mapeamento de Scancodes para seus respectivos códigos de LED do Kernel
+        MAPA_TECLAS = {
+            58: (ecodes.LED_CAPSL, "Caps Lock"),
+            69: (ecodes.LED_NUML, "Num Lock"),
+            70: (ecodes.LED_SCROLLL, "Scroll Lock")
         }
 
         lock_global = threading.Lock()
-        ultimo_evento_tempo = 0.0
 
-        def aplicar_led_sistema(nome_led, estado):
-            """ Envia os comandos de iluminação diretamente via hardware de forma assíncrona """
-            try:
-                dispositivo_alvo = f"input*::{nome_led}"
-                subprocess.run(
-                    ["brightnessctl", "--device", dispositivo_alvo, "set", str(estado)],
-                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-                )
-                
-                # Força a injeção nas portas base de energia física do chip para o Scroll Lock (Iluminação traseira)
-                if nome_led == "scrolllock":
-                    subprocess.run(["brightnessctl", "--device", "input0::scrolllock", "set", str(estado)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                    subprocess.run(["brightnessctl", "--device", "input1::scrolllock", "set", str(estado)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                    subprocess.run(["brightnessctl", "--device", "input19::scrolllock", "set", str(estado)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                    subprocess.run(["brightnessctl", "--device", "input20::scrolllock", "set", str(estado)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            except Exception:
-                pass
-
-        def monitorar_interface(dev):
-            global ultimo_evento_tempo
+        def monitorar_interface(dev, todos_os_devs):
+            print(f"DEBUG: Ouvindo interface {dev.path} ({dev.name})")
+            sys.stdout.flush()
             try:
                 for event in dev.read_loop():
                     if event.type == ecodes.EV_KEY:
                         data = evdev.categorize(event)
-                        
-                        # Captura apenas quando a tecla é pressionada (keystate == 1)
-                        if data.scancode in ESTADOS_LED and data.keystate == 1:
-                            now = time.time()
-                            
+                        # Processa apenas o clique inicial (keystate == 1) de Caps, Num ou Scroll Lock
+                        if data.scancode in MAPA_TECLAS and data.keystate == 1:
                             with lock_global:
-                                # Filtro Debounce leve (180ms) apenas para descartar ruído físico da tecla de membrana
-                                if (now - ultimo_evento_tempo) < 0.18:
-                                    continue
-                                ultimo_evento_tempo = now
+                                time.sleep(0.1) # Aguarda o Linux atualizar o estado lógico interno
                                 
-                                # Alterna o estado lógico diretamente via software de forma imediata (sem consultar o d.leds())
-                                ESTADOS_LED[data.scancode]["status"] = not ESTADOS_LED[data.scancode]["status"]
+                                led_alvo, nome_tecla = MAPA_TECLAS[data.scancode]
                                 
-                                nome_led = ESTADOS_LED[data.scancode]["nome_sysfs"]
-                                estado = 1 if ESTADOS_LED[data.scancode]["status"] else 0
-                                nome_tecla = ESTADOS_LED[data.scancode]["nome"]
+                                # Verifica o estado oficial e real do sistema para o LED pressionado
+                                is_on = False
+                                for d in todos_os_devs:
+                                    try:
+                                        if led_alvo in d.leds():
+                                            is_on = True
+                                            break
+                                    except: pass
                                 
-                                # Dispara a alteração física em background através do brightnessctl
-                                aplicar_led_sistema(nome_led, estado)
+                                estado = 1 if is_on else 0
                                 
-                                print(f"INSTANTANEO: {nome_tecla} alternado via software para: {estado}")
+                                # Dispara a atualização direta em todas as portas do chip
+                                for d in todos_os_devs:
+                                    try:
+                                        # Reset rápido no NumLock para acordar o barramento do chip ZXW
+                                        d.set_led(ecodes.LED_NUML, 0)
+                                        time.sleep(0.01)
+                                        d.set_led(ecodes.LED_NUML, 1)
+
+                                        # Envia o comando físico bruto que funcionou no seu teste manual
+                                        d.write(ecodes.EV_LED, led_alvo, estado)
+                                        d.write(ecodes.EV_SYN, ecodes.SYN_REPORT, 0)
+                                    except: pass
+                                
+                                print(f"SINCRO: {nome_tecla} -> {'LIGADO' if is_on else 'DESLIGADO'}")
                                 sys.stdout.flush()
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"Interface {dev.path} desconectada: {e}")
+                sys.stdout.flush()
 
         def iniciar():
-            print("--- Iniciando Monitor Estável e Veloz de LEDs Evolut ---")
+            print("--- Iniciando Serviço Embutido de LEDs Evolut (Sessão Usuário) ---")
             sys.stdout.flush()
             while True:
                 try:
@@ -702,21 +695,23 @@ systemd.user.services.unmute-hardware-audio = {
                     zxw_devs = [d for d in devices if "ZXWMicroChip" in d.name]
                     
                     if zxw_devs:
-                        # Força o NumLock ligado no hardware ao iniciar o script
-                        aplicar_led_sistema("numlock", 1)
-                        # Garante que o ScrollLock inicie limpo/desligado no hardware
-                        aplicar_led_sistema("scrolllock", 0)
-                        
+                        print(f"Sucesso: {len(zxw_devs)} interfaces encontradas.")
+                        sys.stdout.flush()
                         threads = []
                         for d in zxw_devs:
-                            t = threading.Thread(target=monitorar_interface, args=(d,))
+                            t = threading.Thread(target=monitorar_interface, args=(d, zxw_devs))
                             t.daemon = True
                             t.start()
                             threads.append(t)
                         for t in threads:
                             t.join()
-                except Exception:
-                    pass
+                    else:
+                        print("Aguardando teclado ser conectado...")
+                        sys.stdout.flush()
+                except Exception as e:
+                    print(f"Erro no loop principal: {e}")
+                    sys.stdout.flush()
+                
                 time.sleep(5)
 
         if __name__ == "__main__":
