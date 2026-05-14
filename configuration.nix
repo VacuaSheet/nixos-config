@@ -611,51 +611,114 @@ systemd.user.services.unmute-hardware-audio = {
     };
 
  #teclado
-  # Serviço definitivo de sincronização de estados de LED para o chip Evolut ZXW
+  # Serviço definitivo e unificado para os LEDs (Caps, Num e Scroll Lock) - Teclado Evolut/ZXW
   systemd.services.teclado-led-trigger = {
-    description = "Sincronizador de Hardware de LEDs via Estados do Kernel - Teclado Evolut";
+    description = "Sincronização Independente de LEDs - Teclado Evolut";
     after = [ "local-fs.target" "systemd-udevd.service" ];
     wantedBy = [ "multi-user.target" ];
-    # Removido pkgs.awk e pkgs.coreutils para evitar falhas de compilação
-    path = [ pkgs.brightnessctl pkgs.gnugrep ];
+    path = [ (pkgs.python3.withPackages (ps: [ ps.evdev ])) ];
 
     serviceConfig = {
       Type = "simple";
       Restart = "always";
-      ExecStart = pkgs.writeShellScript "sincronizar-leds-kernel" ''
-        echo "--- Iniciando Sincronizador por Bits do Kernel ---"
-        
-        LAST_CAPS=""
-        LAST_NUM=""
-        LAST_SCROLL=""
+      ExecStart = pkgs.writeScript "led-trigger-consolidado" ''
+        #!${pkgs.python3.withPackages (ps: [ ps.evdev ])}/bin/python
+        import evdev
+        from evdev import ecodes
+        import time
+        import sys
+        import threading
 
-        while true; do
-          # Lê diretamente o estado lógico das travas conforme interpretado pelo subsistema do kernel
-          VAL_CAPS=$(cat /sys/class/leds/input*::capslock/brightness 2>/dev/null | grep -q "1" && echo "1" || echo "0")
-          VAL_NUM=$(cat /sys/class/leds/input*::numlock/brightness 2>/dev/null | grep -q "1" && echo "1" || echo "0")
-          
-          # Força a atualização física em lote usando o brilho do brightnessctl que o chip aceita
-          if [ "$VAL_CAPS" != "$LAST_CAPS" ]; then
-             brightnessctl --device='input*::capslock' set "$VAL_CAPS" >/dev/null 2>&1
-             LAST_CAPS="$VAL_CAPS"
-          fi
+        # Mapeamento de Scancodes para seus respectivos códigos de LED do sistema
+        MAPA_TECLAS = {
+            58: (ecodes.LED_CAPSL, "Caps Lock"),
+            69: (ecodes.LED_NUML, "Num Lock"),
+            70: (ecodes.LED_SCROLLL, "Scroll Lock")
+        }
 
-          if [ "$VAL_NUM" != "$LAST_NUM" ]; then
-             brightnessctl --device='input*::numlock' set "$VAL_NUM" >/dev/null 2>&1
-             LAST_NUM="$VAL_NUM"
-          fi
+        # Trava global para impedir que o clique seja processado por múltiplas interfaces ao mesmo tempo
+        lock_global = threading.Lock()
 
-          # Intercepta o estado lógico do Scroll Lock (Luz de fundo) que o seu chip registrou originalmente no input20/19
-          VAL_SCROLL=$(brightnessctl --device='input20::scrolllock' info 2>/dev/null | grep -q "Current brightness: 1" && echo "1" || echo "0")
-          
-          # Clona o valor do barramento lógico funcional para alimentar as portas físicas de energia (input0 e input1)
-          brightnessctl --device='input0::scrolllock' set "$VAL_SCROLL" >/dev/null 2>&1
-          brightnessctl --device='input1::scrolllock' set "$VAL_SCROLL" >/dev/null 2>&1
-          brightnessctl --device='input19::scrolllock' set "$VAL_SCROLL" >/dev/null 2>&1
-          brightnessctl --device='input20::scrolllock' set "$VAL_SCROLL" >/dev/null 2>&1
+        def monitorar_interface(dev, todos_os_devs):
+            print(f"DEBUG: Ouvindo interface {dev.path} ({dev.name})")
+            sys.stdout.flush()
+            try:
+                for event in dev.read_loop():
+                    if event.type == ecodes.EV_KEY:
+                        data = evdev.categorize(event)
+                        
+                        # Processa apenas se for uma das 3 teclas modificadoras e se foi PRESSIONADA (keystate 1)
+                        if data.scancode in MAPA_TECLAS and data.keystate == 1:
+                            # O Lock global impede o entrelaçamento e duplicidade de eventos
+                            with lock_global:
+                                time.sleep(0.1) # Aguarda o Linux atualizar o estado lógico interno
+                                
+                                led_alvo, nome_tecla = MAPA_TECLAS[data.scancode]
+                                
+                                # Verifica o estado oficial e real do sistema para o LED pressionado
+                                is_on = False
+                                for d in todos_os_devs:
+                                    try:
+                                        if led_alvo in d.leds():
+                                            is_on = True
+                                            break
+                                    except: pass
+                                
+                                estado = 1 if is_on else 0
+                                
+                                # Dispara a atualização usando a lógica bem-sucedida do primeiro script
+                                for d in todos_os_devs:
+                                    try:
+                                        # Executa o reset rápido que acorda o barramento do chip ZXW
+                                        d.set_led(ecodes.LED_NUML, 0)
+                                        time.sleep(0.01)
+                                        d.set_led(ecodes.LED_NUML, 1)
 
-          sleep 0.1
-        done
+                                        # Envia o comando nativo set_led que o firmware aceitou no CapsLock
+                                        d.set_led(led_alvo, estado)
+                                        
+                                        # Se a tecla for o Scroll Lock, também garante a injeção na trilha alternativa de luz
+                                        if led_alvo == ecodes.LED_SCROLLL:
+                                            d.set_led(3, estado)
+                                    except: pass
+                                
+                                print(f"EVENTO: {nome_tecla} sincronizado! Estado físico -> {'LIGADO' if is_on else 'DESLIGADO'}")
+                                sys.stdout.flush()
+            except Exception as e:
+                print(f"Interface {dev.path} desconectada: {e}")
+                sys.stdout.flush()
+
+        def iniciar():
+            print("--- Iniciando Serviço Unificado de LEDs Evolut ---")
+            sys.stdout.flush()
+            while True:
+                try:
+                    devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
+                    zxw_devs = [d for d in devices if "ZXWMicroChip" in d.name]
+                    
+                    if zxw_devs:
+                        print(f"Sucesso: {len(zxw_devs)} interfaces encontradas.")
+                        sys.stdout.flush()
+                        threads = []
+                        for d in zxw_devs:
+                            t = threading.Thread(target=monitorar_interface, args=(d, zxw_devs))
+                            t.daemon = True
+                            t.start()
+                            threads.append(t)
+                        
+                        for t in threads:
+                            t.join()
+                    else:
+                        print("Aguardando teclado ser conectado...")
+                        sys.stdout.flush()
+                except Exception as e:
+                    print(f"Erro no loop principal: {e}")
+                    sys.stdout.flush()
+                
+                time.sleep(5)
+
+        if __name__ == "__main__":
+            iniciar()
       '';
     };
   };
