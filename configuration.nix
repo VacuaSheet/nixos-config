@@ -611,7 +611,7 @@ systemd.user.services.unmute-hardware-audio = {
     };
 
  #teclado
-# Script original com filtros estritos de isolamento e trava por ciclo de clique
+  # Script original com filtros estritos de isolamento e trava por ciclo de clique
   systemd.services.teclado-led-trigger = {
     description = "Gatilho de LED Isolado e Estrito - Teclado Evolut";
     after = [ "local-fs.target" "systemd-udevd.service" ];
@@ -636,10 +636,13 @@ systemd.user.services.unmute-hardware-audio = {
             70: (ecodes.LED_SCROLLL, "Scroll Lock"),
         }
 
+        # Trava global: evita que múltiplos threads processem simultaneamente eventos
         lock_global = threading.Lock()
 
-        # Trava de ciclo: impede repetição contínua enquanto o dedo está pressionando a tecla
-        TECLAS_PRESSIONADAS = {58: False, 69: False, 70: False}
+        # Trava por device+scancode: evita disputa entre múltiplas instâncias do mesmo evento
+        # (alguns drivers geram eventos repetidos em dispositivos diferentes)
+        TECLAS_PRESSIONADAS = {}
+
 
         def monitorar_interface(dev, todos_os_devs):
             global TECLAS_PRESSIONADAS
@@ -671,13 +674,21 @@ systemd.user.services.unmute-hardware-audio = {
                             monitorar_interface.estado_local[data.scancode] = estado
 
 
-                            # Disparo estritamente no LED correspondente
-                            # (não usa pulso em outros LEDs para evitar vazamento Caps<->Num)
+                            # Disparo estritamente no LED correspondente.
+                            # Correção específica: Caps Lock (scancode 58) não pode afetar Num Lock.
+                            # Então, ao agir no Caps, forçamos NumLock=0.
                             for d in todos_os_devs:
                                 try:
+                                    # Apenas para Caps: força NumLock=0 quando Caps está entrando em 1.
+                                    # Quando Caps está indo para 0 (desligar), não tocamos no NumLock
+                                    # para evitar desincronização.
+                                    if data.scancode == 58 and estado == 1:
+                                        d.set_led(ecodes.LED_NUML, 0)
                                     d.set_led(led_alvo, estado)
                                 except:
                                     pass
+
+
 
                             print(f"REGRA ESTRITA: {nome_tecla} alterado para {estado}")
                             sys.stdout.flush()
