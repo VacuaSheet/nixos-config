@@ -611,9 +611,9 @@ systemd.user.services.unmute-hardware-audio = {
     };
 
  #teclado
-  # Serviço definitivo via escuta de interface única consolidada - Teclado Evolut/ZXW
+  # Serviço com filtragem estrita de clique (ignora tecla segurada) - Teclado Evolut/ZXW
   systemd.services.teclado-led-trigger = {
-    description = "Controle de LEDs via Interface Única - Teclado Evolut";
+    description = "Controle de LEDs por Clique Único Estrito - Teclado Evolut";
     after = [ "local-fs.target" "systemd-udevd.service" ];
     wantedBy = [ "multi-user.target" ];
     path = [ 
@@ -624,7 +624,7 @@ systemd.user.services.unmute-hardware-audio = {
     serviceConfig = {
       Type = "simple";
       Restart = "always";
-      ExecStart = pkgs.writeScript "teclado-trigger-single-thread" ''
+      ExecStart = pkgs.writeScript "teclado-trigger-clique-unico" ''
         #!${pkgs.python3.withPackages (ps: [ ps.evdev ])}/bin/python
         import evdev
         from evdev import ecodes
@@ -639,70 +639,76 @@ systemd.user.services.unmute-hardware-audio = {
             70: "scrolllock"
         }
 
-        def atualizar_led(nome_sysfs):
-            """ 
-            Verifica o estado lógico que o Linux quer e força o hardware a sincronizar.
-            Remove a necessidade de adivinhar o time ou cliques consecutivos.
-            """
+        ESTADOS_LOCAIS = {
+            "capslock": False,
+            "numlock": True,
+            "scrolllock": False
+        }
+
+        def sincronizar_hardware(nome_sysfs, estado_booleano):
+            estado_str = "1" if estado_booleano else "0"
             try:
-                # Verifica se o Linux ativou a trava lógica olhando os leds virtuais do sistema
-                cmd = f"cat /sys/class/leds/input*::{nome_sysfs}/brightness 2>/dev/null"
-                resultado = subprocess.check_output(cmd, shell=True).decode().strip()
-                estado = "1" if "1" in resultado else "0"
+                # Envia o sinal de forma limpa para a máscara global do chip
+                subprocess.run(["brightnessctl", "--device", f"input*::{nome_sysfs}", "set", estado_str], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 
-                # Injeta o sinal em lote direto no hardware
-                subprocess.run(["brightnessctl", "--device", f"input*::{nome_sysfs}", "set", estado], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                
-                # Alimenta as trilhas físicas de energia do Scroll Lock (Backlight)
+                # Garante a alimentação contínua nas trilhas de energia do Scroll Lock (Luz de fundo)
                 if nome_sysfs == "scrolllock":
                     for porta in ["input0", "input1", "input19", "input20"]:
-                        subprocess.run(["brightnessctl", "--device", f"{porta}::scrolllock", "set", estado], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                        subprocess.run(["brightnessctl", "--device", f"{porta}::scrolllock", "set", estado_str], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             except Exception:
                 pass
 
         def iniciar():
-            print("--- Iniciando Serviço de Interface Única Evolut ---")
+            print("--- Iniciando Serviço de Clique Único Estrito Evolut ---")
             sys.stdout.flush()
             
+            ultimo_clique_tempo = 0.0
+
             while True:
                 try:
-                    # Procura o atalho unificado que o Linux cria para o teclado principal do chip
-                    caminhos = glob.glob("/dev/input/by-id/*ZXWMicroChip*event-kbd")
-                    if not caminhos:
-                        # Se não achar por ID, tenta o link genérico de teclado do chip
-                        caminhos = glob.glob("/dev/input/by-id/*ZXW*kbd*")
+                    caminhos = glob.glob("/dev/input/by-id/*ZXWMicroChip*event-kbd") or glob.glob("/dev/input/by-id/*ZXW*kbd*")
                     
                     if caminhos:
-                        caminho_teclado = caminhos[0]
-                        print(f"Sucesso: Escutando canal unificado em {caminho_teclado}")
+                        caminho_teclado = caminhos
+                        print(f"Sucesso: Escutando barramento unificado em {caminho_teclado}")
                         sys.stdout.flush()
                         
-                        # Sincronização inicial do boot
-                        atualizar_led("numlock")
-                        atualizar_led("capslock")
-                        atualizar_led("scrolllock")
+                        # Alinhamento estável inicial do boot
+                        for led, status in ESTADOS_LOCAIS.items():
+                            sincronizar_hardware(led, status)
                         
                         device = evdev.InputDevice(caminho_teclado)
                         
-                        # Loop de escuta em canal único (Elimina o conflito de múltiplas threads)
                         for event in device.read_loop():
                             if event.type == ecodes.EV_KEY:
                                 data = evdev.categorize(event)
                                 
-                                # Processa imediatamente quando a tecla é pressionada (keystate 1)
+                                # 🔍 O SEGREDO ESTÁ AQUI: 
+                                # data.keystate == 1 significa APENAS o momento exato em que a tecla RECENTEMENTE DESCEU.
+                                # Ignora completamente o valor 2 (tecla segurada / key-repeat) e o valor 0 (tecla solta).
                                 if data.scancode in MAPA_TECLAS and data.keystate == 1:
-                                    time.sleep(0.04) # Pequena pausa para o kernel processar a flag antes da leitura
+                                    now = time.time()
+                                    
+                                    # Filtro de proteção de rebote elétrico (150ms)
+                                    if (now - ultimo_clique_tempo) < 0.15:
+                                        continue
+                                    ultimo_clique_tempo = now
+                                    
                                     nome_sysfs = MAPA_TECLAS[data.scancode]
                                     
-                                    # Executa o alinhamento de hardware
-                                    atualizar_led(nome_sysfs)
-                                    print(f"SINCRO DIRETA: {nome_sysfs} atualizado.")
+                                    # Inverte o estado armazenado na memória interna do script
+                                    ESTADOS_LOCAIS[nome_sysfs] = not ESTADOS_LOCAIS[nome_sysfs]
+                                    
+                                    # Envia a ordem para as portas de luz
+                                    sincronizar_hardware(nome_sysfs, ESTADOS_LOCAIS[nome_sysfs])
+                                    
+                                    print(f"CLIQUE CONFIRMADO: {nome_tecla if 'nome_tecla' in locals() else nome_sysfs} -> {ESTADOS_LOCAIS[nome_sysfs]}")
                                     sys.stdout.flush()
                     else:
-                        print("Aguardando barramento do teclado...")
+                        print("Aguardando detecção do teclado...")
                         sys.stdout.flush()
                 except Exception as e:
-                    print(f"Erro de conexão no barramento: {e}")
+                    print(f"Conexão reiniciada: {e}")
                     sys.stdout.flush()
                 
                 time.sleep(5)
