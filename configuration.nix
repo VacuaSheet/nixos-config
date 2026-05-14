@@ -611,12 +611,16 @@ systemd.user.services.unmute-hardware-audio = {
     };
 
  #teclado
-  # Serviço definitivo com controle por software sem checagem de hardware lenta - Teclado Evolut/ZXW
+  # Serviço com isolamento completo de canais via subprocesso - Teclado Evolut/ZXW
   systemd.services.teclado-led-trigger = {
-    description = "Gatilho de LED Instantâneo por Software - Teclado Evolut";
+    description = "Gatilho Isolado de LED por Hardware - Teclado Evolut";
     after = [ "local-fs.target" "systemd-udevd.service" ];
     wantedBy = [ "multi-user.target" ];
-    path = [ (pkgs.python3.withPackages (ps: [ ps.evdev ])) ];
+    # Injeta o Python para a escuta e o brightnessctl para a escrita isolada
+    path = [ 
+      (pkgs.python3.withPackages (ps: [ ps.evdev ])) 
+      pkgs.brightnessctl 
+    ];
 
     serviceConfig = {
       Type = "simple";
@@ -628,89 +632,90 @@ systemd.user.services.unmute-hardware-audio = {
         import time
         import sys
         import threading
+        import subprocess
 
-        # Mapeamento de Scancodes para seus respectivos códigos de LED e estados lógicos em memória
-        # NumLock inicia como True pois a BIOS geralmente o ativa no boot
+        # Dicionário de estados em memória para controle independente
         ESTADOS_LED = {
-            58: {"led": ecodes.LED_CAPSL, "status": False, "nome": "Caps Lock"},
-            69: {"led": ecodes.LED_NUML, "status": True, "nome": "Num Lock"},
-            70: {"led": ecodes.LED_SCROLLL, "status": False, "nome": "Scroll Lock"}
+            58: {"sysfs": "capslock", "status": False, "nome": "Caps Lock"},
+            69: {"sysfs": "numlock", "status": True, "nome": "Num Lock"},
+            70: {"sysfs": "scrolllock", "status": False, "nome": "Scroll Lock"}
         }
 
         lock_global = threading.Lock()
         ultimo_clique_global = {58: 0.0, 69: 0.0, 70: 0.0}
 
-        def monitorar_interface(dev, todos_os_devs):
+        def atualizar_led_hardware(nome_sysfs, estado):
+            """ Envia o comando via sistema operacional isolando o barramento """
+            try:
+                # Usa máscara global para atingir o barramento de controle do chip ZXW
+                dispositivo = f"input*::{nome_sysfs}"
+                subprocess.run(
+                    ["brightnessctl", "--device", dispositivo, "set", str(estado)],
+                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+                )
+                
+                # Se for o Scroll Lock, alimenta em lote as trilhas físicas adicionais
+                if nome_sysfs == "scrolllock":
+                    for sub in ["input0", "input1", "input19", "input20"]:
+                        subprocess.run(
+                            ["brightnessctl", "--device", f"{sub}::scrolllock", "set", str(estado)],
+                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+                        )
+            except Exception:
+                pass
+
+        def monitorar_interface(dev):
             global ultimo_clique_global, ESTADOS_LED
             try:
                 for event in dev.read_loop():
                     if event.type == ecodes.EV_KEY:
                         data = evdev.categorize(event)
                         
-                        # Captura o clique inicial (keystate 1) das teclas mapeadas
                         if data.scancode in ESTADOS_LED and data.keystate == 1:
                             now = time.time()
                             
                             with lock_global:
-                                # Filtro Debounce: Ignora repetições de outras interfaces em menos de 180ms
-                                if (now - ultimo_clique_global[data.scancode]) < 0.18:
+                                # Filtro estável de 220ms para impedir cliques múltiplos fantasmas
+                                if (now - ultimo_clique_global[data.scancode]) < 0.22:
                                     continue
                                 ultimo_clique_global[data.scancode] = now
                                 
-                                # ALTERNA O ESTADO IMEDIATAMENTE VIA MEMÓRIA (Removeu a lentidão do d.leds())
+                                # Alterna apenas a variável da própria tecla pressionada
                                 ESTADOS_LED[data.scancode]["status"] = not ESTADOS_LED[data.scancode]["status"]
                                 
-                                led_alvo = ESTADOS_LED[data.scancode]["led"]
+                                nome_sysfs = ESTADOS_LED[data.scancode]["sysfs"]
                                 estado = 1 if ESTADOS_LED[data.scancode]["status"] else 0
                                 nome_tecla = ESTADOS_LED[data.scancode]["nome"]
                                 
-                                # Envia os sinais de controle em lote para o hardware
-                                for d in todos_os_devs:
-                                    try:
-                                        # Gatilho do barramento do chip ZXW
-                                        if data.scancode != 69:
-                                            d.set_led(ecodes.LED_NUML, 0)
-                                            time.sleep(0.01)
-                                            d.set_led(ecodes.LED_NUML, 1)
-                                        else:
-                                            d.set_led(ecodes.LED_CAPSL, 0)
-                                            time.sleep(0.01)
-                                            d.set_led(ecodes.LED_CAPSL, 1)
-
-                                        # Consolida o estado real no hardware
-                                        d.set_led(led_alvo, estado)
-                                        
-                                        # Trilha alternativa para o Scroll Lock / Iluminação traseira
-                                        if led_alvo == ecodes.LED_SCROLLL:
-                                            d.set_led(3, estado)
-                                    except: pass
+                                # Atualiza estritamente o hardware correspondente, sem cruzar com outros LEDs
+                                atualizar_led_hardware(nome_sysfs, estado)
                                 
-                                print(f"EVENTO MEMORIA: {nome_tecla} -> {'LIGADA' if estado == 1 else 'DESLIGADA'}")
+                                print(f"ISOLADO: {nome_tecla} alterado para {estado}")
                                 sys.stdout.flush()
             except Exception:
                 pass
 
         def iniciar():
-            print("--- Iniciando Serviço de LED Evolut Sem Checagem de Hardware ---")
+            print("--- Iniciando Serviço Isolado de LEDs Evolut ---")
             sys.stdout.flush()
+            
+            # Sincroniza o estado inicial do NumLock (LIGADO) sem mexer no CapsLock
+            atualizar_led_hardware("numlock", 1)
+            atualizar_led_hardware("capslock", 0)
+            atualizar_led_hardware("scrolllock", 0)
+
             while True:
                 try:
                     devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
                     zxw_devs = [d for d in devices if "ZXWMicroChip" in d.name]
                     
                     if zxw_devs:
-                        # Sincroniza o hardware inicializando com o NumLock ligado
-                        for d in zxw_devs:
-                            try: d.set_led(ecodes.LED_NUML, 1)
-                            except: pass
-                        
                         threads = []
                         for d in zxw_devs:
-                            t = threading.Thread(target=monitorar_interface, args=(d, zxw_devs))
+                            t = threading.Thread(target=monitorar_interface, args=(d,))
                             t.daemon = True
                             t.start()
                             threads.append(t)
-                        
                         for t in threads:
                             t.join()
                 except Exception:
