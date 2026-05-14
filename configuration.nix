@@ -616,7 +616,8 @@ systemd.user.services.unmute-hardware-audio = {
     description = "Sincronizador de Hardware de LEDs via Estados do Kernel - Teclado Evolut";
     after = [ "local-fs.target" "systemd-udevd.service" ];
     wantedBy = [ "multi-user.target" ];
-    path = [ pkgs.brightnessctl pkgs.coreutils pkgs.awk ];
+    # Removido pkgs.awk e pkgs.coreutils para evitar falhas de compilação
+    path = [ pkgs.brightnessctl pkgs.gnugrep ];
 
     serviceConfig = {
       Type = "simple";
@@ -629,23 +630,9 @@ systemd.user.services.unmute-hardware-audio = {
         LAST_SCROLL=""
 
         while true; do
-          # Extrai o estado real das travas diretamente do estado dos LEDs do teclado padrão do sistema
-          # O arquivo /proc/bus/input/leds mostra o bitmap exato das travas ativas (Caps=1, Num=2, Scroll=4)
-          LEDBITS=$(cat /proc/sys/dev/readline/default_leds 2>/dev/null || echo "0")
-          
-          # Caso o arquivo default_leds não esteja acessível, lemos do mapeamento do TTY principal
-          if [ "$LEDBITS" = "0" ] || [ -z "$LEDBITS" ]; then
-             # Alternativa robusta: lê o status das flags de controle do subsistema de input do kernel
-             STATE=$(cat /sys/class/tty/tty0/active 2>/dev/null)
-          fi
-
-          # Método universal via verificação de arquivos de controle do X/Wayland ou Sysfs
-          # Vamos ler diretamente o estado lógico das travas via Sysfs mas filtrando o teclado padrão do kernel
+          # Lê diretamente o estado lógico das travas conforme interpretado pelo subsistema do kernel
           VAL_CAPS=$(cat /sys/class/leds/input*::capslock/brightness 2>/dev/null | grep -q "1" && echo "1" || echo "0")
           VAL_NUM=$(cat /sys/class/leds/input*::numlock/brightness 2>/dev/null | grep -q "1" && echo "1" || echo "0")
-          
-          # Como o Scroll Lock nunca atualiza sozinho por falta de mapeamento, nós vamos ler o evento do arquivo correspondente
-          # Mas para garantir que o circuito de energia (Backlight) do Scroll Lock acenda, enviamos o sinal bruto
           
           # Força a atualização física em lote usando o brilho do brightnessctl que o chip aceita
           if [ "$VAL_CAPS" != "$LAST_CAPS" ]; then
@@ -658,11 +645,10 @@ systemd.user.services.unmute-hardware-audio = {
              LAST_NUM="$VAL_NUM"
           fi
 
-          # O Scroll Lock (Luz de fundo) do Evolut é ativado quando você pressiona a tecla Scroll Lock física.
-          # Como o sistema não altera o Sysfs dele nativamente, vamos interceptar o estado lógico dele:
+          # Intercepta o estado lógico do Scroll Lock (Luz de fundo) que o seu chip registrou originalmente no input20/19
           VAL_SCROLL=$(brightnessctl --device='input20::scrolllock' info 2>/dev/null | grep -q "Current brightness: 1" && echo "1" || echo "0")
           
-          # Se o sinal do Scroll Lock sumir das outras portas fantasmas, clonamos o valor do barramento funcional (input20/19) para todos
+          # Clona o valor do barramento lógico funcional para alimentar as portas físicas de energia (input0 e input1)
           brightnessctl --device='input0::scrolllock' set "$VAL_SCROLL" >/dev/null 2>&1
           brightnessctl --device='input1::scrolllock' set "$VAL_SCROLL" >/dev/null 2>&1
           brightnessctl --device='input19::scrolllock' set "$VAL_SCROLL" >/dev/null 2>&1
