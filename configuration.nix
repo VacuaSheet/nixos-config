@@ -611,7 +611,7 @@ systemd.user.services.unmute-hardware-audio = {
     };
 
  #teclado
-  # Serviço baseado estritamente no código original funcional para Caps, Num e Scroll Lock - Teclado Evolut/ZXW
+  # Serviço baseado estritamente no original com filtro de clique único (Debounce) - Teclado Evolut/ZXW
   systemd.services.teclado-led-trigger = {
     description = "Gatilho de LED para Caps, Num e Scroll Lock - Teclado Evolut";
     after = [ "local-fs.target" "systemd-udevd.service" ];
@@ -629,18 +629,19 @@ systemd.user.services.unmute-hardware-audio = {
         import sys
         import threading
 
-        # Mapeamento de Scancodes para seus respectivos códigos de LED do Kernel
         MAPA_TECLAS = {
             58: (ecodes.LED_CAPSL, "Caps Lock"),
             69: (ecodes.LED_NUML, "Num Lock"),
             70: (ecodes.LED_SCROLLL, "Scroll Lock")
         }
 
-        # Evita concorrência entre threads processando o mesmo evento
         lock_global = threading.Lock()
+        
+        # Dicionário para rastrear o tempo do último clique de cada tecla individualmente
+        ultimo_clique = {58: 0.0, 69: 0.0, 70: 0.0}
 
-        # Função que monitora cada interface individualmente
         def monitorar_interface(dev, todos_os_devs):
+            global ultimo_clique
             print(f"DEBUG: Ouvindo interface {dev.path} ({dev.name})")
             sys.stdout.flush()
             try:
@@ -650,11 +651,17 @@ systemd.user.services.unmute-hardware-audio = {
                         
                         # Detecta se foi Caps(58), Num(69) ou Scroll(70) pressionado (keystate 1)
                         if data.scancode in MAPA_TECLAS and data.keystate == 1:
+                            now = time.time()
+                            
                             with lock_global:
-                                time.sleep(0.1)
+                                # FILTRO DE CLIQUE ÚNICO: Se o mesmo evento se repetir em menos de 200ms, ignora
+                                if (now - ultimo_clique[data.scancode]) < 0.20:
+                                    continue
+                                ultimo_clique[data.scancode] = now
+                                
+                                time.sleep(0.08) # Aguarda o Linux consolidar o estado interno da trava
                                 led_alvo, nome_tecla = MAPA_TECLAS[data.scancode]
                                 
-                                # Verifica o estado real da tecla pressionada no sistema
                                 is_on = False
                                 for d in todos_os_devs:
                                     try:
@@ -665,25 +672,21 @@ systemd.user.services.unmute-hardware-audio = {
                                 
                                 estado = 1 if is_on else 0
                                 
-                                # Dispara o comando de LED para TODAS as portas do chip
                                 for d in todos_os_devs:
                                     try:
-                                        # GATILHO DE INICIALIZAÇÃO (O segredo do chip ZXW):
-                                        # Se a tecla apertada NÃO for NumLock, pisca o NumLock para acordar o chip.
+                                        # Gatilho de inicialização do barramento do chip ZXW
                                         if data.scancode != 69:
                                             d.set_led(ecodes.LED_NUML, 0)
-                                            time.sleep(0.02)
+                                            time.sleep(0.01)
                                             d.set_led(ecodes.LED_NUML, 1)
-                                        # Se a tecla apertada FOR o NumLock, pisca o CapsLock para acordar o chip sem dar loop.
                                         else:
                                             d.set_led(ecodes.LED_CAPSL, 0)
-                                            time.sleep(0.02)
+                                            time.sleep(0.01)
                                             d.set_led(ecodes.LED_CAPSL, 1)
 
                                         # Envia o comando real que o firmware precisa consolidar
                                         d.set_led(led_alvo, estado)
                                         
-                                        # Se for Scroll Lock, também garante a injeção na trilha alternativa
                                         if led_alvo == ecodes.LED_SCROLLL:
                                             d.set_led(3, estado)
                                     except: pass
@@ -695,7 +698,7 @@ systemd.user.services.unmute-hardware-audio = {
                 sys.stdout.flush()
 
         def iniciar():
-            print("--- Iniciando Serviço de LED Evolut Expandido ---")
+            print("--- Iniciando Serviço de LED Evolut com Filtro Anti-Repetição ---")
             sys.stdout.flush()
             while True:
                 try:
