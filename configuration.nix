@@ -611,12 +611,11 @@ systemd.user.services.unmute-hardware-audio = {
     };
 
  #teclado
-  # Serviço com isolamento completo de canais via subprocesso - Teclado Evolut/ZXW
+  # Serviço com filtragem de enxurrada de hardware e execução assíncrona - Teclado Evolut/ZXW
   systemd.services.teclado-led-trigger = {
-    description = "Gatilho Isolado de LED por Hardware - Teclado Evolut";
+    description = "Controle Anti-Enxurrada de LEDs - Teclado Evolut";
     after = [ "local-fs.target" "systemd-udevd.service" ];
     wantedBy = [ "multi-user.target" ];
-    # Injeta o Python para a escuta e o brightnessctl para a escrita isolada
     path = [ 
       (pkgs.python3.withPackages (ps: [ ps.evdev ])) 
       pkgs.brightnessctl 
@@ -634,7 +633,7 @@ systemd.user.services.unmute-hardware-audio = {
         import threading
         import subprocess
 
-        # Dicionário de estados em memória para controle independente
+        # Estados lógicos isolados em memória
         ESTADOS_LED = {
             58: {"sysfs": "capslock", "status": False, "nome": "Caps Lock"},
             69: {"sysfs": "numlock", "status": True, "nome": "Num Lock"},
@@ -642,67 +641,73 @@ systemd.user.services.unmute-hardware-audio = {
         }
 
         lock_global = threading.Lock()
-        ultimo_clique_global = {58: 0.0, 69: 0.0, 70: 0.0}
+        
+        # Carimba o tempo do último evento aceito no sistema inteiro
+        ultimo_evento_valido = 0.0
 
-        def atualizar_led_hardware(nome_sysfs, estado):
-            """ Envia o comando via sistema operacional isolando o barramento """
-            try:
-                # Usa máscara global para atingir o barramento de controle do chip ZXW
-                dispositivo = f"input*::{nome_sysfs}"
-                subprocess.run(
-                    ["brightnessctl", "--device", dispositivo, "set", str(estado)],
-                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-                )
-                
-                # Se for o Scroll Lock, alimenta em lote as trilhas físicas adicionais
-                if nome_sysfs == "scrolllock":
-                    for sub in ["input0", "input1", "input19", "input20"]:
-                        subprocess.run(
-                            ["brightnessctl", "--device", f"{sub}::scrolllock", "set", str(estado)],
-                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-                        )
-            except Exception:
-                pass
+        def injetar_sinal_hardware(nome_sysfs, estado):
+            """ Executa a mudança física de brilho em uma thread separada para não travar o teclado """
+            def tarefa():
+                try:
+                    dispositivo = f"input*::{nome_sysfs}"
+                    subprocess.run(
+                        ["brightnessctl", "--device", dispositivo, "set", str(estado)],
+                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+                    )
+                    # Tratamento robusto em lote para a iluminação do Scroll Lock
+                    if nome_sysfs == "scrolllock":
+                        for sub in ["input0", "input1", "input19", "input20"]:
+                            subprocess.run(
+                                ["brightnessctl", "--device", f"{sub}::scrolllock", "set", str(estado)],
+                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+                            )
+                except Exception:
+                    pass
+            
+            # Dispara de forma assíncrona para liberar o input do usuário imediatamente
+            threading.Thread(target=tarefa, daemon=True).start()
 
         def monitorar_interface(dev):
-            global ultimo_clique_global, ESTADOS_LED
+            global ultimo_evento_valido, ESTADOS_LED
             try:
                 for event in dev.read_loop():
                     if event.type == ecodes.EV_KEY:
                         data = evdev.categorize(event)
                         
+                        # Intercepta apenas o primeiro clique físico (keystate == 1)
                         if data.scancode in ESTADOS_LED and data.keystate == 1:
                             now = time.time()
                             
                             with lock_global:
-                                # Filtro estável de 220ms para impedir cliques múltiplos fantasmas
-                                if (now - ultimo_clique_global[data.scancode]) < 0.22:
+                                # FILTRO ANTI-ENXURRADA (Debounce agressivo de 350ms):
+                                # Descarta sumariamente os repetições fantasmas geradas pelo chip ZXW
+                                if (now - ultimo_evento_valido) < 0.35:
                                     continue
-                                ultimo_clique_global[data.scancode] = now
+                                ultimo_evento_valido = now
                                 
-                                # Alterna apenas a variável da própria tecla pressionada
+                                # Alterna estritamente o estado na memória de forma instantânea
                                 ESTADOS_LED[data.scancode]["status"] = not ESTADOS_LED[data.scancode]["status"]
                                 
                                 nome_sysfs = ESTADOS_LED[data.scancode]["sysfs"]
                                 estado = 1 if ESTADOS_LED[data.scancode]["status"] else 0
                                 nome_tecla = ESTADOS_LED[data.scancode]["nome"]
                                 
-                                # Atualiza estritamente o hardware correspondente, sem cruzar com outros LEDs
-                                atualizar_led_hardware(nome_sysfs, estado)
+                                # Injeta o sinal de forma isolada sem congelar a leitura
+                                injetar_sinal_hardware(nome_sysfs, estado)
                                 
-                                print(f"ISOLADO: {nome_tecla} alterado para {estado}")
+                                print(f"CONFIRMADO: {nome_tecla} -> {estado}")
                                 sys.stdout.flush()
             except Exception:
                 pass
 
         def iniciar():
-            print("--- Iniciando Serviço Isolado de LEDs Evolut ---")
+            print("--- Iniciando Serviço Anti-Enxurrada Evolut ---")
             sys.stdout.flush()
             
-            # Sincroniza o estado inicial do NumLock (LIGADO) sem mexer no CapsLock
-            atualizar_led_hardware("numlock", 1)
-            atualizar_led_hardware("capslock", 0)
-            atualizar_led_hardware("scrolllock", 0)
+            # Define estados iniciais estáveis no boot
+            injetar_sinal_hardware("numlock", 1)
+            injetar_sinal_hardware("capslock", 0)
+            injetar_sinal_hardware("scrolllock", 0)
 
             while True:
                 try:
