@@ -611,7 +611,7 @@ systemd.user.services.unmute-hardware-audio = {
     };
 
  #teclado
-  # Serviço baseado estritamente no original com filtro de clique único (Debounce) - Teclado Evolut/ZXW
+  # Serviço com Debounce Global Centralizado contra cliques múltiplos - Teclado Evolut/ZXW
   systemd.services.teclado-led-trigger = {
     description = "Gatilho de LED para Caps, Num e Scroll Lock - Teclado Evolut";
     after = [ "local-fs.target" "systemd-udevd.service" ];
@@ -637,11 +637,12 @@ systemd.user.services.unmute-hardware-audio = {
 
         lock_global = threading.Lock()
         
-        # Dicionário para rastrear o tempo do último clique de cada tecla individualmente
-        ultimo_clique = {58: 0.0, 69: 0.0, 70: 0.0}
+        # Variável global centralizada compartilhada por todas as threads
+        # Evita colisões entre interfaces diferentes
+        ultimo_clique_global = {58: 0.0, 69: 0.0, 70: 0.0}
 
         def monitorar_interface(dev, todos_os_devs):
-            global ultimo_clique
+            global ultimo_clique_global
             print(f"DEBUG: Ouvindo interface {dev.path} ({dev.name})")
             sys.stdout.flush()
             try:
@@ -649,17 +650,17 @@ systemd.user.services.unmute-hardware-audio = {
                     if event.type == ecodes.EV_KEY:
                         data = evdev.categorize(event)
                         
-                        # Detecta se foi Caps(58), Num(69) ou Scroll(70) pressionado (keystate 1)
+                        # Captura o clique inicial (keystate 1) das teclas mapeadas
                         if data.scancode in MAPA_TECLAS and data.keystate == 1:
                             now = time.time()
                             
                             with lock_global:
-                                # FILTRO DE CLIQUE ÚNICO: Se o mesmo evento se repetir em menos de 200ms, ignora
-                                if (now - ultimo_clique[data.scancode]) < 0.20:
+                                # FILTRO DE COOLDOWN GLOBAL: Bloqueia reentradas de outras interfaces por 300ms
+                                if (now - ultimo_clique_global[data.scancode]) < 0.30:
                                     continue
-                                ultimo_clique[data.scancode] = now
+                                ultimo_clique_global[data.scancode] = now
                                 
-                                time.sleep(0.08) # Aguarda o Linux consolidar o estado interno da trava
+                                time.sleep(0.12) # Tempo necessário para o kernel estabilizar o estado lógico
                                 led_alvo, nome_tecla = MAPA_TECLAS[data.scancode]
                                 
                                 is_on = False
@@ -672,9 +673,10 @@ systemd.user.services.unmute-hardware-audio = {
                                 
                                 estado = 1 if is_on else 0
                                 
+                                # Envia os sinais de controle em lote para o hardware
                                 for d in todos_os_devs:
                                     try:
-                                        # Gatilho de inicialização do barramento do chip ZXW
+                                        # Pulso rápido modificado para evitar saturação do chip
                                         if data.scancode != 69:
                                             d.set_led(ecodes.LED_NUML, 0)
                                             time.sleep(0.01)
@@ -684,21 +686,22 @@ systemd.user.services.unmute-hardware-audio = {
                                             time.sleep(0.01)
                                             d.set_led(ecodes.LED_CAPSL, 1)
 
-                                        # Envia o comando real que o firmware precisa consolidar
+                                        # Consolda o estado real no hardware
                                         d.set_led(led_alvo, estado)
                                         
+                                        # Força o acendimento do circuito de backlight geral (Scroll Lock)
                                         if led_alvo == ecodes.LED_SCROLLL:
                                             d.set_led(3, estado)
                                     except: pass
                                 
-                                print(f"EVENTO: {nome_tecla} detectado! Luz -> {'LIGADA' if is_on else 'DESLIGADA'}")
+                                print(f"EVENTO UNIFICADO: {nome_tecla} -> {'LIGADA' if is_on else 'DESLIGADA'}")
                                 sys.stdout.flush()
             except Exception as e:
                 print(f"Interface {dev.path} desconectada: {e}")
                 sys.stdout.flush()
 
         def iniciar():
-            print("--- Iniciando Serviço de LED Evolut com Filtro Anti-Repetição ---")
+            print("--- Iniciando Serviço de LED Evolut com Trava Unificada ---")
             sys.stdout.flush()
             while True:
                 try:
