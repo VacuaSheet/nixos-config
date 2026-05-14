@@ -611,60 +611,59 @@ systemd.user.services.unmute-hardware-audio = {
     };
 
  #teclado
-  # Script de teste interativo para o teclado Evolut
-  _module.args.testar-teclado-led = pkgs.writeShellScriptBin "testar-teclado-led" ''
-    echo "========================================================"
-    echo "  INICIANDO VARREDURA PASSO A PASSO: TECLADO EVOLUT     "
-    echo "========================================================"
-    echo "Este script vai testar cada barramento físico e virtual,"
-    echo "mostrando na tela até encontrar o valor real que acende o LED."
-    echo "--------------------------------------------------------"
+  # Injeta o script de varredura passo a passo sem mexer na lista principal de pacotes
+  services.udev.packages = [
+    (pkgs.writeShellScriptBin "testar-teclado-led" ''
+      echo "========================================================"
+      echo "  INICIANDO VARREDURA PASSO A PASSO: TECLADO EVOLUT     "
+      echo "========================================================"
+      echo "Este script vai testar cada barramento físico e virtual,"
+      echo "mostrando na tela até encontrar o valor real que acende o LED."
+      echo "--------------------------------------------------------"
 
-    LEDS_DISPONIVEIS=$(ls -1 /sys/class/leds/input*::*/brightness 2>/dev/null)
+      LEDS_DISPONIVEIS=$(ls -1 /sys/class/leds/input*::*/brightness 2>/dev/null)
 
-    if [ -z "$LEDS_DISPONIVEIS" ]; then
-        echo "🚨 Nenhum barramento de LED encontrado em /sys/class/leds/input*"
-        exit 1
-    fi
+      if [ -z "$LEDS_DISPONIVEIS" ]; then
+          echo "🚨 Nenhum barramento de LED encontrado em /sys/class/leds/input*"
+          exit 1
+      fi
 
-    echo "🔍 Interfaces de LED detectadas no sistema:"
-    echo "$LEDS_DISPONIVEIS"
-    echo "--------------------------------------------------------"
+      echo "🔍 Interfaces de LED detectadas no sistema:"
+      echo "$LEDS_DISPONIVEIS"
+      echo "--------------------------------------------------------"
 
-    for led_path in $LEDS_DISPONIVEIS; do
-        NOME_AMIGAVEL=$(echo "$led_path" | cut -d'/' -f5)
-        
-        echo ""
-        echo "➔ TESTANDO AGORA: [$NOME_AMIGAVEL]"
-        echo "Caminho real do sistema: $led_path"
-        
-        VALOR_ATUAL=$(cat "$led_path")
-        echo "Valor lógico atual no Linux: $VALOR_ATUAL"
-        
-        echo "Injetando sinal de ativação (Valor: 1) via Sysfs..."
-        echo 1 | sudo tee "$led_path" > /dev/null
-        
-        echo "Injetando sinal de ativação em lote via Brightnessctl..."
-        sudo brightnessctl --device="$NOME_AMIGAVEL" set 1 >/dev/null 2>&1
-        
-        NOVO_VALOR=$(cat "$led_path")
-        echo "Valor verificado após o teste: $NOVO_VALOR"
-        
-        echo "❓ O LED FÍSICO DO TECLADO ACENDEU? (pressione ENTER para testar o próximo...)"
-        read -r
-        
-        echo 0 | sudo tee "$led_path" > /dev/null
-        sudo brightnessctl --device="$NOME_AMIGAVEL" set 0 >/dev/null 2>&1
-    done
+      for led_path in $LEDS_DISPONIVEIS; do
+          NOME_AMIGAVEL=$(echo "$led_path" | cut -d'/' -f5)
+          
+          echo ""
+          echo "➔ TESTANDO AGORA: [$NOME_AMIGAVEL]"
+          echo "Caminho real do sistema: $led_path"
+          
+          VALOR_ATUAL=$(cat "$led_path")
+          echo "Valor lógico atual no Linux: $VALOR_ATUAL"
+          
+          echo "Injetando sinal de ativação (Valor: 1) via Sysfs..."
+          echo 1 | sudo tee "$led_path" > /dev/null
+          
+          echo "Injetando sinal de ativação em lote via Brightnessctl..."
+          sudo brightnessctl --device="$NOME_AMIGAVEL" set 1 >/dev/null 2>&1
+          
+          NOVO_VALOR=$(cat "$led_path")
+          echo "Valor verificado após o teste: $NOVO_VALOR"
+          
+          echo "❓ O LED FÍSICO DO TECLADO ACENDEU? (pressione ENTER para testar o próximo...)"
+          read -r
+          
+          echo 0 | sudo tee "$led_path" > /dev/null
+          sudo brightnessctl --device="$NOME_AMIGAVEL" set 0 >/dev/null 2>&1
+      done
 
-    echo "========================================================"
-    echo "Varredura concluída! Anote qual nome de dispositivo"
-    echo "reagiu visualmente no seu teclado físico."
-    echo "========================================================"
-  '';
-
-  # Injeta o script acima no perfil do sistema sem duplicar o systemPackages
-  environment.systemPackages = [ testar-teclado-led ];
+      echo "========================================================"
+      echo "Varredura concluída! Anote qual nome de dispositivo"
+      echo "reagiu visualmente no seu teclado físico."
+      echo "========================================================"
+    '')
+  ];
 #Teclado
 
   # Habilita o suporte a 32 bits para o Wine/Lutris enxergar a placa
