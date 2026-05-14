@@ -611,12 +611,11 @@ systemd.user.services.unmute-hardware-audio = {
     };
 
  #teclado
-  # Serviço de controle híbrido (Escuta via Python / Injeção via Brightnessctl) - Teclado Evolut/ZXW
+  # Serviço de controle híbrido otimizado (Escuta via Python / Injeção via Brightnessctl com Estados por Software)
   systemd.services.teclado-led-trigger = {
-    description = "Controle Híbrido Anti-Saturação de LEDs - Teclado Evolut";
+    description = "Controle Instantâneo de LEDs - Teclado Evolut";
     after = [ "local-fs.target" "systemd-udevd.service" ];
     wantedBy = [ "multi-user.target" ];
-    # Disponibiliza tanto o Python para escuta quanto o brightnessctl para injeção sem concorrência
     path = [ 
       (pkgs.python3.withPackages (ps: [ ps.evdev ])) 
       pkgs.brightnessctl 
@@ -625,7 +624,7 @@ systemd.user.services.unmute-hardware-audio = {
     serviceConfig = {
       Type = "simple";
       Restart = "always";
-      ExecStart = pkgs.writeScript "led-trigger-hibrido" ''
+      ExecStart = pkgs.writeScript "led-trigger-instantaneo" ''
         #!${pkgs.python3.withPackages (ps: [ ps.evdev ])}/bin/python
         import evdev
         from evdev import ecodes
@@ -634,21 +633,18 @@ systemd.user.services.unmute-hardware-audio = {
         import threading
         import subprocess
 
-        MAPA_TECLAS = {
-            58: ("capslock", "Caps Lock"),
-            69: ("numlock", "Num Lock"),
-            70: ("scrolllock", "Scroll Lock")
+        # Gerenciamento de estados locais via software (Inicia com NumLock ligado e os outros desligados)
+        ESTADOS_LED = {
+            58: {"nome_sysfs": "capslock", "status": False, "nome": "Caps Lock"},
+            69: {"nome_sysfs": "numlock", "status": True, "nome": "Num Lock"},
+            70: {"nome_sysfs": "scrolllock", "status": False, "nome": "Scroll Lock"}
         }
 
         lock_global = threading.Lock()
         ultimo_evento_tempo = 0.0
 
         def aplicar_led_sistema(nome_led, estado):
-            """
-            Injeta o sinal via brightnessctl usando máscara genérica (input*).
-            Isso força todas as portas físicas do chip a mudarem de estado ao mesmo tempo,
-            sem usar a biblioteca evdev, evitando loops de re-entrada de dados.
-            """
+            """ Envia os comandos de iluminação diretamente via hardware de forma assíncrona """
             try:
                 dispositivo_alvo = f"input*::{nome_led}"
                 subprocess.run(
@@ -656,55 +652,49 @@ systemd.user.services.unmute-hardware-audio = {
                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
                 )
                 
-                # O Scroll Lock do Evolut necessita de um pulso de alimentação nas portas de energia física (input0 e input1)
+                # Força a injeção nas portas base de energia física do chip para o Scroll Lock (Iluminação traseira)
                 if nome_led == "scrolllock":
                     subprocess.run(["brightnessctl", "--device", "input0::scrolllock", "set", str(estado)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                     subprocess.run(["brightnessctl", "--device", "input1::scrolllock", "set", str(estado)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    subprocess.run(["brightnessctl", "--device", "input19::scrolllock", "set", str(estado)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    subprocess.run(["brightnessctl", "--device", "input20::scrolllock", "set", str(estado)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             except Exception:
                 pass
 
-        def monitorar_interface(dev, todos_os_devs):
+        def monitorar_interface(dev):
             global ultimo_evento_tempo
             try:
                 for event in dev.read_loop():
                     if event.type == ecodes.EV_KEY:
                         data = evdev.categorize(event)
                         
-                        if data.scancode in MAPA_TECLAS and data.keystate == 1:
+                        # Captura apenas quando a tecla é pressionada (keystate == 1)
+                        if data.scancode in ESTADOS_LED and data.keystate == 1:
                             now = time.time()
                             
                             with lock_global:
-                                # Filtro estável de Debounce (200 milissegundos)
-                                if (now - ultimo_evento_tempo) < 0.20:
+                                # Filtro Debounce leve (180ms) apenas para descartar ruído físico da tecla de membrana
+                                if (now - ultimo_evento_tempo) < 0.18:
                                     continue
                                 ultimo_evento_tempo = now
                                 
-                                time.sleep(0.05) # Delay curto para o kernel mudar a flag
-                                nome_led, nome_tecla = MAPA_TECLAS[data.scancode]
+                                # Alterna o estado lógico diretamente via software de forma imediata (sem consultar o d.leds())
+                                ESTADOS_LED[data.scancode]["status"] = not ESTADOS_LED[data.scancode]["status"]
                                 
-                                # Verifica o estado lógico oficial usando a primeira interface disponível
-                                is_on = False
-                                for d in todos_os_devs:
-                                    try:
-                                        # Mapeia dinamicamente os códigos internos do evdev para checagem
-                                        codigo_verificacao = getattr(ecodes, f"LED_{nome_led.upper().replace('LOCK', 'L')}")
-                                        if codigo_verificacao in d.leds():
-                                            is_on = True
-                                            break
-                                    except: pass
+                                nome_led = ESTADOS_LED[data.scancode]["nome_sysfs"]
+                                estado = 1 if ESTADOS_LED[data.scancode]["status"] else 0
+                                nome_tecla = ESTADOS_LED[data.scancode]["nome"]
                                 
-                                estado = 1 if is_on else 0
-                                
-                                # Executa a injeção via subprocesso externo isolado
+                                # Dispara a alteração física em background através do brightnessctl
                                 aplicar_led_sistema(nome_led, estado)
                                 
-                                print(f"HIBRIDO: {nome_tecla} sincronizado para estado {estado}")
+                                print(f"INSTANTANEO: {nome_tecla} alternado via software para: {estado}")
                                 sys.stdout.flush()
             except Exception:
                 pass
 
         def iniciar():
-            print("--- Iniciando Serviço Híbrido Isento de Saturação Evolut ---")
+            print("--- Iniciando Monitor Estável e Veloz de LEDs Evolut ---")
             sys.stdout.flush()
             while True:
                 try:
@@ -712,12 +702,14 @@ systemd.user.services.unmute-hardware-audio = {
                     zxw_devs = [d for d in devices if "ZXWMicroChip" in d.name]
                     
                     if zxw_devs:
-                        # Inicializa o NumLock ativado via brightnessctl no carregamento
+                        # Força o NumLock ligado no hardware ao iniciar o script
                         aplicar_led_sistema("numlock", 1)
+                        # Garante que o ScrollLock inicie limpo/desligado no hardware
+                        aplicar_led_sistema("scrolllock", 0)
                         
                         threads = []
                         for d in zxw_devs:
-                            t = threading.Thread(target=monitorar_interface, args=(d, zxw_devs))
+                            t = threading.Thread(target=monitorar_interface, args=(d,))
                             t.daemon = True
                             t.start()
                             threads.append(t)
