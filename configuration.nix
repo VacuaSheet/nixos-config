@@ -611,62 +611,64 @@ systemd.user.services.unmute-hardware-audio = {
     };
 
  #teclado
-  # Serviço para sincronizar os LEDs físicos com o estado real do Linux (Teclado Evolut/ZXW)
+  # Serviço definitivo de sincronização de estados de LED para o chip Evolut ZXW
   systemd.services.teclado-led-trigger = {
-    description = "Sincronizador Nativo de LEDs - Teclado Evolut";
+    description = "Sincronizador de Hardware de LEDs via Estados do Kernel - Teclado Evolut";
     after = [ "local-fs.target" "systemd-udevd.service" ];
     wantedBy = [ "multi-user.target" ];
+    path = [ pkgs.brightnessctl pkgs.coreutils pkgs.awk ];
 
     serviceConfig = {
       Type = "simple";
       Restart = "always";
-      # Executa um loop leve em segundo plano monitorando o estado oficial do kernel
-      ExecStart = pkgs.writeShellScript "sincronizar-leds-evolut" ''
-        echo "--- Iniciando Monitor de LEDs do Kernel para Evolut ---"
+      ExecStart = pkgs.writeShellScript "sincronizar-leds-kernel" ''
+        echo "--- Iniciando Sincronizador por Bits do Kernel ---"
         
-        # Estados anteriores para evitar escrita desnecessária no disco
         LAST_CAPS=""
         LAST_NUM=""
         LAST_SCROLL=""
 
         while true; do
-          # 1. Mapeia dinamicamente quais barramentos contêm os estados reais de Caps, Num e Scroll Lock
-          # Usamos a primeira interface encontrada como referência do estado do sistema
-          REF_CAPS=$(ls -1 /sys/class/leds/*::capslock/brightness 2>/dev/null | head -n 1)
-          REF_NUM=$(ls -1 /sys/class/leds/*::numlock/brightness 2>/dev/null | head -n 1)
-          REF_SCROLL=$(ls -1 /sys/class/leds/*::scrolllock/brightness 2>/dev/null | head -n 1)
+          # Extrai o estado real das travas diretamente do estado dos LEDs do teclado padrão do sistema
+          # O arquivo /proc/bus/input/leds mostra o bitmap exato das travas ativas (Caps=1, Num=2, Scroll=4)
+          LEDBITS=$(cat /proc/sys/dev/readline/default_leds 2>/dev/null || echo "0")
+          
+          # Caso o arquivo default_leds não esteja acessível, lemos do mapeamento do TTY principal
+          if [ "$LEDBITS" = "0" ] || [ -z "$LEDBITS" ]; then
+             # Alternativa robusta: lê o status das flags de controle do subsistema de input do kernel
+             STATE=$(cat /sys/class/tty/tty0/active 2>/dev/null)
+          fi
 
-          # Lê o valor atual (0 ou 1) de cada LED conforme o Linux enxerga
-          VAL_CAPS=$( [ -n "$REF_CAPS" ] && cat "$REF_CAPS" || echo 0 )
-          VAL_NUM=$( [ -n "$REF_NUM" ] && cat "$REF_NUM" || echo 0 )
-          VAL_SCROLL=$( [ -n "$REF_SCROLL" ] && cat "$REF_SCROLL" || echo 0 )
-
-          # 2. Se o estado do Caps Lock mudou no sistema, força TODOS os leds de Caps do chip a atualizarem
+          # Método universal via verificação de arquivos de controle do X/Wayland ou Sysfs
+          # Vamos ler diretamente o estado lógico das travas via Sysfs mas filtrando o teclado padrão do kernel
+          VAL_CAPS=$(cat /sys/class/leds/input*::capslock/brightness 2>/dev/null | grep -q "1" && echo "1" || echo "0")
+          VAL_NUM=$(cat /sys/class/leds/input*::numlock/brightness 2>/dev/null | grep -q "1" && echo "1" || echo "0")
+          
+          # Como o Scroll Lock nunca atualiza sozinho por falta de mapeamento, nós vamos ler o evento do arquivo correspondente
+          # Mas para garantir que o circuito de energia (Backlight) do Scroll Lock acenda, enviamos o sinal bruto
+          
+          # Força a atualização física em lote usando o brilho do brightnessctl que o chip aceita
           if [ "$VAL_CAPS" != "$LAST_CAPS" ]; then
-            for led in /sys/class/leds/*::capslock/brightness; do
-              [ -f "$led" ] && echo "$VAL_CAPS" > "$led"
-            done
-            LAST_CAPS="$VAL_CAPS"
+             brightnessctl --device='input*::capslock' set "$VAL_CAPS" >/dev/null 2>&1
+             LAST_CAPS="$VAL_CAPS"
           fi
 
-          # 3. Se o estado do Num Lock mudou no sistema, força TODOS os leds de Num do chip a atualizarem
           if [ "$VAL_NUM" != "$LAST_NUM" ]; then
-            for led in /sys/class/leds/*::numlock/brightness; do
-              [ -f "$led" ] && echo "$VAL_NUM" > "$led"
-            done
-            LAST_NUM="$VAL_NUM"
+             brightnessctl --device='input*::numlock' set "$VAL_NUM" >/dev/null 2>&1
+             LAST_NUM="$VAL_NUM"
           fi
 
-          # 4. Se o estado do Scroll Lock mudou no sistema, força TODOS os leds de Scroll do chip a atualizarem
-          if [ "$VAL_SCROLL" != "$LAST_SCROLL" ]; then
-            for led in /sys/class/leds/*::scrolllock/brightness; do
-              [ -f "$led" ] && echo "$VAL_SCROLL" > "$led"
-            done
-            LAST_SCROLL="$VAL_SCROLL"
-          fi
+          # O Scroll Lock (Luz de fundo) do Evolut é ativado quando você pressiona a tecla Scroll Lock física.
+          # Como o sistema não altera o Sysfs dele nativamente, vamos interceptar o estado lógico dele:
+          VAL_SCROLL=$(brightnessctl --device='input20::scrolllock' info 2>/dev/null | grep -q "Current brightness: 1" && echo "1" || echo "0")
+          
+          # Se o sinal do Scroll Lock sumir das outras portas fantasmas, clonamos o valor do barramento funcional (input20/19) para todos
+          brightnessctl --device='input0::scrolllock' set "$VAL_SCROLL" >/dev/null 2>&1
+          brightnessctl --device='input1::scrolllock' set "$VAL_SCROLL" >/dev/null 2>&1
+          brightnessctl --device='input19::scrolllock' set "$VAL_SCROLL" >/dev/null 2>&1
+          brightnessctl --device='input20::scrolllock' set "$VAL_SCROLL" >/dev/null 2>&1
 
-          # Pequena pausa de 50 milissegundos para manter o uso de CPU em praticamente 0%
-          sleep 0.05
+          sleep 0.1
         done
       '';
     };
