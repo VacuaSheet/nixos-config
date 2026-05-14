@@ -611,122 +611,111 @@ systemd.user.services.unmute-hardware-audio = {
     };
 
  #teclado
-  # Serviço com isolamento estrito de hardware e trava de ciclo puro - Teclado Evolut/ZXW
+  # Serviço baseado estritamente no código original que deu certo - Teclado Evolut/ZXW
   systemd.services.teclado-led-trigger = {
-    description = "Controle Isolado de LEDs com Trava de Ciclo Puro - Teclado Evolut";
+    description = "Gatilho de LED para Caps, Num e Scroll Lock - Teclado Evolut";
     after = [ "local-fs.target" "systemd-udevd.service" ];
     wantedBy = [ "multi-user.target" ];
-    path = [ 
-      (pkgs.python3.withPackages (ps: [ ps.evdev ])) 
-      pkgs.brightnessctl 
-    ];
+    path = [ (pkgs.python3.withPackages (ps: [ ps.evdev ])) ];
 
     serviceConfig = {
       Type = "simple";
       Restart = "always";
-      ExecStart = pkgs.writeScript "teclado-trigger-isolado-estrito" ''
+      ExecStart = pkgs.writeScript "caps-trigger-python" ''
         #!${pkgs.python3.withPackages (ps: [ ps.evdev ])}/bin/python
         import evdev
         from evdev import ecodes
         import time
         import sys
-        import glob
-        import subprocess
+        import threading
 
-        # Mapeamento estrito de Scancodes para os sufixos exatos do Sysfs do Kernel
+        # Mapeamento das 3 teclas com base no código original
         MAPA_TECLAS = {
-            58: "capslock",
-            69: "numlock",
-            70: "scrolllock"
+            58: (ecodes.LED_CAPSL, "Caps Lock"),
+            69: (ecodes.LED_NUML, "Num Lock"),
+            70: (ecodes.LED_SCROLLL, "Scroll Lock")
         }
 
-        # Estados lógicos mantidos estritamente na memória do script
-        ESTADOS_LOCAIS = {
-            "capslock": False,
-            "numlock": True,
-            "scrolllock": False
-        }
-
-        # Trava física para impedir qualquer repetição ou vazamento enquanto o dedo está na tecla
-        TECLAS_PRESSIONADAS = {58: False, 69: False, 70: False}
-
-        def sincronizar_hardware_estrito(nome_led, estado_booleano):
-            """
-            Varre as pastas reais de leds do kernel e injeta o sinal apenas no alvo exato.
-            Elimina o uso de máscaras genéricas (input*), impedindo que o CapsLock acione o NumLock.
-            """
-            estado_str = "1" if estado_booleano else "0"
+        # Função que monitora cada interface individualmente (Mantida idêntica ao original)
+        def monitorar_interface(dev, todos_os_devs):
+            print(f"DEBUG: Ouvindo interface {dev.path} ({dev.name})")
+            sys.stdout.flush()
             try:
-                # Localiza caminhos reais no sistema que correspondam estritamente ao LED alvo
-                caminhos_leds = glob.glob(f"/sys/class/leds/*::{nome_led}/brightness")
-                for caminho in caminhos_leds:
-                    # Injeta o sinal diretamente no descritor de arquivo do kernel
-                    with open(caminho, "w") as f:
-                        f.write(estado_str)
-                
-                # Se o alvo for o Scroll Lock, alimenta em lote as trilhas base de energia da iluminação
-                if nome_led == "scrolllock":
-                    for sub_porta in ["input0", "input1", "input19", "input20"]:
-                        caminhos_físicos = glob.glob(f"/sys/class/leds/{sub_porta}::scrolllock/brightness")
-                        for cp in caminhos_físicos:
-                            with open(cp, "w") as f:
-                                f.write(estado_str)
-            except Exception:
-                pass
+                for event in dev.read_loop():
+                    if event.type == ecodes.EV_KEY:
+                        data = evdev.categorize(event)
+                        
+                        # Captura apenas se for Caps(58), Num(69) ou Scroll(70) pressionado (keystate 1)
+                        if data.scancode in MAPA_TECLAS and data.keystate == 1:
+                            time.sleep(0.1)
+                            
+                            led_alvo, nome_tecla = MAPA_TECLAS[data.scancode]
+                            
+                            # Verifica o estado real do LED pressionado no sistema (Lógica original)
+                            is_on = False
+                            for d in todos_os_devs:
+                                try:
+                                    if led_alvo in d.leds():
+                                        is_on = True
+                                        break
+                                except: pass
+                            
+                            estado = 1 if is_on else 0
+                            
+                            # Dispara o comando de LED para TODAS as portas do chip
+                            for d in todos_os_devs:
+                                try:
+                                    # SEGREDO ORIGINAL: Reset rápido no NumLock para 'acordar' o barramento do chip.
+                                    # CORREÇÃO DE ISOLAMENTO: Só faz o reset se a tecla apertada NÃO for o próprio Num Lock.
+                                    # Se for o Num Lock, pisca o Caps Lock para acordar o chip sem dar curto na mesma linha.
+                                    if data.scancode != 69:
+                                        d.set_led(ecodes.LED_NUML, 0)
+                                        time.sleep(0.02)
+                                        d.set_led(ecodes.LED_NUML, 1)
+                                    else:
+                                        d.set_led(ecodes.LED_CAPSL, 0)
+                                        time.sleep(0.02)
+                                        d.set_led(ecodes.LED_CAPSL, 1)
+
+                                    # Envia o comando para o LED correspondente (Evita que o Caps ligue o Num)
+                                    d.set_led(led_alvo, estado)
+                                    
+                                    # Se for Scroll Lock (Luz de fundo), alimenta também a trilha 3
+                                    if led_alvo == ecodes.LED_SCROLLL:
+                                        d.set_led(3, estado)
+                                except: pass
+                            
+                            print(f"EVENTO: {nome_tecla} detectado! Luz -> {'LIGADA' if is_on else 'DESLIGADA'}")
+                            sys.stdout.flush()
+            except Exception as e:
+                print(f"Interface {dev.path} desconectada: {e}")
+                sys.stdout.flush()
 
         def iniciar():
-            print("--- Iniciando Serviço Isolado de LEDs Evolut (Regra Estrita) ---")
+            print("--- Iniciando Serviço de LED Evolut (Ouvido Total) ---")
             sys.stdout.flush()
-            
-            global TECLAS_PRESSIONADAS
-
             while True:
                 try:
-                    # Captura o canal unificado consolidado pelo Linux para o chip ZXW
-                    caminhos = glob.glob("/dev/input/by-id/*ZXWMicroChip*event-kbd") or glob.glob("/dev/input/by-id/*ZXW*kbd*")
+                    devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
+                    zxw_devs = [d for d in devices if "ZXWMicroChip" in d.name]
                     
-                    if caminhos:
-                        caminho_teclado = caminhos[0]
-                        print(f"Sucesso: Monitorando ciclo estrito isolado em {caminho_teclado}")
+                    if zxw_devs:
+                        print(f"Sucesso: {len(zxw_devs)} interfaces encontradas.")
                         sys.stdout.flush()
+                        threads = []
+                        for d in zxw_devs:
+                            t = threading.Thread(target=monitorar_interface, args=(d, zxw_devs))
+                            t.daemon = True
+                            t.start()
+                            threads.append(t)
                         
-                        # Inicialização limpa e isolada do boot
-                        for led, status in ESTADOS_LOCAIS.items():
-                            sincronizar_hardware_estrito(led, status)
-                        
-                        device = evdev.InputDevice(caminho_teclado)
-                        
-                        for event in device.read_loop():
-                            if event.type == ecodes.EV_KEY:
-                                data = evdev.categorize(event)
-                                
-                                if data.scancode in MAPA_TECLAS:
-                                    nome_led = MAPA_TECLAS[data.scancode]
-                                    
-                                    # REGRA 1: Tecla foi APERTADA (keystate == 1) e a trava local está livre
-                                    if data.keystate == 1 and not TECLAS_PRESSIONADAS[data.scancode]:
-                                        TECLAS_PRESSIONADAS[data.scancode] = True # Bloqueia reentradas imediatamente
-                                        
-                                        # Inverte apenas o estado da própria tecla na memória
-                                        ESTADOS_LOCAIS[nome_led] = not ESTADOS_LOCAIS[nome_led]
-                                        
-                                        # Envia o comando de forma isolada sem atingir outras trilhas
-                                        sincronizar_hardware_estrito(nome_led, ESTADOS_LOCAIS[nome_led])
-                                        
-                                        print(f"SINCRO ISOLADA: {nome_led} -> {ESTADOS_LOCAIS[nome_led]}")
-                                        sys.stdout.flush()
-                                    
-                                    # REGRA 2: Tecla foi COMPLETAMENTE SOLTA (keystate == 0)
-                                    elif data.keystate == 0:
-                                        # Libera a trava apenas após o dedo sair totalmente do teclado
-                                        TECLAS_PRESSIONADAS[data.scancode] = False
-                                        
-                                    # Eventos de repetição de tecla (keystate == 2) são sumariamente descartados.
+                        for t in threads:
+                            t.join()
                     else:
-                        print("Aguardando barramento do teclado USB...")
+                        print("Aguardando teclado ser conectado...")
                         sys.stdout.flush()
                 except Exception as e:
-                    print(f"Conexão reiniciada: {e}")
+                    print(f"Erro no loop principal: {e}")
                     sys.stdout.flush()
                 
                 time.sleep(5)
