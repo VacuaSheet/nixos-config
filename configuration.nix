@@ -611,7 +611,6 @@ systemd.user.services.unmute-hardware-audio = {
     };
 
  #teclado
-  # Script original com filtros estritos de isolamento e trava por ciclo de clique
   systemd.services.teclado-led-trigger = {
     description = "Gatilho de LED Isolado e Estrito - Teclado Evolut";
     after = [ "local-fs.target" "systemd-udevd.service" ];
