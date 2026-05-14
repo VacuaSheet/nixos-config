@@ -611,8 +611,8 @@ systemd.user.services.unmute-hardware-audio = {
     };
 
  #teclado
-environment.systemPackages = [
-  (pkgs.writeShellScriptBin "testar-teclado-led" ''
+  # Script de teste interativo para o teclado Evolut
+  _module.args.testar-teclado-led = pkgs.writeShellScriptBin "testar-teclado-led" ''
     echo "========================================================"
     echo "  INICIANDO VARREDURA PASSO A PASSO: TECLADO EVOLUT     "
     echo "========================================================"
@@ -620,7 +620,6 @@ environment.systemPackages = [
     echo "mostrando na tela até encontrar o valor real que acende o LED."
     echo "--------------------------------------------------------"
 
-    # 1. Identifica todos os arquivos de LED do chip ZXWMicroChip
     LEDS_DISPONIVEIS=$(ls -1 /sys/class/leds/input*::*/brightness 2>/dev/null)
 
     if [ -z "$LEDS_DISPONIVEIS" ]; then
@@ -632,35 +631,28 @@ environment.systemPackages = [
     echo "$LEDS_DISPONIVEIS"
     echo "--------------------------------------------------------"
 
-    # 2. Loop interativo passo a passo (Dispositivo por Dispositivo)
     for led_path in $LEDS_DISPONIVEIS; do
-        # Extrai o nome amigável (ex: input0::scrolllock)
         NOME_AMIGAVEL=$(echo "$led_path" | cut -d'/' -f5)
         
         echo ""
         echo "➔ TESTANDO AGORA: [$NOME_AMIGAVEL]"
         echo "Caminho real do sistema: $led_path"
         
-        # Lê o valor lógico atual que o Linux acha que o LED tem
         VALOR_ATUAL=$(cat "$led_path")
         echo "Valor lógico atual no Linux: $VALOR_ATUAL"
         
         echo "Injetando sinal de ativação (Valor: 1) via Sysfs..."
-        # Tenta ligar via redirecionamento de kernel
         echo 1 | sudo tee "$led_path" > /dev/null
         
         echo "Injetando sinal de ativação em lote via Brightnessctl..."
-        # Tenta ligar forçando via barramento USB
         sudo brightnessctl --device="$NOME_AMIGAVEL" set 1 >/dev/null 2>&1
         
-        # Lê novamente para confirmar se o sistema aceitou a gravação
         NOVO_VALOR=$(cat "$led_path")
         echo "Valor verificado após o teste: $NOVO_VALOR"
         
         echo "❓ O LED FÍSICO DO TECLADO ACENDEU? (pressione ENTER para testar o próximo...)"
         read -r
         
-        # Restaura o estado para continuar o teste de forma limpa
         echo 0 | sudo tee "$led_path" > /dev/null
         sudo brightnessctl --device="$NOME_AMIGAVEL" set 0 >/dev/null 2>&1
     done
@@ -669,9 +661,10 @@ environment.systemPackages = [
     echo "Varredura concluída! Anote qual nome de dispositivo"
     echo "reagiu visualmente no seu teclado físico."
     echo "========================================================"
-  '')
-];
+  '';
 
+  # Injeta o script acima no perfil do sistema sem duplicar o systemPackages
+  environment.systemPackages = [ testar-teclado-led ];
 #Teclado
 
   # Habilita o suporte a 32 bits para o Wine/Lutris enxergar a placa
