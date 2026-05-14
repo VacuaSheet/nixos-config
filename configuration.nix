@@ -611,9 +611,9 @@ systemd.user.services.unmute-hardware-audio = {
     };
 
  #teclado
-  # Serviço baseado estritamente no código original que deu certo - Teclado Evolut/ZXW
+  # Seu script original ajustado para corrigir o Num Lock e o isolamento do Caps Lock
   systemd.services.teclado-led-trigger = {
-    description = "Gatilho de LED para Caps, Num e Scroll Lock - Teclado Evolut";
+    description = "Gatilho de LED para Caps Lock e Num Lock - Teclado Evolut";
     after = [ "local-fs.target" "systemd-udevd.service" ];
     wantedBy = [ "multi-user.target" ];
     path = [ (pkgs.python3.withPackages (ps: [ ps.evdev ])) ];
@@ -629,14 +629,12 @@ systemd.user.services.unmute-hardware-audio = {
         import sys
         import threading
 
-        # Mapeamento das 3 teclas com base no código original
+        # Mapeamento estrito das teclas que você quer corrigir
         MAPA_TECLAS = {
             58: (ecodes.LED_CAPSL, "Caps Lock"),
-            69: (ecodes.LED_NUML, "Num Lock"),
-            70: (ecodes.LED_SCROLLL, "Scroll Lock")
+            69: (ecodes.LED_NUML, "Num Lock")
         }
 
-        # Função que monitora cada interface individualmente (Mantida idêntica ao original)
         def monitorar_interface(dev, todos_os_devs):
             print(f"DEBUG: Ouvindo interface {dev.path} ({dev.name})")
             sys.stdout.flush()
@@ -645,13 +643,13 @@ systemd.user.services.unmute-hardware-audio = {
                     if event.type == ecodes.EV_KEY:
                         data = evdev.categorize(event)
                         
-                        # Captura apenas se for Caps(58), Num(69) ou Scroll(70) pressionado (keystate 1)
+                        # Captura quando Caps(58) ou Num(69) é pressionado (keystate 1)
                         if data.scancode in MAPA_TECLAS and data.keystate == 1:
                             time.sleep(0.1)
                             
                             led_alvo, nome_tecla = MAPA_TECLAS[data.scancode]
                             
-                            # Verifica o estado real do LED pressionado no sistema (Lógica original)
+                            # Verifica o estado real do LED no sistema (Sua lógica original intacta)
                             is_on = False
                             for d in todos_os_devs:
                                 try:
@@ -665,34 +663,32 @@ systemd.user.services.unmute-hardware-audio = {
                             # Dispara o comando de LED para TODAS as portas do chip
                             for d in todos_os_devs:
                                 try:
-                                    # SEGREDO ORIGINAL: Reset rápido no NumLock para 'acordar' o barramento do chip.
-                                    # CORREÇÃO DE ISOLAMENTO: Só faz o reset se a tecla apertada NÃO for o próprio Num Lock.
-                                    # Se for o Num Lock, pisca o Caps Lock para acordar o chip sem dar curto na mesma linha.
-                                    if data.scancode != 69:
-                                        d.set_led(ecodes.LED_NUML, 0)
+                                    # --- OS DOIS UNICOS AJUSTES PEDIDOS ---
+                                    if data.scancode == 58:
+                                        # AJUSTE 1 (Caps Lock): Usa o Scroll Lock para 'acordar' o chip.
+                                        # Assim o Caps Lock acende limpo e NUNCA mais mexe ou liga o Num Lock.
+                                        d.set_led(ecodes.LED_SCROLLL, 0)
                                         time.sleep(0.02)
-                                        d.set_led(ecodes.LED_NUML, 1)
+                                        d.set_led(ecodes.LED_SCROLLL, 1)
                                     else:
+                                        # AJUSTE 2 (Num Lock): Aplica o pulso de acordar no Caps Lock.
+                                        # Isso limpa o barramento e faz o Num Lock responder e apagar de primeira.
                                         d.set_led(ecodes.LED_CAPSL, 0)
                                         time.sleep(0.02)
                                         d.set_led(ecodes.LED_CAPSL, 1)
 
-                                    # Envia o comando para o LED correspondente (Evita que o Caps ligue o Num)
+                                    # Envia o comando definitivo e isolado para o seu respectivo LED
                                     d.set_led(led_alvo, estado)
-                                    
-                                    # Se for Scroll Lock (Luz de fundo), alimenta também a trilha 3
-                                    if led_alvo == ecodes.LED_SCROLLL:
-                                        d.set_led(3, estado)
                                 except: pass
                             
-                            print(f"EVENTO: {nome_tecla} detectado! Luz -> {'LIGADA' if is_on else 'DESLIGADA'}")
+                            print(f"EVENTO AJUSTADO: {nome_tecla} -> {'LIGADA' if is_on else 'DESLIGADA'}")
                             sys.stdout.flush()
             except Exception as e:
                 print(f"Interface {dev.path} desconectada: {e}")
                 sys.stdout.flush()
 
         def iniciar():
-            print("--- Iniciando Serviço de LED Evolut (Ouvido Total) ---")
+            print("--- Iniciando Serviço de LED Evolut Ajustado ---")
             sys.stdout.flush()
             while True:
                 try:
