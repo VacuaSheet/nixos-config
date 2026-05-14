@@ -611,114 +611,67 @@ systemd.user.services.unmute-hardware-audio = {
     };
 
  #teclado
-  # Serviço embutido em Python para controle dos LEDs (Caps, Num e Scroll Lock) - Teclado Evolut/ZXW
-  systemd.user.services.teclado-led-trigger = {
-    description = "Sincronizador de LEDs do Usuário - Teclado Evolut";
-    # Garante que o serviço roda vinculado à sua sessão gráfica (X11/Wayland), liberando os sinais USB
-    wantedBy = [ "graphical-session.target" ];
-    
-    # Injeta automaticamente o pacote evdev no ambiente isolado do serviço
-    path = [ (pkgs.python3.withPackages (ps: [ ps.evdev ])) ];
+environment.systemPackages = [
+  (pkgs.writeShellScriptBin "testar-teclado-led" ''
+    echo "========================================================"
+    echo "  INICIANDO VARREDURA PASSO A PASSO: TECLADO EVOLUT     "
+    echo "========================================================"
+    echo "Este script vai testar cada barramento físico e virtual,"
+    echo "mostrando na tela até encontrar o valor real que acende o LED."
+    echo "--------------------------------------------------------"
 
-    serviceConfig = {
-      Type = "simple";
-      Restart = "always";
-      RestartSec = 3;
-      # Executa o script Python gerado dinamicamente pelo Nix
-      ExecStart = pkgs.writeScript "led-trigger-user-python" ''
-        #!${pkgs.python3.withPackages (ps: [ ps.evdev ])}/bin/python
-        import evdev
-        from evdev import ecodes
-        import time
-        import sys
-        import threading
+    # 1. Identifica todos os arquivos de LED do chip ZXWMicroChip
+    LEDS_DISPONIVEIS=$(ls -1 /sys/class/leds/input*::*/brightness 2>/dev/null)
 
-        # Mapeamento de Scancodes para seus respectivos códigos de LED do Kernel
-        MAPA_TECLAS = {
-            58: (ecodes.LED_CAPSL, "Caps Lock"),
-            69: (ecodes.LED_NUML, "Num Lock"),
-            70: (ecodes.LED_SCROLLL, "Scroll Lock")
-        }
+    if [ -z "$LEDS_DISPONIVEIS" ]; then
+        echo "🚨 Nenhum barramento de LED encontrado em /sys/class/leds/input*"
+        exit 1
+    fi
 
-        lock_global = threading.Lock()
+    echo "🔍 Interfaces de LED detectadas no sistema:"
+    echo "$LEDS_DISPONIVEIS"
+    echo "--------------------------------------------------------"
 
-        def monitorar_interface(dev, todos_os_devs):
-            print(f"DEBUG: Ouvindo interface {dev.path} ({dev.name})")
-            sys.stdout.flush()
-            try:
-                for event in dev.read_loop():
-                    if event.type == ecodes.EV_KEY:
-                        data = evdev.categorize(event)
-                        # Processa apenas o clique inicial (keystate == 1) de Caps, Num ou Scroll Lock
-                        if data.scancode in MAPA_TECLAS and data.keystate == 1:
-                            with lock_global:
-                                time.sleep(0.1) # Aguarda o Linux atualizar o estado lógico interno
-                                
-                                led_alvo, nome_tecla = MAPA_TECLAS[data.scancode]
-                                
-                                # Verifica o estado oficial e real do sistema para o LED pressionado
-                                is_on = False
-                                for d in todos_os_devs:
-                                    try:
-                                        if led_alvo in d.leds():
-                                            is_on = True
-                                            break
-                                    except: pass
-                                
-                                estado = 1 if is_on else 0
-                                
-                                # Dispara a atualização direta em todas as portas do chip
-                                for d in todos_os_devs:
-                                    try:
-                                        # Reset rápido no NumLock para acordar o barramento do chip ZXW
-                                        d.set_led(ecodes.LED_NUML, 0)
-                                        time.sleep(0.01)
-                                        d.set_led(ecodes.LED_NUML, 1)
+    # 2. Loop interativo passo a passo (Dispositivo por Dispositivo)
+    for led_path in $LEDS_DISPONIVEIS; do
+        # Extrai o nome amigável (ex: input0::scrolllock)
+        NOME_AMIGAVEL=$(echo "$led_path" | cut -d'/' -f5)
+        
+        echo ""
+        echo "➔ TESTANDO AGORA: [$NOME_AMIGAVEL]"
+        echo "Caminho real do sistema: $led_path"
+        
+        # Lê o valor lógico atual que o Linux acha que o LED tem
+        VALOR_ATUAL=$(cat "$led_path")
+        echo "Valor lógico atual no Linux: $VALOR_ATUAL"
+        
+        echo "Injetando sinal de ativação (Valor: 1) via Sysfs..."
+        # Tenta ligar via redirecionamento de kernel
+        echo 1 | sudo tee "$led_path" > /dev/null
+        
+        echo "Injetando sinal de ativação em lote via Brightnessctl..."
+        # Tenta ligar forçando via barramento USB
+        sudo brightnessctl --device="$NOME_AMIGAVEL" set 1 >/dev/null 2>&1
+        
+        # Lê novamente para confirmar se o sistema aceitou a gravação
+        NOVO_VALOR=$(cat "$led_path")
+        echo "Valor verificado após o teste: $NOVO_VALOR"
+        
+        echo "❓ O LED FÍSICO DO TECLADO ACENDEU? (pressione ENTER para testar o próximo...)"
+        read -r
+        
+        # Restaura o estado para continuar o teste de forma limpa
+        echo 0 | sudo tee "$led_path" > /dev/null
+        sudo brightnessctl --device="$NOME_AMIGAVEL" set 0 >/dev/null 2>&1
+    done
 
-                                        # Envia o comando físico bruto que funcionou no seu teste manual
-                                        d.write(ecodes.EV_LED, led_alvo, estado)
-                                        d.write(ecodes.EV_SYN, ecodes.SYN_REPORT, 0)
-                                    except: pass
-                                
-                                print(f"SINCRO: {nome_tecla} -> {'LIGADO' if is_on else 'DESLIGADO'}")
-                                sys.stdout.flush()
-            except Exception as e:
-                print(f"Interface {dev.path} desconectada: {e}")
-                sys.stdout.flush()
+    echo "========================================================"
+    echo "Varredura concluída! Anote qual nome de dispositivo"
+    echo "reagiu visualmente no seu teclado físico."
+    echo "========================================================"
+  '')
+];
 
-        def iniciar():
-            print("--- Iniciando Serviço Embutido de LEDs Evolut (Sessão Usuário) ---")
-            sys.stdout.flush()
-            while True:
-                try:
-                    devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
-                    zxw_devs = [d for d in devices if "ZXWMicroChip" in d.name]
-                    
-                    if zxw_devs:
-                        print(f"Sucesso: {len(zxw_devs)} interfaces encontradas.")
-                        sys.stdout.flush()
-                        threads = []
-                        for d in zxw_devs:
-                            t = threading.Thread(target=monitorar_interface, args=(d, zxw_devs))
-                            t.daemon = True
-                            t.start()
-                            threads.append(t)
-                        for t in threads:
-                            t.join()
-                    else:
-                        print("Aguardando teclado ser conectado...")
-                        sys.stdout.flush()
-                except Exception as e:
-                    print(f"Erro no loop principal: {e}")
-                    sys.stdout.flush()
-                
-                time.sleep(5)
-
-        if __name__ == "__main__":
-            iniciar()
-      '';
-    };
-  };
 #Teclado
 
   # Habilita o suporte a 32 bits para o Wine/Lutris enxergar a placa
