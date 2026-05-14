@@ -611,7 +611,7 @@ systemd.user.services.unmute-hardware-audio = {
     };
 
  #teclado
-  # Script original com filtros estritos de isolamento e trava por ciclo de clique
+# Script original com filtros estritos de isolamento e trava por ciclo de clique
   systemd.services.teclado-led-trigger = {
     description = "Gatilho de LED Isolado e Estrito - Teclado Evolut";
     after = [ "local-fs.target" "systemd-udevd.service" ];
@@ -661,16 +661,15 @@ systemd.user.services.unmute-hardware-audio = {
                             time.sleep(0.08)  # Aguarda o Linux consolidar o estado lógico
 
                             # Estado lógico do LED (somente para o LED alvo)
-                            is_on = False
-                            for d in todos_os_devs:
-                                try:
-                                    if led_alvo in d.leds():
-                                        is_on = True
-                                        break
-                                except:
-                                    pass
+                            # O evdev nem sempre reflete imediatamente o estado real em d.leds().
+                            # Para evitar acoplamento Caps<->Num, usamos toggling lógico local.
+                            if not hasattr(monitorar_interface, "estado_local"):
+                                monitorar_interface.estado_local = {}
 
-                            estado = 1 if is_on else 0
+                            atual = monitorar_interface.estado_local.get(data.scancode, 0)
+                            estado = 0 if atual == 1 else 1
+                            monitorar_interface.estado_local[data.scancode] = estado
+
 
                             # Disparo estritamente no LED correspondente
                             # (não usa pulso em outros LEDs para evitar vazamento Caps<->Num)
