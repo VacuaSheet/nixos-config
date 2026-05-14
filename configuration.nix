@@ -632,72 +632,63 @@ systemd.user.services.unmute-hardware-audio = {
         # FILTRO DE BOTÕES: Mapeamento rigoroso de uma tecla para uma ação
         MAPA_TECLAS = {
             58: (ecodes.LED_CAPSL, "Caps Lock"),
-            69: (ecodes.LED_NUML, "Num Lock")
+            69: (ecodes.LED_NUML, "Num Lock"),
+            70: (ecodes.LED_SCROLLL, "Scroll Lock"),
         }
 
         lock_global = threading.Lock()
-        
+
         # Trava de ciclo: impede repetição contínua enquanto o dedo está pressionando a tecla
-        TECLAS_PRESSIONADAS = {58: False, 69: False}
+        TECLAS_PRESSIONADAS = {58: False, 69: False, 70: False}
 
         def monitorar_interface(dev, todos_os_devs):
             global TECLAS_PRESSIONADAS
             try:
                 for event in dev.read_loop():
-                    if event.type == ecodes.EV_KEY:
-                        data = evdev.categorize(event)
-                        
-                        if data.scancode in MAPA_TECLAS:
-                            led_alvo, nome_tecla = MAPA_TECLAS[data.scancode]
-                            
-                            # REGRA 1: Tecla foi APERTADA (keystate == 1) e a trava local está livre
-                            if data.keystate == 1 and not TECLAS_PRESSIONADAS[data.scancode]:
-                                with lock_global:
-                                    TECLAS_PRESSIONADAS[data.scancode] = True # Bloqueia reentradas fantasmas
-                                    time.sleep(0.08) # Aguarda o Linux consolidar o estado lógico
-                                    
-                                    # Verifica o estado real do LED no sistema (Sua lógica original)
-                                    is_on = False
-                                    for d in todos_os_devs:
-                                        try:
-                                            if led_alvo in d.leds():
-                                                is_on = True
-                                                break
-                                        except: pass
-                                    
-                                    estado = 1 if is_on else 0
-                                    
-                                    # Dispara o comando de LED de forma totalmente isolada
-                                    for d in todos_os_devs:
-                                        try:
-                                            # FILTRO DE SINAL: Diferencia qual botão aciona o quê
-                                            if data.scancode == 58:
-                                                # Se for Caps Lock, usa a linha neutra do Scroll para acordar o chip.
-                                                # NUNCA mais envia pulso no NumLock, impedindo o vazamento.
-                                                d.set_led(ecodes.LED_SCROLLL, 0)
-                                                time.sleep(0.01)
-                                                d.set_led(ecodes.LED_SCROLLL, 1)
-                                            else:
-                                                # Se for Num Lock, usa o Caps Lock como pulso rápido de acordar.
-                                                # Isso limpa a fila do barramento e faz o Num Lock responder de primeira.
-                                                d.set_led(ecodes.LED_CAPSL, 0)
-                                                time.sleep(0.01)
-                                                d.set_led(ecodes.LED_CAPSL, 1)
+                    if event.type != ecodes.EV_KEY:
+                        continue
 
-                                            # Envia o comando definitivo estritamente para o seu respectivo LED
-                                            d.set_led(led_alvo, estado)
-                                        except: pass
-                                    
-                                    print(f"REGRA ESTRITA: {nome_tecla} alterado para {estado}")
-                                    sys.stdout.flush()
-                                    
-                            # REGRA 2: Tecla foi COMPLETAMENTE SOLTA (keystate == 0)
-                            elif data.keystate == 0:
-                                with lock_global:
-                                    # Libera a trava apenas após o dedo sair totalmente do botão
-                                    TECLAS_PRESSIONADAS[data.scancode] = False
-                                    
-                            # Eventos de repetição contínua (keystate == 2) são sumariamente ignorados.
+                    data = evdev.categorize(event)
+                    if data.scancode not in MAPA_TECLAS:
+                        continue
+
+                    led_alvo, nome_tecla = MAPA_TECLAS[data.scancode]
+
+                    # REGRA 1: Tecla foi APERTADA (keystate == 1) e a trava local está livre
+                    if data.keystate == 1 and not TECLAS_PRESSIONADAS[data.scancode]:
+                        with lock_global:
+                            TECLAS_PRESSIONADAS[data.scancode] = True
+                            time.sleep(0.08)  # Aguarda o Linux consolidar o estado lógico
+
+                            # Estado lógico do LED (somente para o LED alvo)
+                            is_on = False
+                            for d in todos_os_devs:
+                                try:
+                                    if led_alvo in d.leds():
+                                        is_on = True
+                                        break
+                                except:
+                                    pass
+
+                            estado = 1 if is_on else 0
+
+                            # Disparo estritamente no LED correspondente
+                            # (não usa pulso em outros LEDs para evitar vazamento Caps<->Num)
+                            for d in todos_os_devs:
+                                try:
+                                    d.set_led(led_alvo, estado)
+                                except:
+                                    pass
+
+                            print(f"REGRA ESTRITA: {nome_tecla} alterado para {estado}")
+                            sys.stdout.flush()
+
+                    # REGRA 2: Tecla foi COMPLETAMENTE SOLTA (keystate == 0)
+                    elif data.keystate == 0:
+                        with lock_global:
+                            TECLAS_PRESSIONADAS[data.scancode] = False
+
+                    # keystate == 2 (autorepeat) é ignorado
             except Exception:
                 pass
 
@@ -708,7 +699,7 @@ systemd.user.services.unmute-hardware-audio = {
                 try:
                     devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
                     zxw_devs = [d for d in devices if "ZXWMicroChip" in d.name]
-                    
+
                     if zxw_devs:
                         threads = []
                         for d in zxw_devs:
