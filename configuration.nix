@@ -611,9 +611,9 @@ systemd.user.services.unmute-hardware-audio = {
     };
 
  #teclado
-  # Seu script original ajustado para corrigir o Num Lock e o isolamento do Caps Lock
+  # Script original com filtros estritos de isolamento e trava por ciclo de clique
   systemd.services.teclado-led-trigger = {
-    description = "Gatilho de LED para Caps Lock e Num Lock - Teclado Evolut";
+    description = "Gatilho de LED Isolado e Estrito - Teclado Evolut";
     after = [ "local-fs.target" "systemd-udevd.service" ];
     wantedBy = [ "multi-user.target" ];
     path = [ (pkgs.python3.withPackages (ps: [ ps.evdev ])) ];
@@ -621,7 +621,7 @@ systemd.user.services.unmute-hardware-audio = {
     serviceConfig = {
       Type = "simple";
       Restart = "always";
-      ExecStart = pkgs.writeScript "caps-trigger-python" ''
+      ExecStart = pkgs.writeScript "teclado-trigger-filtrado" ''
         #!${pkgs.python3.withPackages (ps: [ ps.evdev ])}/bin/python
         import evdev
         from evdev import ecodes
@@ -629,66 +629,80 @@ systemd.user.services.unmute-hardware-audio = {
         import sys
         import threading
 
-        # Mapeamento estrito das teclas que você quer corrigir
+        # FILTRO DE BOTÕES: Mapeamento rigoroso de uma tecla para uma ação
         MAPA_TECLAS = {
             58: (ecodes.LED_CAPSL, "Caps Lock"),
             69: (ecodes.LED_NUML, "Num Lock")
         }
 
+        lock_global = threading.Lock()
+        
+        # Trava de ciclo: impede repetição contínua enquanto o dedo está pressionando a tecla
+        TECLAS_PRESSIONADAS = {58: False, 69: False}
+
         def monitorar_interface(dev, todos_os_devs):
-            print(f"DEBUG: Ouvindo interface {dev.path} ({dev.name})")
-            sys.stdout.flush()
+            global TECLAS_PRESSIONADAS
             try:
                 for event in dev.read_loop():
                     if event.type == ecodes.EV_KEY:
                         data = evdev.categorize(event)
                         
-                        # Captura quando Caps(58) ou Num(69) é pressionado (keystate 1)
-                        if data.scancode in MAPA_TECLAS and data.keystate == 1:
-                            time.sleep(0.1)
-                            
+                        if data.scancode in MAPA_TECLAS:
                             led_alvo, nome_tecla = MAPA_TECLAS[data.scancode]
                             
-                            # Verifica o estado real do LED no sistema (Sua lógica original intacta)
-                            is_on = False
-                            for d in todos_os_devs:
-                                try:
-                                    if led_alvo in d.leds():
-                                        is_on = True
-                                        break
-                                except: pass
-                            
-                            estado = 1 if is_on else 0
-                            
-                            # Dispara o comando de LED para TODAS as portas do chip
-                            for d in todos_os_devs:
-                                try:
-                                    # --- OS DOIS UNICOS AJUSTES PEDIDOS ---
-                                    if data.scancode == 58:
-                                        # AJUSTE 1 (Caps Lock): Usa o Scroll Lock para 'acordar' o chip.
-                                        # Assim o Caps Lock acende limpo e NUNCA mais mexe ou liga o Num Lock.
-                                        d.set_led(ecodes.LED_SCROLLL, 0)
-                                        time.sleep(0.02)
-                                        d.set_led(ecodes.LED_SCROLLL, 1)
-                                    else:
-                                        # AJUSTE 2 (Num Lock): Aplica o pulso de acordar no Caps Lock.
-                                        # Isso limpa o barramento e faz o Num Lock responder e apagar de primeira.
-                                        d.set_led(ecodes.LED_CAPSL, 0)
-                                        time.sleep(0.02)
-                                        d.set_led(ecodes.LED_CAPSL, 1)
+                            # REGRA 1: Tecla foi APERTADA (keystate == 1) e a trava local está livre
+                            if data.keystate == 1 and not TECLAS_PRESSIONADAS[data.scancode]:
+                                with lock_global:
+                                    TECLAS_PRESSIONADAS[data.scancode] = True # Bloqueia reentradas fantasmas
+                                    time.sleep(0.08) # Aguarda o Linux consolidar o estado lógico
+                                    
+                                    # Verifica o estado real do LED no sistema (Sua lógica original)
+                                    is_on = False
+                                    for d in todos_os_devs:
+                                        try:
+                                            if led_alvo in d.leds():
+                                                is_on = True
+                                                break
+                                        except: pass
+                                    
+                                    estado = 1 if is_on else 0
+                                    
+                                    # Dispara o comando de LED de forma totalmente isolada
+                                    for d in todos_os_devs:
+                                        try:
+                                            # FILTRO DE SINAL: Diferencia qual botão aciona o quê
+                                            if data.scancode == 58:
+                                                # Se for Caps Lock, usa a linha neutra do Scroll para acordar o chip.
+                                                # NUNCA mais envia pulso no NumLock, impedindo o vazamento.
+                                                d.set_led(ecodes.LED_SCROLLL, 0)
+                                                time.sleep(0.01)
+                                                d.set_led(ecodes.LED_SCROLLL, 1)
+                                            else:
+                                                # Se for Num Lock, usa o Caps Lock como pulso rápido de acordar.
+                                                # Isso limpa a fila do barramento e faz o Num Lock responder de primeira.
+                                                d.set_led(ecodes.LED_CAPSL, 0)
+                                                time.sleep(0.01)
+                                                d.set_led(ecodes.LED_CAPSL, 1)
 
-                                    # Envia o comando definitivo e isolado para o seu respectivo LED
-                                    d.set_led(led_alvo, estado)
-                                except: pass
-                            
-                            print(f"EVENTO AJUSTADO: {nome_tecla} -> {'LIGADA' if is_on else 'DESLIGADA'}")
-                            sys.stdout.flush()
-            except Exception as e:
-                print(f"Interface {dev.path} desconectada: {e}")
-                sys.stdout.flush()
+                                            # Envia o comando definitivo estritamente para o seu respectivo LED
+                                            d.set_led(led_alvo, estado)
+                                        except: pass
+                                    
+                                    print(f"REGRA ESTRITA: {nome_tecla} alterado para {estado}")
+                                    sys.stdout.flush()
+                                    
+                            # REGRA 2: Tecla foi COMPLETAMENTE SOLTA (keystate == 0)
+                            elif data.keystate == 0:
+                                with lock_global:
+                                    # Libera a trava apenas após o dedo sair totalmente do botão
+                                    TECLAS_PRESSIONADAS[data.scancode] = False
+                                    
+                            # Eventos de repetição contínua (keystate == 2) são sumariamente ignorados.
+            except Exception:
+                pass
 
         def iniciar():
-            print("--- Iniciando Serviço de LED Evolut Ajustado ---")
+            print("--- Iniciando Monitor Isolado de Cliques Evolut ---")
             sys.stdout.flush()
             while True:
                 try:
@@ -696,24 +710,16 @@ systemd.user.services.unmute-hardware-audio = {
                     zxw_devs = [d for d in devices if "ZXWMicroChip" in d.name]
                     
                     if zxw_devs:
-                        print(f"Sucesso: {len(zxw_devs)} interfaces encontradas.")
-                        sys.stdout.flush()
                         threads = []
                         for d in zxw_devs:
                             t = threading.Thread(target=monitorar_interface, args=(d, zxw_devs))
                             t.daemon = True
                             t.start()
                             threads.append(t)
-                        
                         for t in threads:
                             t.join()
-                    else:
-                        print("Aguardando teclado ser conectado...")
-                        sys.stdout.flush()
-                except Exception as e:
-                    print(f"Erro no loop principal: {e}")
-                    sys.stdout.flush()
-                
+                except Exception:
+                    pass
                 time.sleep(5)
 
         if __name__ == "__main__":
