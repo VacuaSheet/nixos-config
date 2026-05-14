@@ -611,111 +611,63 @@ systemd.user.services.unmute-hardware-audio = {
     };
 
  #teclado
-  # Serviço para normalizar o funcionamento dos LEDs (Caps, Num e Scroll Lock) no Teclado Evolut/ZXW
+  # Serviço para sincronizar os LEDs físicos com o estado real do Linux (Teclado Evolut/ZXW)
   systemd.services.teclado-led-trigger = {
-    description = "Correção nativa para LEDs de Caps, Num e Scroll Lock - Teclado Evolut";
+    description = "Sincronizador Nativo de LEDs - Teclado Evolut";
     after = [ "local-fs.target" "systemd-udevd.service" ];
     wantedBy = [ "multi-user.target" ];
-    path = [ (pkgs.python3.withPackages (ps: [ ps.evdev ])) ];
 
     serviceConfig = {
       Type = "simple";
       Restart = "always";
-      ExecStart = pkgs.writeScript "led-trigger-python" ''
-        #!${pkgs.python3.withPackages (ps: [ ps.evdev ])}/bin/python
-        import evdev
-        from evdev import ecodes
-        import time
-        import sys
-        import threading
+      # Executa um loop leve em segundo plano monitorando o estado oficial do kernel
+      ExecStart = pkgs.writeShellScript "sincronizar-leds-evolut" ''
+        echo "--- Iniciando Monitor de LEDs do Kernel para Evolut ---"
+        
+        # Estados anteriores para evitar escrita desnecessária no disco
+        LAST_CAPS=""
+        LAST_NUM=""
+        LAST_SCROLL=""
 
-        # Gerenciamento de estados locais (NumLock inicia True)
-        ESTADOS_LED = {
-            58: {"led": ecodes.LED_CAPSL, "status": False, "nome": "Caps Lock"},
-            69: {"led": ecodes.LED_NUML, "status": True, "nome": "Num Lock"},
-            70: {"led": ecodes.LED_SCROLLL, "status": False, "nome": "Scroll Lock"}
-        }
+        while true; do
+          # 1. Mapeia dinamicamente quais barramentos contêm os estados reais de Caps, Num e Scroll Lock
+          # Usamos a primeira interface encontrada como referência do estado do sistema
+          REF_CAPS=$(ls -1 /sys/class/leds/*::capslock/brightness 2>/dev/null | head -n 1)
+          REF_NUM=$(ls -1 /sys/class/leds/*::numlock/brightness 2>/dev/null | head -n 1)
+          REF_SCROLL=$(ls -1 /sys/class/leds/*::scrolllock/brightness 2>/dev/null | head -n 1)
 
-        lock_evento = threading.Lock()
+          # Lê o valor atual (0 ou 1) de cada LED conforme o Linux enxerga
+          VAL_CAPS=$( [ -n "$REF_CAPS" ] && cat "$REF_CAPS" || echo 0 )
+          VAL_NUM=$( [ -n "$REF_NUM" ] && cat "$REF_NUM" || echo 0 )
+          VAL_SCROLL=$( [ -n "$REF_SCROLL" ] && cat "$REF_SCROLL" || echo 0 )
 
-        # Função dedicada exclusivamente a INJETAR as luzes nos canais corretos
-        def aplicar_leds_no_hardware():
-            try:
-                # Procura todos os barramentos novamente para garantir envio limpo
-                todos_os_dispositivos = [evdev.InputDevice(path) for path in evdev.list_devices()]
-                zxw_outputs = [d for d in todos_os_dispositivos if "ZXWMicroChip" in d.name]
-                
-                for d in zxw_outputs:
-                    for codigo_tecla, info in ESTADOS_LED.items():
-                        estado = 1 if info["status"] else 0
-                        try:
-                            d.write(ecodes.EV_LED, info["led"], estado)
-                            d.write(ecodes.EV_SYN, ecodes.SYN_REPORT, 0)
-                        except: pass
-            except Exception as e:
-                print(f"Erro ao aplicar LEDs: {e}")
-                sys.stdout.flush()
+          # 2. Se o estado do Caps Lock mudou no sistema, força TODOS os leds de Caps do chip a atualizarem
+          if [ "$VAL_CAPS" != "$LAST_CAPS" ]; then
+            for led in /sys/class/leds/*::capslock/brightness; do
+              [ -f "$led" ] && echo "$VAL_CAPS" > "$led"
+            done
+            LAST_CAPS="$VAL_CAPS"
+          fi
 
-        # Função dedicada exclusivamente a OUVIR as teclas de digitação
-        def monitorar_teclas(dev):
-            print(f"DEBUG: Escutando entradas em {dev.path} ({dev.name})")
-            sys.stdout.flush()
-            try:
-                for event in dev.read_loop():
-                    if event.type == ecodes.EV_KEY:
-                        data = evdev.categorize(event)
-                        
-                        # Verifica se a tecla foi pressionada (keystate 1)
-                        if data.scancode in ESTADOS_LED and data.keystate == 1:
-                            with lock_evento:
-                                # Inverte o estado lógico no dicionário global
-                                ESTADOS_LED[data.scancode]["status"] = not ESTADOS_LED[data.scancode]["status"]
-                                nome = ESTADOS_LED[data.scancode]["nome"]
-                                print(f"TECLA DETECTADA: {nome} pressionado.")
-                                sys.stdout.flush()
-                                
-                                # Aplica a atualização de luzes imediatamente
-                                aplicar_leds_no_hardware()
-            except Exception as e:
-                print(f"Interface de escuta {dev.path} desconectada: {e}")
-                sys.stdout.flush()
+          # 3. Se o estado do Num Lock mudou no sistema, força TODOS os leds de Num do chip a atualizarem
+          if [ "$VAL_NUM" != "$LAST_NUM" ]; then
+            for led in /sys/class/leds/*::numlock/brightness; do
+              [ -f "$led" ] && echo "$VAL_NUM" > "$led"
+            done
+            LAST_NUM="$VAL_NUM"
+          fi
 
-        def iniciar():
-            print("--- Iniciando Serviço Separado de Entrada/Saída Evolut ---")
-            sys.stdout.flush()
-            while True:
-                try:
-                    devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
-                    zxw_devs = [d for d in devices if "ZXWMicroChip" in d.name]
-                    
-                    if zxw_devs:
-                        print(f"Sucesso: {len(zxw_devs)} sub-interfaces mapeadas do chip.")
-                        sys.stdout.flush()
-                        
-                        # Aplica os estados iniciais de luz (Num Lock ligado)
-                        aplicar_leds_no_hardware()
-                        
-                        # Cria threads de escuta para todas as sub-interfaces (garante pegar os inputs do teclado)
-                        threads = []
-                        for d in zxw_devs:
-                            t = threading.Thread(target=monitorar_teclas, args=(d,))
-                            t.daemon = True
-                            t.start()
-                            threads.append(t)
-                        
-                        for t in threads:
-                            t.join()
-                    else:
-                        print("Aguardando teclado ser conectado...")
-                        sys.stdout.flush()
-                except Exception as e:
-                    print(f"Erro no loop de varredura: {e}")
-                    sys.stdout.flush()
-                
-                time.sleep(5)
+          # 4. Se o estado do Scroll Lock mudou no sistema, força TODOS os leds de Scroll do chip a atualizarem
+          if [ "$VAL_SCROLL" != "$LAST_SCROLL" ]; then
+            for led in /sys/class/leds/*::scrolllock/brightness; do
+              [ -f "$led" ] && echo "$VAL_SCROLL" > "$led"
+            done
+            LAST_SCROLL="$VAL_SCROLL"
+          fi
 
-        if __name__ == "__main__":
-            iniciar()
+          # Pequena pausa de 50 milissegundos para manter o uso de CPU em praticamente 0%
+          sleep 0.05
+        done
       '';
     };
   };
