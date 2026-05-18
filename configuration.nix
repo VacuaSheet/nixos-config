@@ -384,6 +384,7 @@ programs.zsh = {
   alsa-tools 
   steamtinkerlaunch
   waydroid
+  waydroid-helper
 
          # Antvirus
            clamav
