@@ -284,6 +284,12 @@ programs.zsh = {
       nh os switch /home/_-_-yakov_-_-/nixos-config
     }
 
+	comitav() {
+    kill -9 4546 2>/dev/null || pkill -9 gpg
+    gpgconf --kill gpg-agent
+    echo "GPG/comit destravado e reiniciado!"
+    }
+
 '';
 
 };
