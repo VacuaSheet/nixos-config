@@ -429,7 +429,9 @@ programs.zsh = {
      brightnessctl 
      openrgb
      iptables
-     kronometer
+     kdePackages.ktimer
+     gnome-clocks
+     solanum
   ];
 
    virtualisation.waydroid.enable = true; # Android
