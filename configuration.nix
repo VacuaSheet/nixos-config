@@ -429,6 +429,7 @@ programs.zsh = {
      brightnessctl 
      openrgb
      iptables
+     kronometer
   ];
 
    virtualisation.waydroid.enable = true; # Android
