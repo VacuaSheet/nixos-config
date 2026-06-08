@@ -385,6 +385,7 @@ programs.zsh = {
   steamtinkerlaunch
   waydroid
   waydroid-helper
+  polonium #multi janelas
 
          # Antvirus
            clamav
