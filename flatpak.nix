@@ -29,6 +29,8 @@ in
       "com.discordapp.Discord"
       "net.davidotek.pupgui2"
       "org.freedesktop.Platform.GL32.default//25.08"
+      "org.freedesktop.Platform.VulkanLayer.gamescope"
+      "io.github.rfrench3.scopebuddy-gui" #automatiza o gamescope
     ];
 
   overrides = {
