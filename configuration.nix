@@ -437,7 +437,6 @@ comitav() {
      kdePackages.ktimer
      gnome-clocks
      solanum
-     syncthing # Sicronização de pasta pc para celular e vice versa
   ];
 
    virtualisation.waydroid.enable = true; # Android
