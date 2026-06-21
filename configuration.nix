@@ -251,6 +251,7 @@ programs.zsh = {
  	zce = "nano ~/.zsh_history";
 	zcp = "LC_ALL=C sed -i '/TERMO_QUE_VOCE_QUER_APAGAR/d' ~/.zsh_history";
 	zch = "echo -n \"\" > ~/.zsh_history";
+	mpvpl = "mpv --ytdl-raw-options=yes-playlist=";
          };  
              
      # 2. A função para o sga aceitar argumentos (FORA do bloco acima)
