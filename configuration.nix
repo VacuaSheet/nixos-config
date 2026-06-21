@@ -284,11 +284,19 @@ programs.zsh = {
       nh os switch /home/_-_-yakov_-_-/nixos-config
     }
 
-	comitav() {
-    kill -9 4546 2>/dev/null || pkill -9 gpg
-    gpgconf --kill gpg-agent
-    echo "GPG/comit destravado e reiniciado!"
-    }
+comitav() {
+    # Remove os arquivos de trava gerados por travamentos anteriores
+    rm -f ~/.gnupg/public-keys.d/pubring.db.lock 2>/dev/null
+    rm -f ~/.gnupg/*.lock 2>/dev/null
+    
+    # Derruba o agente clássico e o novo gerenciador de banco de dados do GPG
+    gpgconf --kill gpg-agent 2>/dev/null
+    pkill -9 keyboxd 2>/dev/null
+    pkill -9 gpg 2>/dev/null
+    
+    echo "✅ GPG, keyboxd e travas de arquivos limpos com sucesso!"
+}
+
 
 '';
 
@@ -433,6 +441,7 @@ programs.zsh = {
      kdePackages.ktimer
      gnome-clocks
      solanum
+     syncthing # Sicronização de pasta pc para celular e vice versa
   ];
 
    virtualisation.waydroid.enable = true; # Android
