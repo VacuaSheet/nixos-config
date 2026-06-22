@@ -248,7 +248,7 @@ programs.zsh = {
         c = "printf \"\\033[2J\\033[3J\\033[1;1H\"" ;
         flat = "f() { flatpak remote-add --if-not-exists flathub https://dl.flathub.org && flatpak install flathub \"$1\"; }; f";
         goanime = "$HOME/go/bin/goanime";  
-	nix-shell --pure -p uv mpv fzf curl bash --run 'uv run --project $HOME/ani-tupi $HOME/ani-tupi/main.py --help'
+	ani-tupi = "nix-shell --pure -p uv mpv fzf curl bash xdg-utils --run 'export PATH=/run/current-system/sw/bin:/usr/bin:/bin:$PATH; export DISPLAY=$DISPLAY; export WAYLAND_DISPLAY=$WAYLAND_DISPLAY; export XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR; export LD_LIBRARY_PATH=/run/opengl-driver/lib:/run/opengl-driver-32/lib:$LD_LIBRARY_PATH; export AMD_VULKAN_ICD=RADV; export DBUS_SESSION_BUS_ADDRESS=\"\"; export PLAYER=mpv; uv run --project $HOME/ani-tupi $HOME/ani-tupi/main.py'";
  	zce = "nano ~/.zsh_history";
 	zcp = "LC_ALL=C sed -i '/TERMO_QUE_VOCE_QUER_APAGAR/d' ~/.zsh_history";
 	zch = "echo -n \"\" > ~/.zsh_history";
