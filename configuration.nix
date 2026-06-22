@@ -412,6 +412,9 @@ comitav() {
     usbutils # Para consultar e gerenciar barramentos e dispositivos USB no Linux
     direnv
      mpv # OBRIGATÓRIO: O GoAnime usa ele para dar o play
+    curl
+    bash
+    uv
      mpv-handler
      ani-cli
      yt-dlp
