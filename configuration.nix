@@ -248,7 +248,7 @@ programs.zsh = {
         c = "printf \"\\033[2J\\033[3J\\033[1;1H\"" ;
         flat = "f() { flatpak remote-add --if-not-exists flathub https://dl.flathub.org && flatpak install flathub \"$1\"; }; f";
         goanime = "$HOME/go/bin/goanime";  
-	ani-tupi = "$HOME/ani-tupi";
+	ani-tupi = "nix-shell -p uv mpv fzf curl bash --run \"uv run \$HOME/ani-tupi/main.py\"";
  	zce = "nano ~/.zsh_history";
 	zcp = "LC_ALL=C sed -i '/TERMO_QUE_VOCE_QUER_APAGAR/d' ~/.zsh_history";
 	zch = "echo -n \"\" > ~/.zsh_history";
