@@ -248,7 +248,7 @@ programs.zsh = {
         c = "printf \"\\033[2J\\033[3J\\033[1;1H\"" ;
         flat = "f() { flatpak remote-add --if-not-exists flathub https://dl.flathub.org && flatpak install flathub \"$1\"; }; f";
         goanime = "$HOME/go/bin/goanime";  
-	ani-tupi = "env PLAYER=mpv BROWSER=mpv DEFAULT_BROWSER=mpv $HOME/.local/bin/ani-tupi";
+	# ani-tupi = "env PLAYER=mpv BROWSER=mpv DEFAULT_BROWSER=mpv $HOME/.local/bin/ani-tupi";
  	zce = "nano ~/.zsh_history";
 	zcp = "LC_ALL=C sed -i '/TERMO_QUE_VOCE_QUER_APAGAR/d' ~/.zsh_history";
 	zch = "echo -n \"\" > ~/.zsh_history";
@@ -448,6 +448,16 @@ comitav() {
   ];
 
    virtualisation.waydroid.enable = true; # Android
+
+    # Força o NixOS a vincular links de internet e arquivos de vídeo diretamente ao MPV
+      xdg.mime.defaultApplications = {
+        "x-scheme-handler/http" = [ "mpv.desktop" ];
+        "x-scheme-handler/https" = [ "mpv.desktop" ];
+        "video/mp4" = [ "mpv.desktop" ];
+        "video/webm" = [ "mpv.desktop" ];
+        "video/x-matroska" = [ "mpv.desktop" ];
+      };
+
 
    # Configuração VS Code
     # Isso ajuda extensões do VS Code a executarem binários que esperam bibliotecas padrão em locais convencionais.
