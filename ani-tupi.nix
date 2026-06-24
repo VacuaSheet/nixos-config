@@ -1,17 +1,16 @@
 { pkgs, ... }:
 
 let
-  # 1. Baixamos o repositório em Python atualizado do levyvix
-  # Alteramos o identificador 'name' para forçar o Nix a baixar a pasta certa e ignorar o cache antigo
+  # 1. Baixamos o repositório em Python com o hash exato fornecido pelo Nix
   ani-tupi-repo = pkgs.fetchFromGitHub {
     name = "ani-tupi-python-src";
     owner = "levyvix";
     repo = "ani-tupi";
     rev = "master";
-    hash = "sha256-pWrPuzpilXwHVRLwJB+XMkgTiyPRIKdoMf4fXS8GnPg=";
+    hash = "sha256-N3UNGzC1Q4s1kMenYdjeAfV2CR8sdHbO+pTbFbyis0s="; # Hash real do repositório Python
   };
 
-  # 2. Montamos o ambiente Python do Nix com todas as dependências que o script pede
+  # 2. Montamos o ambiente Python com todas as dependências necessárias
   python-env = pkgs.python3.withPackages (ps: with ps; [
     requests
     beautifulsoup4
