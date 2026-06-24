@@ -10,13 +10,14 @@ let
     hash = "sha256-N3UNGzC1Q4s1kMenYdjeAfV2CR8sdHbO+pTbFbyis0s=";
   };
 
-  # 2. Montamos o ambiente Python com TODAS as dependências necessárias (incluindo o pydantic)
+  # 2. Montamos o ambiente Python com TODAS as dependências identificadas até agora
   python-env = pkgs.python3.withPackages (ps: with ps; [
     requests
     beautifulsoup4
     prompt-toolkit
     setuptools
-    pydantic # Adicionado para corrigir o ModuleNotFoundError
+    pydantic
+    pydantic-settings # Adicionado para corrigir o erro ModuleNotFoundError: pydantic_settings
   ]);
 in
 {
