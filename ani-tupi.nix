@@ -10,10 +10,11 @@ let
     hash = "sha256-N3UNGzC1Q4s1kMenYdjeAfV2CR8sdHbO+pTbFbyis0s=";
   };
 
-  # 2. Montamos o ambiente Python com TODAS as dependências do projeto
+  # 2. Montamos o ambiente Python com absolutamente TODAS as dependências do projeto
   python-env = pkgs.python3.withPackages (ps: with ps; [
-    # ---- Dependências Base de Interface e CLI ----
+    # ---- Dependências Base de Interface, CLI e Menus ----
     prompt-toolkit
+    inquirerpy        # Adicionado para corrigir o erro ModuleNotFoundError: 'InquirerPy'
     pydantic
     pydantic-settings
     setuptools
