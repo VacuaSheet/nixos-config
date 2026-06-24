@@ -1,13 +1,15 @@
 { pkgs, ... }:
 
 let
-  # 1. Buscamos o script oficial usando a URL corrigida do domínio da AWS/GitHub
-  ani-tupi-script = pkgs.fetchurl {
-    url = "https://githubusercontent.com";
-    hash = "sha256-o6f6O5uH0WJ4tO17Yyv86ZpS5b3Y4tZ76uB81vX0cW4=";
+  # 1. Busca os arquivos do repositório usando a função dedicada do GitHub para evitar travas de cache
+  ani-tupi-repo = pkgs.fetchFromGitHub {
+    owner = "eduardonery1";
+    repo = "ani-tupi";
+    rev = "master";
+    hash = "sha256-4YIidXw1nU7AonhX/gO3j+hE/X+G0IeYm8mIqV9zP8A=";
   };
 
-  # 2. Criamos o executável sandboxado usando a estrutura correta para scripts isolados
+  # 2. Cria o executável sandboxado usando a estrutura correta para scripts isolados
   ani-tupi-sandbox = pkgs.writeShellApplication {
     name = "ani-tupi";
     
@@ -22,7 +24,7 @@ let
     ];
 
     text = ''
-      # Executa o Bubblewrap isolando o ambiente e chamando o script que baixamos
+      # Executa o Bubblewrap isolando o ambiente e apontando para o script no repositório baixado
       exec bwrap \
         --ro-bind /nix/store /nix/store \
         --dev /dev \
@@ -37,7 +39,7 @@ let
         --setenv DISPLAY "$DISPLAY" \
         --setenv WAYLAND_DISPLAY "$WAYLAND_DISPLAY" \
         --setenv XDG_RUNTIME_DIR "/run/user/$(id -u)" \
-        bash "${ani-tupi-script}" "$@"
+        bash "${ani-tupi-repo}/ani-tupi" "$@"
     '';
   };
 in
