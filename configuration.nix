@@ -249,11 +249,11 @@ programs.zsh = {
         flat = "f() { flatpak remote-add --if-not-exists flathub https://dl.flathub.org && flatpak install flathub \"$1\"; }; f";
         goanime = "$HOME/go/bin/goanime";  
 	ani-tupi = "env WEBKIT_DISABLE_COMPOSITING_MODE=1 uv run git+https://github.com";
-        zce = "nano ~/.zsh_history";
 
  	zce = "nano ~/.zsh_history";
 	zcp = "LC_ALL=C sed -i '/TERMO_QUE_VOCE_QUER_APAGAR/d' ~/.zsh_history";
 	zch = "echo -n \"\" > ~/.zsh_history";
+
 	mpvpl = "mpv --ytdl-raw-options=yes-playlist=";
          };  
              
