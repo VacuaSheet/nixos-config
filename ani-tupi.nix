@@ -10,17 +10,29 @@ let
     hash = "sha256-N3UNGzC1Q4s1kMenYdjeAfV2CR8sdHbO+pTbFbyis0s=";
   };
 
-  # 2. Montamos o ambiente Python com TODAS as dependências identificadas até agora
+  # 2. Montamos o ambiente Python com TODAS as dependências do projeto
   python-env = pkgs.python3.withPackages (ps: with ps; [
-    requests
-    beautifulsoup4
+    # ---- Dependências Base de Interface e CLI ----
     prompt-toolkit
-    setuptools
     pydantic
     pydantic-settings
+    setuptools
+    loguru
+
+    # ---- Rede, Requisições e Scrapers ----
+    requests
+    urllib3
+    beautifulsoup4
+    cryptography
+
+    # ---- Cache e Algoritmos de Busca/Normalização ----
+    diskcache
     fuzzywuzzy
     levenshtein
-    diskcache         # Adicionado para corrigir o erro ModuleNotFoundError: 'diskcache'
+
+    # ---- Dependências Extras do Ecossistema (Scrapers/Parsers) ----
+    html5lib
+    brotli
   ]);
 in
 {
