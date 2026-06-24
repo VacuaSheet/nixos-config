@@ -18,6 +18,8 @@ let
     setuptools
     pydantic
     pydantic-settings # Adicionado para corrigir o erro ModuleNotFoundError: pydantic_settings
+    fuzzywuzzy        # Adicionado para corrigir o erro de importação do anilist_discovery.py
+    levenshtein       # Adicionado para otimizar a velocidade do fuzzywuzzy
   ]);
 in
 {
