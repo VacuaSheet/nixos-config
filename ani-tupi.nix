@@ -1,7 +1,6 @@
 { pkgs, ... }:
 
 let
-  # 1. Baixamos o repositório em Python com o hash correto
   ani-tupi-repo = pkgs.fetchFromGitHub {
     name = "ani-tupi-python-src";
     owner = "levyvix";
@@ -10,21 +9,17 @@ let
     hash = "sha256-N3UNGzC1Q4s1kMenYdjeAfV2CR8sdHbO+pTbFbyis0s=";
   };
 
-  # 2. Ambiente Python com ABSOLUTAMENTE TODAS as dependências da aplicação
   python-env = pkgs.python3.withPackages (ps: with ps; [
-    # ---- Interface, Menus e Renderização CLI ----
     prompt-toolkit
     inquirerpy
     rich
     loguru
-    nest-asyncio      # Adicionado para evitar quebra de concorrência assíncrona da TUI
+    nest-asyncio
 
-    # ---- Configurações e Modelagem de Dados ----
     pydantic
     pydantic-settings
     setuptools
 
-    # ---- Rede e Requisições Assíncronas/Síncronas ----
     requests
     urllib3
     cryptography
@@ -33,34 +28,55 @@ let
     anyio
     h11
 
-    # ---- Extração, Scrapers e Parsers Web ----
     beautifulsoup4
     html5lib
     brotli
-    lxml              # Adicionado porque os scrapers dependem do motor de XML/HTML lxml
+    lxml
 
-    # ---- Cache e Algoritmos de Busca/Normalização ----
     diskcache
     fuzzywuzzy
     levenshtein
   ]);
 in
 {
-  # 3. Criamos a Sandbox do Bubblewrap injetando o ambiente Python estruturado
   home.packages = [
     (pkgs.writeShellApplication {
       name = "ani-tupi";
-      
-      runtimeInputs = with pkgs; [ 
-        mpv          
-        zathura      
-        curl 
-        gnugrep 
-        coreutils 
-        bubblewrap 
+
+      runtimeInputs = with pkgs; [
+        mpv
+        zathura
+        curl
+        gnugrep
+        coreutils
+        bubblewrap
       ];
 
       text = ''
+        set -euo pipefail
+
+        UID="$(id -u)"
+        RUNTIME_DIR="/run/user/$UID"
+
+        # Sockets (Wayland)
+        WAYLAND_SOCKET=""
+        WAYLAND_DISPLAY_VAL="''${WAYLAND_DISPLAY:-}" 
+
+
+        if [ -n "$WAYLAND_DISPLAY_VAL" ]; then
+          WAYLAND_SOCKET="$RUNTIME_DIR/$WAYLAND_DISPLAY_VAL"
+        fi
+
+
+
+
+        # Pulse / PipeWire
+        PULSE_DIR="$RUNTIME_DIR/pulse"
+        PIPEWIRE_0="$RUNTIME_DIR/pipewire-0"
+
+        # X11 socket (quando aplicável)
+        XSOCK="/tmp/.X11-unix"
+
         exec bwrap \
           --ro-bind /nix/store /nix/store \
           --dev /dev \
@@ -70,14 +86,23 @@ in
           --die-with-parent \
           --bind-try "$HOME/.config/ani-tupi" "$HOME/.config/ani-tupi" \
           --bind-try "$HOME/.config/mpv" "$HOME/.config/mpv" \
-          --ro-bind-try "/run/user/$(id -u)/pulse" "/run/user/$(id -u)/pulse" \
-          --ro-bind-try "/run/user/$(id -u)/pipewire-0" "/run/user/$(id -u)/pipewire-0" \
-          --ro-bind-try "/run/user/$(id -u)/wayland-0" "/run/user/$(id -u)/wayland-0" \
-          --setenv DISPLAY "$DISPLAY" \
-          --setenv WAYLAND_DISPLAY "$WAYLAND_DISPLAY" \
-          --setenv XDG_RUNTIME_DIR "/run/user/$(id -u)" \
+          --ro-bind-try "$PULSE_DIR" "$PULSE_DIR" \
+          --ro-bind-try "$PIPEWIRE_0" "$PIPEWIRE_0" \
+          --ro-bind-try "$WAYLAND_SOCKET" "$WAYLAND_SOCKET" \
+          --ro-bind-try "$XSOCK" "$XSOCK" \
+          --setenv DISPLAY "''${DISPLAY:-}" \
+          --setenv WAYLAND_DISPLAY "''${WAYLAND_DISPLAY:-}" \
+
+
+
+
+
+
+          --setenv XDG_RUNTIME_DIR "$RUNTIME_DIR" \
+
           "${python-env}/bin/python" "${ani-tupi-repo}/main.py" "$@"
       '';
     })
   ];
 }
+
