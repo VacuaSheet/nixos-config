@@ -1,21 +1,22 @@
 { pkgs, ... }:
 
 let
-  # 1. Baixamos o repositório em Python com o hash exato fornecido pelo Nix
+  # 1. Baixamos o repositório em Python com o hash correto
   ani-tupi-repo = pkgs.fetchFromGitHub {
     name = "ani-tupi-python-src";
     owner = "levyvix";
     repo = "ani-tupi";
     rev = "master";
-    hash = "sha256-N3UNGzC1Q4s1kMenYdjeAfV2CR8sdHbO+pTbFbyis0s="; # Hash real do repositório Python
+    hash = "sha256-N3UNGzC1Q4s1kMenYdjeAfV2CR8sdHbO+pTbFbyis0s=";
   };
 
-  # 2. Montamos o ambiente Python com todas as dependências necessárias
+  # 2. Montamos o ambiente Python com TODAS as dependências necessárias (incluindo o pydantic)
   python-env = pkgs.python3.withPackages (ps: with ps; [
     requests
     beautifulsoup4
     prompt-toolkit
     setuptools
+    pydantic # Adicionado para corrigir o ModuleNotFoundError
   ]);
 in
 {
@@ -25,8 +26,8 @@ in
       name = "ani-tupi";
       
       runtimeInputs = with pkgs; [ 
-        mpv          # Player de vídeo obrigatório
-        zathura      # Leitor de PDF para Mangá (recomendado)
+        mpv          
+        zathura      
         curl 
         gnugrep 
         coreutils 
