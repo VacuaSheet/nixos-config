@@ -11,7 +11,7 @@ let
       repo = "ani-tupi";
       rev = "master"; 
       # Hash fictício. Substitua pelo hash correto gerado pelo nix-prefetch-url
-      sha256 = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="; 
+      sha256 = "sha256-pWrPuzpilXwHVRLwJB+XMkgTiyPRIKdoMf4fXS8GnPg="; 
     };
 
     installPhase = ''
