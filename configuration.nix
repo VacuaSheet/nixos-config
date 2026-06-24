@@ -248,6 +248,7 @@ programs.zsh = {
         c = "printf \"\\033[2J\\033[3J\\033[1;1H\"" ;
         flat = "f() { flatpak remote-add --if-not-exists flathub https://dl.flathub.org && flatpak install flathub \"$1\"; }; f";
         goanime = "$HOME/go/bin/goanime";  
+	ani-tupi = "env WEBKIT_DISABLE_COMPOSITING_MODE=1 uv run git+https://github.com";
         zce = "nano ~/.zsh_history";
 
  	zce = "nano ~/.zsh_history";
