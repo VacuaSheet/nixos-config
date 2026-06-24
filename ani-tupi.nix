@@ -92,13 +92,8 @@ in
           --ro-bind-try "$XSOCK" "$XSOCK" \
           --setenv DISPLAY "''${DISPLAY:-}" \
           --setenv WAYLAND_DISPLAY "''${WAYLAND_DISPLAY:-}" \
-
-
-
-
-
-
           --setenv XDG_RUNTIME_DIR "$RUNTIME_DIR" \
+
 
           "${python-env}/bin/python" "${ani-tupi-repo}/main.py" "$@"
       '';
