@@ -10,6 +10,8 @@ let
   };
 
   python-env = pkgs.python3.withPackages (ps: with ps; [
+    tqdm
+
     prompt-toolkit
     inquirerpy
     rich
@@ -36,7 +38,11 @@ let
     diskcache
     fuzzywuzzy
     levenshtein
+
+    python3Packages.tqdm
+
   ]);
+
 in
 {
   home.packages = [
@@ -55,8 +61,31 @@ in
       text = ''
         set -euo pipefail
 
+        echo "[ani-tupi] python-env=${python-env}" >&2
+        echo "[ani-tupi] python=${python-env}/bin/python" >&2
+        echo "[ani-tupi] smoke-check (outside bwrap):" >&2
+        "${python-env}/bin/python" -c "import tqdm; print('tqdm-ok', getattr(tqdm,'__version__','?'))" >&2 || true
+
+        echo "[ani-tupi] smoke-check (inside bwrap):" >&2
         BB_UID="$(id -u)"
         RUNTIME_DIR="/run/user/$BB_UID"
+
+        # DEBUG: garantir tqdm dentro do ambiente python-env antes do bwrap
+        "${python-env}/bin/python" -c "import tqdm; print('tqdm-inside-python-env-ok')" >&2 || true
+
+        # DEBUG: e dentro do bwrap básico
+        bwrap \
+          --ro-bind /nix/store /nix/store \
+          --dev /dev \
+          --proc /proc \
+          --tmpfs /tmp \
+          --share-net \
+          --die-with-parent \
+          --setenv XDG_RUNTIME_DIR "$RUNTIME_DIR" \
+          "${python-env}/bin/python" -c "import tqdm; print('tqdm-inside-bwrap-ok')" >/dev/null
+
+        echo "[ani-tupi] starting app" >&2
+
 
 
         # Sockets (Wayland)
