@@ -248,7 +248,6 @@ programs.zsh = {
         c = "printf \"\\033[2J\\033[3J\\033[1;1H\"" ;
         flat = "f() { flatpak remote-add --if-not-exists flathub https://dl.flathub.org && flatpak install flathub \"$1\"; }; f";
         goanime = "$HOME/go/bin/goanime";  
-	ani-tupi = "env WEBKIT_DISABLE_COMPOSITING_MODE=1 uv run --project $HOME/ani-tupi $HOME/ani-tupi/main.py";
 
  	zce = "nano ~/.zsh_history";
 	zcp = "LC_ALL=C sed -i '/TERMO_QUE_VOCE_QUER_APAGAR/d' ~/.zsh_history";
@@ -396,7 +395,8 @@ comitav() {
   steamtinkerlaunch
   waydroid
   waydroid-helper
-  polonium #multi janelas
+  polonium # multi janelas
+  bubblewrap # Caixa de areia
 
          # Antvirus
            clamav
