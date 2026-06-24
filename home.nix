@@ -9,7 +9,7 @@ in
  {
 
   imports = [
-    ./ani-tupi.nix
+    
   ];
 
   home.username = "_-_-yakov_-_-";
