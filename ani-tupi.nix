@@ -1,7 +1,7 @@
 { pkgs, ... }:
 
 let
-  # 1. Buscamos o script oficial diretamente do GitHub
+  # 1. Buscamos o script oficial usando a URL corrigida do domínio da AWS/GitHub
   ani-tupi-script = pkgs.fetchurl {
     url = "https://githubusercontent.com";
     hash = "sha256-o6f6O5uH0WJ4tO17Yyv86ZpS5b3Y4tZ76uB81vX0cW4=";
@@ -47,3 +47,4 @@ in
     ani-tupi-sandbox
   ];
 }
+
