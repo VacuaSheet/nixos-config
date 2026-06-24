@@ -55,8 +55,9 @@ in
       text = ''
         set -euo pipefail
 
-        UID="$(id -u)"
-        RUNTIME_DIR="/run/user/$UID"
+        BB_UID="$(id -u)"
+        RUNTIME_DIR="/run/user/$BB_UID"
+
 
         # Sockets (Wayland)
         WAYLAND_SOCKET=""
