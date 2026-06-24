@@ -1,22 +1,40 @@
 { pkgs, ... }:
 
 let
-  # 1. Busca os arquivos do repositório usando a função dedicada do GitHub para evitar travas de cache
-  ani-tupi-repo = pkgs.fetchFromGitHub {
-    owner = "eduardonery1";
+  # 1. Baixa o repositório oficial em Python do levyvix
+  ani-tupi-src = pkgs.fetchFromGitHub {
+    owner = "levyvix";
     repo = "ani-tupi";
     rev = "master";
-    hash = "sha256-4YIidXw1nU7AonhX/gO3j+hE/X+G0IeYm8mIqV9zP8A=";
+    # Hash do repositório Python atualizado
+    hash = "sha256-pWrPuzpilXwHVRLwJB+XMkgTiyPRIKdoMf4fXS8GnPg="; 
   };
 
-  # 2. Cria o executável sandboxado usando a estrutura correta para scripts isolados
+  # 2. Empacota a aplicação Python nativamente no ecossistema Nix
+  ani-tupi-app = pkgs.python3Packages.buildPythonApplication {
+    pname = "ani-tupi";
+    version = "1.2.1";
+    src = ani-tupi-src;
+    format = "pyproject";
+
+    # Dependências do ecossistema Python que o programa usa para rodar
+    propagatedBuildInputs = with pkgs.python3Packages; [
+      setuptools
+      requests
+      beautifulsoup4
+      prompt-toolkit
+    ];
+
+    doCheck = false;
+  };
+
+  # 3. Cria a Sandbox do Bubblewrap trancando o executável Python
   ani-tupi-sandbox = pkgs.writeShellApplication {
     name = "ani-tupi";
     
-    # Injeta os programas necessários direto no PATH interno do script
     runtimeInputs = with pkgs; [ 
-      mpv 
-      fzf 
+      mpv          # Player de vídeo obrigatório
+      zathura      # Leitor de PDF para Mangá (recomendado)
       curl 
       gnugrep 
       coreutils 
@@ -24,7 +42,6 @@ let
     ];
 
     text = ''
-      # Executa o Bubblewrap isolando o ambiente e apontando para o script no repositório baixado
       exec bwrap \
         --ro-bind /nix/store /nix/store \
         --dev /dev \
@@ -32,6 +49,7 @@ let
         --tmpfs /tmp \
         --share-net \
         --die-with-parent \
+        --bind-try "$HOME/.config/ani-tupi" "$HOME/.config/ani-tupi" \
         --bind-try "$HOME/.config/mpv" "$HOME/.config/mpv" \
         --ro-bind-try "/run/user/$(id -u)/pulse" "/run/user/$(id -u)/pulse" \
         --ro-bind-try "/run/user/$(id -u)/pipewire-0" "/run/user/$(id -u)/pipewire-0" \
@@ -39,14 +57,13 @@ let
         --setenv DISPLAY "$DISPLAY" \
         --setenv WAYLAND_DISPLAY "$WAYLAND_DISPLAY" \
         --setenv XDG_RUNTIME_DIR "/run/user/$(id -u)" \
-        bash "${ani-tupi-repo}/ani-tupi" "$@"
+        "${ani-tupi-app}/bin/ani-tupi" "$@"
     '';
   };
 in
 {
-  # 3. Adiciona o programa resultante diretamente ao seu perfil do Home Manager
+  # 4. Injeta o executável final na sua Home
   home.packages = [
     ani-tupi-sandbox
   ];
 }
-
