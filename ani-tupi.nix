@@ -10,28 +10,31 @@ let
     hash = "sha256-N3UNGzC1Q4s1kMenYdjeAfV2CR8sdHbO+pTbFbyis0s=";
   };
 
-  # 2. Montamos o ambiente Python com absolutamente TODAS as dependências do projeto
+  # 2. Montamos o ambiente Python com ABSOLUTAMENTE TODAS as dependências diretas e indiretas
   python-env = pkgs.python3.withPackages (ps: with ps; [
-    # ---- Dependências Base de Interface, CLI e Menus ----
+    # ---- Renderização Visual e Interface Teminal ----
     prompt-toolkit
-    inquirerpy        # Adicionado para corrigir o erro ModuleNotFoundError: 'InquirerPy'
+    inquirerpy
+    rich              # Adicionado para corrigir o erro ModuleNotFoundError: 'rich'
+    loguru
+
+    # ---- Configurações e Modelagem de Dados ----
     pydantic
     pydantic-settings
     setuptools
-    loguru
 
-    # ---- Rede, Requisições e Scrapers ----
+    # ---- Rede, Requisições e Extração de Dados ----
     requests
     urllib3
     beautifulsoup4
     cryptography
 
-    # ---- Cache e Algoritmos de Busca/Normalização ----
+    # ---- Mecanismos de Busca e Otimização de Cache ----
     diskcache
     fuzzywuzzy
     levenshtein
 
-    # ---- Dependências Extras do Ecossistema (Scrapers/Parsers) ----
+    # ---- Codificações Extras e Parsers Robustos ----
     html5lib
     brotli
   ]);
