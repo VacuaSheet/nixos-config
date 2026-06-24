@@ -10,33 +10,39 @@ let
     hash = "sha256-N3UNGzC1Q4s1kMenYdjeAfV2CR8sdHbO+pTbFbyis0s=";
   };
 
-  # 2. Montamos o ambiente Python com ABSOLUTAMENTE TODAS as dependências diretas e indiretas
+  # 2. Ambiente Python com ABSOLUTAMENTE TODAS as dependências da aplicação
   python-env = pkgs.python3.withPackages (ps: with ps; [
-    # ---- Renderização Visual e Interface Teminal ----
+    # ---- Interface, Menus e Renderização CLI ----
     prompt-toolkit
     inquirerpy
-    rich              # Adicionado para corrigir o erro ModuleNotFoundError: 'rich'
+    rich
     loguru
+    nest-asyncio      # Adicionado para evitar quebra de concorrência assíncrona da TUI
 
     # ---- Configurações e Modelagem de Dados ----
     pydantic
     pydantic-settings
     setuptools
 
-    # ---- Rede, Requisições e Extração de Dados ----
+    # ---- Rede e Requisições Assíncronas/Síncronas ----
     requests
     urllib3
-    beautifulsoup4
     cryptography
+    httpx
+    httpcore
+    anyio
+    h11
 
-    # ---- Mecanismos de Busca e Otimização de Cache ----
+    # ---- Extração, Scrapers e Parsers Web ----
+    beautifulsoup4
+    html5lib
+    brotli
+    lxml              # Adicionado porque os scrapers dependem do motor de XML/HTML lxml
+
+    # ---- Cache e Algoritmos de Busca/Normalização ----
     diskcache
     fuzzywuzzy
     levenshtein
-
-    # ---- Codificações Extras e Parsers Robustos ----
-    html5lib
-    brotli
   ]);
 in
 {
