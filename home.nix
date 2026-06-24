@@ -8,6 +8,10 @@ let
 in
  {
 
+  imports = [
+    ./ani-tupi.nix
+  ];
+
   home.username = "_-_-yakov_-_-";
   home.homeDirectory = "/home/_-_-yakov_-_-";
 
