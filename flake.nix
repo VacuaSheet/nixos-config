@@ -7,7 +7,6 @@
     home-manager = {
       url = "github:nix-community/home-manager/release-25.11";
       inputs.nixpkgs.follows = "nixpkgs";
-	inputs.nixpkgs-antigo.url = "github:nixos/nixpkgs/nixos-24.11";
     };
     plasma-manager = {
       url = "github:nix-community/plasma-manager";
