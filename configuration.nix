@@ -213,7 +213,7 @@ programs.ssh.extraConfig = ''
     #  thunderbird
        #obsidian # Bloco de notas e mais
        (pkgs.obsidian.override {
-  electron_40 = pkgs.electron_33-bin;
+  electron = pkgs.electron_35-bin; # Note que usamos 'electron' ou o nome correspondente que ele pedir
 })
         # Redes sociais
     # Tema cmd
