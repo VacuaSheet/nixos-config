@@ -211,7 +211,11 @@ programs.ssh.extraConfig = ''
     #postman             # Para testar APIs
     #docker-compose      # Orquestração de containers
     #  thunderbird
-       obsidian # Bloco de notas e mais
+       #obsidian # Bloco de notas e mais
+       # Isso força o Obsidian a usar o binário do Electron 33 (ou outra versão que já tem cache pronto)
+         (pkgs.obsidian.override { 
+         electron = pkgs.electron_33-bin; 
+         })
         # Redes sociais
     # Tema cmd
     eza
