@@ -212,9 +212,6 @@ programs.ssh.extraConfig = ''
     #docker-compose      # Orquestração de containers
     #  thunderbird
        #obsidian # Bloco de notas e mais
-       (pkgs.obsidian.override {
-  electron = pkgs.electron_35-bin; # Note que usamos 'electron' ou o nome correspondente que ele pedir
-})
         # Redes sociais
     # Tema cmd
     eza

@@ -32,6 +32,7 @@ in
       "org.freedesktop.Platform.VulkanLayer.gamescope//25.08"
       "io.github.rfrench3.scopebuddy-gui" #automatiza o gamescope
       "io.github.Faugus.faugus-launcher" #laucher com mods e mais
+      "md.obsidian.Obsidian"
     ];
 
   overrides = {
