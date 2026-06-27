@@ -212,10 +212,16 @@ programs.ssh.extraConfig = ''
     #docker-compose      # Orquestração de containers
     #  thunderbird
        #obsidian # Bloco de notas e mais
-       # Isso força o Obsidian a usar o binário do Electron 33 (ou outra versão que já tem cache pronto)
-         (pkgs.obsidian.override { 
-         electron = electron_33-bin; 
-         })
+       (pkgs.obsidian.overrideAttrs (oldAttrs: {
+  makeWrapperArgs = (oldAttrs.makeWrapperArgs or []) ++ [
+    "--set" "ELECTRON_SKIP_BINARY_DOWNLOAD" "1"
+  ];
+  preFixup = ''
+    gappsWrapperArgs+=(
+      --set ELECTRON_RUN_AS_NODE ""
+    )
+  '';
+}))
         # Redes sociais
     # Tema cmd
     eza
