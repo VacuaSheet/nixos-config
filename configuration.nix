@@ -212,12 +212,9 @@ programs.ssh.extraConfig = ''
     #docker-compose      # Orquestração de containers
     #  thunderbird
        #obsidian # Bloco de notas e mais
-       (pkgs.obsidian.overrideAttrs (oldAttrs: {
-  installPhase = builtins.replaceStrings 
-    ["${pkgs.electron_40}"] 
-    ["${pkgs.electron_33-bin}"] 
-    oldAttrs.installPhase;
-}))
+       (pkgs.obsidian.override {
+  electron_40 = pkgs.electron_33-bin;
+})
         # Redes sociais
     # Tema cmd
     eza
