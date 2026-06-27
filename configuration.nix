@@ -213,14 +213,10 @@ programs.ssh.extraConfig = ''
     #  thunderbird
        #obsidian # Bloco de notas e mais
        (pkgs.obsidian.overrideAttrs (oldAttrs: {
-  makeWrapperArgs = (oldAttrs.makeWrapperArgs or []) ++ [
-    "--set" "ELECTRON_SKIP_BINARY_DOWNLOAD" "1"
-  ];
-  preFixup = ''
-    gappsWrapperArgs+=(
-      --set ELECTRON_RUN_AS_NODE ""
-    )
-  '';
+  installPhase = builtins.replaceStrings 
+    ["${pkgs.electron_40}"] 
+    ["${pkgs.electron_33-bin}"] 
+    oldAttrs.installPhase;
 }))
         # Redes sociais
     # Tema cmd
