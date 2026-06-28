@@ -645,6 +645,12 @@ systemd.user.services.unmute-hardware-audio = {
       };
     };
 
+ # Limite de log 
+   services.journald.extraConfig = ''
+   SystemMaxUse=500M
+    '';
+
+
  #teclado
   # Script de controle dos LEDs do teclado (Caps/Num/Scroll) via evdev + systemd
   systemd.services.teclado-led-trigger = {
