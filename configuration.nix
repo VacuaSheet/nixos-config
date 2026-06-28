@@ -860,7 +860,7 @@ systemd.user.services.unmute-hardware-audio = {
 networking.nftables.enable = true;
 
 # Mantém a interface do Waydroid liberada no firewall
-networking.firewall.trustedInterfaces = [ "waydroid0" ];
+# networking.firewall.trustedInterfaces = [ "waydroid0" ];
 
    # Token (classic)
     nix.extraOptions = ''
