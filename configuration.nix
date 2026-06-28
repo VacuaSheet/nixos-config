@@ -13,7 +13,7 @@ in
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
-      ./squidservers.nix
+     # ./squidservers.nix
     ];
 
   # Define o Zen Kernel
@@ -519,7 +519,7 @@ comitav() {
 };
 
      # Dentro do seu configuration.nix (chamado pelo flake)
-       services.flatpak = {
+     /*  services.flatpak = {
         enable = true;
         overrides = {
          "net.lutris.Lutris" = {
@@ -532,7 +532,7 @@ comitav() {
             };
            };
           };
-         };
+         };*/
 
    # Ativa o serviço e o pacote do OpenRGB com regras de hardware injetadas
      services.hardware.openrgb = {
