@@ -392,8 +392,8 @@ comitav() {
   alsa-utils # APP mantedor do unmute
   alsa-tools 
   steamtinkerlaunch
-  waydroid
-  waydroid-helper
+  #waydroid
+  #waydroid-helper
   polonium # multi janelas
   bubblewrap # Caixa de areia
 
@@ -449,7 +449,7 @@ comitav() {
      solanum
   ];
 
-   virtualisation.waydroid.enable = true; # Android
+   #virtualisation.waydroid.enable = true; # Android
 
     # Força o NixOS a vincular links de internet e arquivos de vídeo diretamente ao MPV
       xdg.mime.defaultApplications = {
@@ -860,7 +860,7 @@ systemd.user.services.unmute-hardware-audio = {
 networking.nftables.enable = true;
 
 # Mantém a interface do Waydroid liberada no firewall
- networking.firewall.trustedInterfaces = [ "waydroid0" ];
+# networking.firewall.trustedInterfaces = [ "waydroid0" ];
 
    # Token (classic)
     nix.extraOptions = ''
