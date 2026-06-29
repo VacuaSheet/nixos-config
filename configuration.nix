@@ -392,7 +392,7 @@ comitav() {
   alsa-utils # APP mantedor do unmute
   alsa-tools 
   steamtinkerlaunch
- #  waydroid
+  waydroid
   waydroid-helper
   polonium # multi janelas
   bubblewrap # Caixa de areia
@@ -860,7 +860,7 @@ systemd.user.services.unmute-hardware-audio = {
 networking.nftables.enable = true;
 
 # Mantém a interface do Waydroid liberada no firewall
-# networking.firewall.trustedInterfaces = [ "waydroid0" ];
+ networking.firewall.trustedInterfaces = [ "waydroid0" ];
 
    # Token (classic)
     nix.extraOptions = ''
