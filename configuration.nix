@@ -392,8 +392,7 @@ comitav() {
   alsa-utils # APP mantedor do unmute
   alsa-tools 
   steamtinkerlaunch
-  #waydroid
-  #waydroid-helper
+  
   polonium # multi janelas
   bubblewrap # Caixa de areia
 
