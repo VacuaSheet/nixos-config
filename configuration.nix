@@ -849,7 +849,7 @@ systemd.user.services.unmute-hardware-audio = {
   # services.openssh.enable = true;
 
   # Open ports in the firewall.
-   networking.firewall.allowedTCPPorts = [ 80 443 3000 ];
+   networking.firewall.allowedTCPPorts = [ 80 443 3000 853 ];
    networking.firewall.allowedUDPPorts = [ 53 1234 ];
   # Habilita wifi automaticamente
    security.pam.services.sddm.enableKwallet = true;
