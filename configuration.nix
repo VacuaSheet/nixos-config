@@ -303,8 +303,9 @@ comitav() {
     
     echo "⚡ GPG destravado e keyboxd reiniciado!"
 }
-	# Cria o comando rápido "ai <modelo>" no terminal
-  	
+
+ #<--------------------------AI----------------------------->
+	# Comando rápido "ai <modelo>" no terminal  	
   ai() {
     if [ -z "$1" ]; then
       echo "Por favor, especifique o modelo. Exemplo: ai llama3.1:8b"
@@ -327,6 +328,82 @@ comitav() {
     wait $OLLAMA_PID 2>/dev/null
     echo "Ollama desligado com sucesso! Recursos liberados."
   }
+
+
+  # 2. COMANDO PARA INICIAR SALVANDO (AISAV)
+  aisav() {
+    if [ -z "$1" ]; then
+      echo "Por favor, especifique o modelo. Exemplo: aisav llama3.1:8b"
+      return 1
+    fi
+    mkdir -p "$HOME/.historico_ai"
+    
+    echo "Iniciando Ollama local com gravação..."
+    ollama serve > /dev/null 2>&1 &
+    OLLAMA_PID=$!
+    sleep 2
+
+    echo "Dica: Digite sua primeira pergunta. Ela definirá o nome do histórico."
+    echo "Aguarde... Iniciando chat."
+    
+    # Criamos um arquivo temporário para registrar a sessão atual
+    SESSION_FILE=$(mktemp)
+    
+    # Executa o ollama capturando a entrada e saída do terminal
+    ollama run "$1" --system "Responda em português." | tee "$SESSION_FILE"
+
+    # Processa o arquivo temporário para gerar o nome do arquivo final com base na primeira interação
+    FIRST_LINE=$(head -n 5 "$SESSION_FILE" | grep -v -e '^$' | head -n 1 | tr -dc 'a-zA-Z0-9_ ')
+    TITLE=$(echo "''${FIRST_LINE:-conversa_sem_titulo}" | cut -c1-30 | sed 's/ /_/g')
+    FINAL_PATH="$HOME/.historico_ai/''${TITLE}.json"
+    
+    # Salva a estrutura simulando linhas de planilha (Usuário | IA)
+    cat "$SESSION_FILE" > "$FINAL_PATH"
+    echo "Conversa salva com sucesso em: $FINAL_PATH (Título: $TITLE)"
+    
+    rm -f "$SESSION_FILE"
+    kill $OLLAMA_PID
+    wait $OLLAMA_PID 2>/dev/null
+  }
+
+  # 3. COMANDO PARA CARREGAR E CONTINUAR (AILOAD)
+  aiload() {
+    if [ -z "$1" ] || [ -z "$2" ]; then
+      echo "Uso correto: aiload <nome_do_titulo> <modelo>"
+      echo "Exemplo: aiload meu_projeto llama3.1:8b"
+      return 1
+    fi
+    
+    FILE_PATH="$HOME/.historico_ai/$1.json"
+    if [ ! -f "$FILE_PATH" ]; then
+      echo "Histórico '$1' não encontrado na pasta ~/.historico_ai/"
+      return 1
+    fi
+
+    echo "Iniciando Ollama local e carregando histórico..."
+    ollama serve > /dev/null 2>&1 &
+    OLLAMA_PID=$!
+    sleep 2
+
+    echo "--- Carregando Contexto Antigo ---"
+    # Injeta o histórico antigo diretamente na memória de contexto do Ollama antes de abrir o prompt
+    ollama run "$2" "Abaixo está o histórico da nossa conversa anterior. Leia para se lembrar do assunto, mas responda apenas com 'Entendido, vamos continuar de onde paramos'. Histórico: $(cat "$FILE_PATH")"
+    
+    echo "--- Pronto! Continue sua conversa ---"
+    # Abre o chat contínuo e atualiza o arquivo no final
+    NEW_SESSION=$(mktemp)
+    ollama run "$2" | tee "$NEW_SESSION"
+    
+    # Adiciona o novo conteúdo ao arquivo existente
+    cat "$NEW_SESSION" >> "$FILE_PATH"
+    echo "Histórico atualizado com sucesso!"
+    
+    rm -f "$NEW_SESSION"
+    kill $OLLAMA_PID
+    wait $OLLAMA_PID 2>/dev/null
+  }
+ #<-----------------------------AI--------------------------------->
+
 '';
 
 };
