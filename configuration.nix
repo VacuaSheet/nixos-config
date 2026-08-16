@@ -199,6 +199,7 @@ programs.ssh.extraConfig = ''
     isNormalUser = true;
     description = "Tiago da Silva Santos";
     extraGroups = [ "networkmanager" "wheel" "networkmanager" "libvirtd" "microvm" "podman" "docker" "video" "kvm" "input" ];
+  # apps local yakov
     packages = with pkgs; [
       kdePackages.kate
         # Ferramentas de Terminal e Git
@@ -220,7 +221,32 @@ programs.ssh.extraConfig = ''
     libsForQt5.qtstyleplugin-kvantum
     papirus-icon-theme
     layan-gtk-theme # O tema Layan se assemelha ao visual "moderno/azul" do Zorin
+    ollama # servidor local AI ollama
     ];
+	# Cria o comando rápido "ai <modelo>" no terminal
+  	interactiveShellInit = ''
+  	  ai() {
+  	    if [ -z "$1" ]; then
+  	      echo "Por favor, especifique o modelo. Exemplo: ai llama3.1:8b"
+	        return 1
+	      fi
+      
+	      echo "Iniciando o servidor Ollama local..."
+	      ollama serve > /dev/null 2>&1 &
+	      OLLAMA_PID=$!
+      
+	      # Espera o servidor iniciar
+	      sleep 2
+      
+	      echo "Abrindo o modelo $1..."
+	      ollama run "$1"
+      
+	      echo "Encerrando o servidor Ollama..."
+	      kill $OLLAMA_PID
+	      wait $OLLAMA_PID 2>/dev/null
+	      echo "Ollama desligado com sucesso! Recursos liberados."
+	    }
+	  '';  
   };
 
     programs.git.enable = true;
