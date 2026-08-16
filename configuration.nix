@@ -255,6 +255,8 @@ programs.zsh = {
  	zce = "nano ~/.zsh_history";
 	zcp = "LC_ALL=C sed -i '/TERMO_QUE_VOCE_QUER_APAGAR/d' ~/.zsh_history";
 	zch = "echo -n \"\" > ~/.zsh_history";
+
+	azsh = "source /etc/zshrc" # Atualiza o zsh
          };  
              
      # 2. A função para o sga aceitar argumentos (FORA do bloco acima)
@@ -303,27 +305,27 @@ comitav() {
 }
 	# Cria o comando rápido "ai <modelo>" no terminal
   	
-  	  ai() {
-  	    if [ -z "$1" ]; then
-  	      echo "Por favor, especifique o modelo. Exemplo: ai llama3.1:8b"
-	        return 1
-	      fi
-      
-	      echo "Iniciando o servidor Ollama local..."
-	      ollama serve > /dev/null 2>&1 &
-	      OLLAMA_PID=$!
-      
-	      # Espera o servidor iniciar
-	      sleep 2
-      
-	      echo "Abrindo o modelo $1..."
-	      ollama run "$1"
-      
-	      echo "Encerrando o servidor Ollama..."
-	      kill $OLLAMA_PID
-	      wait $OLLAMA_PID 2>/dev/null
-	      echo "Ollama desligado com sucesso! Recursos liberados."
-	    }
+ai() {
+    if [ -z "$1" ]; then
+      echo "Por favor, especifique o modelo. Exemplo: ai llama3.1:8b"
+      return 1
+    fi
+
+    echo "Iniciando o servidor Ollama local..."
+    ollama serve > /dev/null 2>&1 &
+    OLLAMA_PID=$!
+
+    # Espera o servidor iniciar
+    sleep 2
+
+    echo "Abrindo o modelo $1..."
+    ollama run "$1"
+
+    echo "Encerrando o servidor Ollama..."
+    kill $OLLAMA_PID
+    wait $OLLAMA_PID 2>/dev/null
+    echo "Ollama desligado com sucesso! Recursos liberados."
+  }
 '';
 
 };
