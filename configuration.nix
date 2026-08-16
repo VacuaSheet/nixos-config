@@ -305,22 +305,23 @@ comitav() {
 }
 	# Cria o comando rápido "ai <modelo>" no terminal
   	
-ai() {
+  ai() {
     if [ -z "$1" ]; then
       echo "Por favor, especifique o modelo. Exemplo: ai llama3.1:8b"
       return 1
     fi
-
+    
     echo "Iniciando o servidor Ollama local..."
     ollama serve > /dev/null 2>&1 &
     OLLAMA_PID=$!
-
+    
     # Espera o servidor iniciar
     sleep 2
-
-    echo "Abrindo o modelo $1..."
-    ollama run "$1"
-
+    
+    echo "Abrindo o modelo $1 em português..."
+    # A linha abaixo força o modelo a responder estritamente em português do Brasil
+    ollama run "$1" --system "Você é um assistente prestativo. Responda SEMPRE em português do Brasil, de forma clara, natural e direta."
+    
     echo "Encerrando o servidor Ollama..."
     kill $OLLAMA_PID
     wait $OLLAMA_PID 2>/dev/null
