@@ -256,7 +256,7 @@ programs.zsh = {
 	zcp = "LC_ALL=C sed -i '/TERMO_QUE_VOCE_QUER_APAGAR/d' ~/.zsh_history";
 	zch = "echo -n \"\" > ~/.zsh_history";
 
-	azsh = "source /etc/zshrc"; # Atualiza o zsh
+	azsh = "source ~/.zshrc"; # Atualiza o zsh
          };  
              
      # 2. A função para o sga aceitar argumentos (FORA do bloco acima)
