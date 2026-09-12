@@ -27,7 +27,6 @@ in
       "com.google.Chrome"
       "org.telegram.desktop"
       "com.discordapp.Discord"
-      "net.davidotek.pupgui2"
       "org.freedesktop.Platform.GL32.default//25.08"
       "org.freedesktop.Platform.VulkanLayer.gamescope//25.08"
       "io.github.rfrench3.scopebuddy-gui" #automatiza o gamescope
