@@ -132,6 +132,7 @@ in
   # 3. Configuração do Zsh
   programs.zsh = {
     enable = true;
+    dotDir = config.home.homeDirectory;
     enableCompletion = true;
     autosuggestion.enable = true;
     syntaxHighlighting.enable = true;
@@ -149,7 +150,7 @@ in
   # 4. Configuração do Starship
   programs.starship = {
   enable = true;
-  enableZshIntegration = true;
+enableZshIntegration = true;
   settings = {
     format = ''
    
