@@ -499,7 +499,7 @@ comitav() {
   steamtinkerlaunch
   #waydroid
   #waydroid-helper
-  polonium # multi janelas
+  kwin-tiling # multi janelas
   bubblewrap # Caixa de areia
 
          # Antvirus
