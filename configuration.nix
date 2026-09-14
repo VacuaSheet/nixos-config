@@ -499,7 +499,7 @@ comitav() {
   steamtinkerlaunch
   #waydroid
   #waydroid-helper
-  kdePackages.kwin-tiling # multi janelas
+  # kdePackages.kwin-tiling # multi janelas
   bubblewrap # Caixa de areia
 
          # Antvirus
