@@ -472,7 +472,7 @@ comitav() {
   amdgpu_top    # Monitor de GPU AMD estilo 'htop'
   btop          # Monitor de sistema bonitão (CPU, RAM, Rede)
   # VPN
-  protonvpn-gui  # Ou protonvpn-cli
+  proton-vpn  # Ou protonvpn-cli
    # Temas de ícones e aplicações
   papirus-icon-theme
   # Breeze-dark ou outro tema dark para base
@@ -533,7 +533,7 @@ comitav() {
      pciutils
      lutris
    # Games config
-     wineWowPackages.staging # Wine com suporte 32/64 bits
+     wineWow64Packages.staging # Wine com suporte 32/64 bits
      libvdpau-va-gl
      gst_all_1.gstreamer
      gst_all_1.gst-plugins-ugly
