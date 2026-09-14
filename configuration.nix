@@ -724,7 +724,7 @@ systemd.user.services.unmute-hardware-audio = {
   # Habilita o serviço do Ollama
    services.ollama = {
     enable = true;
-    acceleration = false; # Habilita aceleração para GPUs AMD (incluindo integradas)
+    package = pkgs.ollama-cpu; # Nova sintaxe obrigatória para rodar via CPU
       environmentVariables = {
     OLLAMA_ORIGINS = "*";
    # OLLAMA_ORIGINS = "app://obsidian.md*"; 
