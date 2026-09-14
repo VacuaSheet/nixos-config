@@ -35,11 +35,6 @@ in
     ];
 
   overrides = {
-	  "io.github.Faugus.faugus-launcher" = {
-    Context = {
-      devices = [ "--allow=multiarch" "--allow=deve" ];
-      sockets = [ "x11" "wayland" "fallback-x11" ];
-    };
      # Permissões específicas apenas para o Lutris
   "net.lutris.Lutris" = {
     Context.sockets = ["x11" "wayland" "fallback-x11"];
@@ -62,6 +57,12 @@ in
       Context.filesystems = [ "xdg-config/kdeglobals:ro" ];
       Context.sockets = [ "wayland" "fallback-x11" ];
     };
+
+    # Permissões Faugus
+	  "io.github.Faugus.faugus-launcher" = 
+    Context = {
+      devices = [ "--allow=multiarch" "--allow=deve" ];
+      sockets = [ "x11" "wayland" "fallback-x11" ];
 
     # Permissão de comunicação restrita aos navegadores
      # Aqui a "mágica" acontece: a função mkMozillaApp já preenche tudo
