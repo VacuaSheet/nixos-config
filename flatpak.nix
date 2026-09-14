@@ -59,11 +59,16 @@ in
     };
 
     # Permissões Faugus
-	  "io.github.Faugus.faugus-launcher" = {
+  "io.github.Faugus.faugus-launcher" = {
     Context = {
-      devices = [ "--allow=multiarch" "--allow=deve" ];
+      devices = [ "dri" "input" ];
       sockets = [ "x11" "wayland" "fallback-x11" ];
-	};
+    };
+    Overrides = [
+      "--allow=multiarch"
+      "--allow=devel"
+    ];
+  };
 
     # Permissão de comunicação restrita aos navegadores
      # Aqui a "mágica" acontece: a função mkMozillaApp já preenche tudo
