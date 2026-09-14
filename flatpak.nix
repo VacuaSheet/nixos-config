@@ -63,11 +63,8 @@ in
     Context = {
       devices = [ "dri" "input" ];
       sockets = [ "x11" "wayland" "fallback-x11" ];
+      features = [ "multiarch" "devel" ]; # Forma correta de passar as flags --allow no nix-flatpak
     };
-    Overrides = [
-      "--allow=multiarch"
-      "--allow=devel"
-    ];
   };
 
     # Permissão de comunicação restrita aos navegadores
