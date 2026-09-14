@@ -63,6 +63,7 @@ in
     Context = {
       devices = [ "--allow=multiarch" "--allow=deve" ];
       sockets = [ "x11" "wayland" "fallback-x11" ];
+	};
 
     # Permissão de comunicação restrita aos navegadores
      # Aqui a "mágica" acontece: a função mkMozillaApp já preenche tudo
