@@ -37,6 +37,7 @@ in
   ];
 
 	home.file.".local/share/kpackage/genericqml/Dream-Dark-Color-Global-6".source = ./temas/Dream-Dark-Color-Global-6;
+	xdg.enable = true;
 
   home.activation.configure-kde-numlock = lib.hm.dag.entryAfter ["writeBoundary"] ''
     # Força a adição da linha do Num Lock direto no arquivo do painel se ela não existir
