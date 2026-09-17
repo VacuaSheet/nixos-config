@@ -958,6 +958,8 @@ systemd.user.services.unmute-hardware-audio = {
    networking.firewall.allowedUDPPorts = [ 53 1234 ];
   # Habilita wifi automaticamente
    security.pam.services.sddm.enableKwallet = true;
+   # Serviço fwupd (Firmware Update Daemon) 
+   services.fwupd.enable = true;
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
 
