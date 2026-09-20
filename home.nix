@@ -36,7 +36,8 @@ in
     crudini
   ];
 
-	home.file.".local/share/kpackage/genericqml/Dream-Dark-Color-Global-6".source = ./temas/Dream-Dark-Color-Global-6;
+	home.file.".local/share/plasma/look-and-feel/Dream-Dark-Color-Global-6" = {
+    source = config.lib.file.mkOutOfStoreSymlink "/home/_-_-yakov_-_-/nixos-config/temas/Dream-Dark-Color-Global-6";
 	xdg.enable = true;
 
   home.activation.configure-kde-numlock = lib.hm.dag.entryAfter ["writeBoundary"] ''
