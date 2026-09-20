@@ -46,7 +46,7 @@ in
   };*/
 
   # Tema
-  home.file.".local/share/plasma/look-and-feel/Dream-Dark-Color-Global-6" = {
+    xdg.dataFile."plasma/look-and-feel/Dream-Dark-Color-Global-6" = {
     source = config.lib.file.mkOutOfStoreSymlink "/home/_-_-yakov_-_-/nixos-config/temas/plasma/look-and-feel/Dream-Dark-Color-Global-6";
 	recursive = true;
   };
