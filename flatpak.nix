@@ -60,21 +60,12 @@ in
 
     # Permissões Faugus
   "io.github.Faugus.faugus-launcher" = {
+      "~/.var/app/com.valvesoftware.Steam/"
     Context = {
       devices = [ "dri" "input" ];
-      sockets = [ "x11" "wayland" "fallback-x11" ];
+      sockets = [ "x11" "wayland" "fallback-x11" "session-bus" ];
       features = [ "multiarch" "devel" ]; # Forma correta de passar as flags --allow no nix-flatpak
     };
-  };
-
-  "io.github.Faugus.faugus-launcher" = {
-    filesystems = [
-      "~/.var/app/com.valvesoftware.Steam/"
-    ];
-    sockets = [
-      # Se precisar de comunicação via session bus:
-      # "talk-name=org.freedesktop.Flatpak"
-    ];
   };
 
     # Permissão de comunicação restrita aos navegadores
