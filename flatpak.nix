@@ -67,6 +67,8 @@ in
     };
   };
 
+    "io.github.Faugus.faugus-launcher --filesystem=~/.var/app/com.valvesoftware.Steam/ --talk-name=org.freedesktop.Flatpak";
+
     # Permissão de comunicação restrita aos navegadores
      # Aqui a "mágica" acontece: a função mkMozillaApp já preenche tudo
     "org.mozilla.firefox" = mkMozillaApp "firefox";
