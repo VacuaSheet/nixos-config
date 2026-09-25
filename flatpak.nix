@@ -67,7 +67,15 @@ in
     };
   };
 
-    "io.github.Faugus.faugus-launcher --filesystem=~/.var/app/com.valvesoftware.Steam/ --talk-name=org.freedesktop.Flatpak";
+  "io.github.Faugus.faugus-launcher" = {
+    filesystems = [
+      "~/.var/app/com.valvesoftware.Steam/"
+    ];
+    sockets = [
+      # Se precisar de comunicação via session bus:
+      # "talk-name=org.freedesktop.Flatpak"
+    ];
+  };
 
     # Permissão de comunicação restrita aos navegadores
      # Aqui a "mágica" acontece: a função mkMozillaApp já preenche tudo
