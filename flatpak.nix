@@ -60,7 +60,7 @@ in
 
     # Permissões Faugus
   "io.github.Faugus.faugus-launcher" = {
-      "~/.var/app/com.valvesoftware.Steam/"
+    filesystems = [ "~/.var/app/com.valvesoftware.Steam/" ];
     Context = {
       devices = [ "dri" "input" ];
       sockets = [ "x11" "wayland" "fallback-x11" "session-bus" ];
