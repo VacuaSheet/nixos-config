@@ -81,6 +81,5 @@ in
   systemd.services.flatpak-managed-install-timer = {
     wantedBy = [ "multi-user.target" ];
     after = [ "network-online.target" ];
-  };
-  };
+    };
 }
