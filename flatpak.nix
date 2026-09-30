@@ -76,10 +76,11 @@ in
   };
     update.auto.enable = true;
     uninstallUnmanaged = true;
+    };
 
  #Corrige ordem de inicialização do timer do Flatpak esperando a rede subir
   systemd.services.flatpak-managed-install-timer = {
     wantedBy = [ "multi-user.target" ];
     after = [ "network-online.target" ];
-    };
+   };
 }
