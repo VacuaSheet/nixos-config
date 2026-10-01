@@ -80,6 +80,7 @@ in
 
  #Corrige ordem de inicialização do timer do Flatpak esperando a rede subir
   systemd.services.flatpak-managed-install-timer = {
+    wants = [ "network-online.target" ];
     wantedBy = [ "multi-user.target" ];
     after = [ "network-online.target" ];
    };
