@@ -312,7 +312,7 @@ comitav() {
       return 1
     fi
     
-    echo "Iniciando o servidor Ollama local..."
+    echo "Iniciando o servidor  Ollama local..."
     ollama serve > /dev/null 2>&1 &
     OLLAMA_PID=$!
     
