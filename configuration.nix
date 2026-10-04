@@ -319,142 +319,116 @@ ai() {
   (echo '/set system "Você é um assistente prestativo. Responda SEMPRE em português do Brasil, de forma clara, natural e direta."'; cat -) | ollama run "$1"
 }
 
-# 2. COMANDO PARA INICIAR SALVANDO (AISAV)
-aisav() {   
-  if [ -z "$1" ]; then
-    echo "Por favor, especifique o modelo. Exemplo: aisav llama3.1:8b"
-    return 1
-  fi
-  
-  # Garante que o diretório existe
-  mkdir -p "$HOME/.historico_ai"
-  
-  echo "Iniciando Ollama local..."
-  # Inicializa o servidor apenas se ele já não estiver rodando
-  if ! pgrep -x "ollama" > /dev/null; then
-    ollama serve > /dev/null 2>&1 &
-    OLLAMA_PID=$!
-    sleep 2
-  fi
+  # 2. COMANDO PARA INICIAR SALVANDO (AISAV)
+  aisav() {   
+    if [ -z "''$1" ]; then
+      echo "Por favor, especifique o modelo. Exemplo: aisav llama3.1:8b"
+      return 1
+    fi
+    
+    mkdir -p "''$HOME/.historico_ai"
+    echo "Iniciando Ollama local..."
+    if ! pgrep -x "ollama" > /dev/null; then
+      ollama serve > /dev/null 2>&1 &
+      OLLAMA_PID=''$!
+      sleep 2
+    fi
 
-  echo "Aguarde... Iniciando chat com $1."
-  
-  # Cria arquivo temporário para a sessão
-  SESSION_FILE=$(mktemp)
-  
-  # O comando 'script' grava toda a interação do terminal mantendo-o interativo
-  script -q -c "ollama run $1" "$SESSION_FILE"
+    echo "Aguarde... Iniciando chat com ''$1."
+    SESSION_FILE=$(mktemp)
+    script -q -c "ollama run ''$1" "''$SESSION_FILE"
 
-  # Limpa caracteres de controle do terminal (^M, cores, etc) que o 'script' gera
-  # e pega a primeira linha de texto válida para o título
-  FIRST_LINE=$(sed 's/\x1b\[[0-9;]*m//g; s/\r//g' "$SESSION_FILE" | grep -E '[a-zA-Z0-9]' | head -n 1 | tr -dc 'a-zA-Z0-9_ ')
-  
-  # Define o título (substitui espaços por _) e limita a 30 caracteres
-  TITLE=$(echo "${FIRST_LINE:-conversa_sem_titulo}" | cut -c1-30 | sed 's/ /_/g')
-  FINAL_PATH="$HOME/.historico_ai/${TITLE}.txt"
-  
-  # Limpa o arquivo final e salva
-  sed 's/\x1b\[[0-9;]*m//g; s/\r//g' "$SESSION_FILE" > "$FINAL_PATH"
-  
-  echo ""
-  echo "Conversa salva com sucesso em: $FINAL_PATH (Título: $TITLE)"
-  
-  # Limpeza
-  rm -f "$SESSION_FILE"
-  if [ -n "$OLLAMA_PID" ]; then
-    kill "$OLLAMA_PID" 2>/dev/null
-  fi
-}
+    FIRST_LINE=$(sed 's/\x1b\[[0-9;]*m//g; s/\r//g' "''$SESSION_FILE" | grep -E '[a-zA-Z0-9]' | head -n 1 | tr -dc 'a-zA-Z0-9_ ')
+    TITLE=$(echo "''${FIRST_LINE:-conversa_sem_titulo}" | cut -c1-30 | sed 's/ /_/g')
+    FINAL_PATH="''$HOME/.historico_ai/''${TITLE}.txt"
+    
+    sed 's/\x1b\[[0-9;]*m//g; s/\r//g' "''$SESSION_FILE" > "''$FINAL_PATH"
+    echo ""
+    echo "Conversa salva com sucesso em: ''$FINAL_PATH (Título: ''$TITLE)"
+    
+    rm -f "''$SESSION_FILE"
+    if [ -n "''$OLLAMA_PID" ]; then
+      kill "''$OLLAMA_PID" 2>/dev/null
+    fi
+  }
 
-# 3. COMANDO PARA CARREGAR E CONTINUAR (AILOAD)
-aiload() {
-  if [ -z "$1" ] || [ -z "$2" ]; then
-    echo "Uso correto: aiload <nome_do_titulo> <modelo>"
-    echo "Exemplo: aiload meu_projeto llama3.1:8b"
-    return 1
-  fi
-  
-  FILE_PATH="$HOME/.historico_ai/$1.json"
-  if [ ! -f "$FILE_PATH" ]; then
-    echo "Histórico '$1' não encontrado na pasta ~/.historico_ai/"
-    return 1
-  fi
+  # 3. COMANDO PARA CARREGAR E CONTINUAR (AILOAD)
+  aiload() {
+    if [ -z "''$1" ] || [ -z "''$2" ]; then
+      echo "Uso correto: aiload <nome_do_titulo> <modelo>"
+      echo "Exemplo: aiload meu_projeto llama3.1:8b"
+      return 1
+    fi
+    
+    FILE_PATH="''$HOME/.historico_ai/''$1.json"
+    if [ ! -f "''$FILE_PATH" ]; then
+      # Tenta buscar .txt caso tenha mudado a extensão
+      FILE_PATH="''$HOME/.historico_ai/''$1.txt"
+      if [ ! -f "''$FILE_PATH" ]; then
+        echo "Histórico '室内''$1' não encontrado na pasta ~/.historico_ai/"
+        return 1
+      fi
+    fi
 
-  echo "Iniciando Ollama local..."
-  if ! pgrep -x "ollama" > /dev/null; then
-    ollama serve > /dev/null 2>&1 &
-    OLLAMA_PID=$!
-    sleep 2
-  fi
+    echo "Iniciando Ollama local..."
+    if ! pgrep -x "ollama" > /dev/null; then
+      ollama serve > /dev/null 2>&1 &
+      OLLAMA_PID=''$!
+      sleep 2
+    fi
 
-  echo "--- Carregando Contexto Antigo e Iniciando Chat ---"
-  
-  # Criamos um arquivo temporário para a nova sessão
-  NEW_SESSION=$(mktemp)
-  
-  # Iniciamos o ollama alimentando o histórico como o prompt de sistema (--system).
-  # Assim, o modelo lê todo o passado logo no primeiro token da nova conversa.
-  CONTEXTO_ANTIGO=$(cat "$FILE_PATH")
-  
-  script -q -c "ollama run $2 --system \"Você é um assistente em português. Continue a conversa abaixo de onde paramos. Histórico anterior: $CONTEXTO_ANTIGO\"" "$NEW_SESSION"
-  
-  # Limpa os caracteres de controle do terminal do novo trecho
-  TEMP_CLEAN=$(mktemp)
-  sed 's/\x1b\[[0-9;]*m//g; s/\r//g' "$NEW_SESSION" > "$TEMP_CLEAN"
-  
-  # Adiciona uma quebra de linha visual e o novo conteúdo ao arquivo original
-  echo -e "\n\n--- CONTINUAÇÃO DA SESSÃO ---" >> "$FILE_PATH"
-  cat "$TEMP_CLEAN" >> "$FILE_PATH"
-  
-  echo ""
-  echo "Histórico atualizado com sucesso em: $FILE_PATH"
-  
-  # Limpeza
-  rm -f "$NEW_SESSION" "$TEMP_CLEAN"
-  if [ -n "$OLLAMA_PID" ]; then
-    kill "$OLLAMA_PID" 2>/dev/null
-  fi
-}
+    echo "--- Carregando Contexto Antigo e Iniciando Chat ---"
+    NEW_SESSION=$(mktemp)
+    CONTEXTO_ANTIGO=$(cat "''$FILE_PATH")
+    
+    script -q -c "ollama run ''$2 --system \"Você é um assistente em português. Continue a conversa abaixo de onde paramos. Histórico anterior: ''$CONTEXTO_ANTIGO\"" "''$NEW_SESSION"
+    
+    TEMP_CLEAN=$(mktemp)
+    sed 's/\x1b\[[0-9;]*m//g; s/\r//g' "''$NEW_SESSION" > "''$TEMP_CLEAN"
+    
+    echo -e "\n\n--- CONTINUAÇÃO DA SESSÃO ---" >> "''$FILE_PATH"
+    cat "''$TEMP_CLEAN" >> "''$FILE_PATH"
+    echo ""
+    echo "Histórico atualizado com sucesso em: ''$FILE_PATH"
+    
+    rm -f "''$NEW_SESSION" "''$TEMP_CLEAN"
+    if [ -n "''$OLLAMA_PID" ]; then
+      kill "''$OLLAMA_PID" 2>/dev/null
+    fi
+  }
 
-# 4. COMANDO PARA VER O QUE FOI SALVO (AISHOW)
-aishow() {
-  DIR_HISTORICO="$HOME/.historico_ai"
+  # 4. COMANDO PARA VER O QUE FOI SALVO (AISHOW)
+  aishow() {
+    DIR_HISTORICO="''$HOME/.historico_ai"
+    if [ ! -d "''$DIR_HISTORICO" ] || [ -z "$(ls -A "''$DIR_HISTORICO" 2>/dev/null)" ]; then
+      echo "Nenhum histórico encontrado em ''$DIR_HISTORICO"
+      return 0
+    fi
 
-  # Se a pasta não existir ou estiver vazia
-  if [ ! -d "$DIR_HISTORICO" ] || [ -z "$(ls -A "$DIR_HISTORICO" 2>/dev/null)" ]; then
-    echo "Nenhum histórico encontrado em $DIR_HISTORICO"
-    return 0
-  fi
+    if [ -z "''$1" ]; then
+      echo "=== CONVERSAS SALVAS ==="
+      echo "Digite 'aishow <nome>' para ler uma conversa específica."
+      echo "------------------------"
+      ls -1 "''$DIR_HISTORICO" | sed 's/\.json$//' | sed 's/\.txt$//' | awk '{print "• " ''$0}'
+      return 0
+    fi
 
-  # CASO 1: Se não passar nenhum argumento, lista os arquivos disponíveis
-  if [ -z "$1" ]; then
-    echo "=== CONVERSAS SALVAS ==="
-    echo "Digite 'aishow <nome>' para ler uma conversa específica."
+    FILE_PATH=""
+    if [ -f "''$DIR_HISTORICO/''$1.json" ]; then
+      FILE_PATH="''$DIR_HISTORICO/''$1.json"
+    elif [ -f "''$DIR_HISTORICO/''$1.txt" ]; then
+      FILE_PATH="''$DIR_HISTORICO/''$1.txt"
+    fi
+
+    if [ -z "''$FILE_PATH" ]; then
+      echo "Histórico '室内''$1' não encontrado."
+      return 1
+    fi
+
+    echo "=== Exibindo: ''$1 ==="
     echo "------------------------"
-    ls -1 "$DIR_HISTORICO" | sed 's/\.json$//' | sed 's/\.txt$//' | awk '{print "• " $0}'
-    return 0
-  fi
-
-  # CASO 2: Se passar o nome, tenta encontrar o arquivo (com extensão .json ou .txt)
-  FILE_PATH=""
-  if [ -f "$DIR_HISTORICO/$1.json" ]; then
-    FILE_PATH="$DIR_HISTORICO/$1.json"
-  elif [ -f "$DIR_HISTORICO/$1.txt" ]; then
-    FILE_PATH="$DIR_HISTORICO/$1.txt"
-  fi
-
-  if [ -z "$FILE_PATH" ]; then
-    echo "Histórico '$1' não encontrado."
-    return 1
-  fi
-
-  # Mostra o conteúdo na tela usando o 'less' se for muito grande (permite rolar com as setas)
-  # Se preferir que apenas jogue no terminal, mude 'less -R' para 'cat'
-  echo "=== Exibindo: $1 ==="
-  echo "------------------------"
-  less -R "$FILE_PATH"
-}
-
+    less -R "''$FILE_PATH"
+  }
  #<-----------------------------AI--------------------------------->
 
 '';
