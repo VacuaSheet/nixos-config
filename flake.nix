@@ -52,6 +52,7 @@
 # -------------------------------
         ({ ... }: {
           services.flatpak.enable = true;
+	  systemd.services.flatpak-managed-install-timer.wantedBy = [ ];
           services.flatpak.update.onActivation = false;
           services.flatpak.remotes = [{
              name = "flathub";
