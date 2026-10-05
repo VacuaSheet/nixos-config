@@ -306,130 +306,90 @@ comitav() {
 
  #<--------------------------AI----------------------------->
 	# Comando rápido "ai <modelo>" no terminal  	
-# 1. COMANDO PARA INICIAR SEM SALVAMENTO
+# 1. COMANDO PARA INICIAR SEM SALVAMENTO (Com instrução de sistema funcional)
 ai() {
   if [ -z "$1" ]; then
-    echo "Por favor, especifique o modelo. Exemplo: ai llama3.1:8b"
+    echo "Por favor, especifique o modelo. Exemplo: ai llama3.1"
     return 1
   fi
   
   echo "Abrindo o modelo $1 em português..."
   
-  # Injeta a instrução de sistema e depois abre o modo interativo
-  # O comando '/set system' define o comportamento e o 'cat -' mantém o chat aberto para você digitar
-  (echo '/set system "Você é um assistente prestativo. Responda SEMPRE em português do Brasil, de forma clara, natural e direta."'; cat -) | ollama run "$1"
+  # O Ollama permite passar o prompt do sistema via flag --system
+  ollama run "$1" --system "Você é um assistente prestativo. Responda SEMPRE em português do Brasil, de forma clara, natural e direta."
 }
 
-  # 2. COMANDO PARA INICIAR SALVANDO (AISAV)
-  aisav() {   
-    if [ -z "''$1" ]; then
-      echo "Por favor, especifique o modelo. Exemplo: aisav llama3.1:8b"
-      return 1
-    fi
-    
-    mkdir -p "''$HOME/.historico_ai"
-    echo "Iniciando Ollama local..."
-    if ! pgrep -x "ollama" > /dev/null; then
-      ollama serve > /dev/null 2>&1 &
-      OLLAMA_PID=''$!
-      sleep 2
-    fi
+# 2. COMANDO PARA INICIAR SALVANDO (AISAV)
+aisav() {   
+  if [ -z "$1" ]; then
+    echo "Por favor, especifique o modelo. Exemplo: aisav llama3.1"
+    return 1
+  fi
+  
+  # Garante que o diretório de histórico existe
+  mkdir -p "$HOME/.historico_ai"
+  
+  # Verifica se o serviço do Ollama está rodando (No NixOS ele geralmente roda via systemd)
+  if ! pgrep -x "ollama" > /dev/null; then
+    echo "Aviso: O serviço Ollama não parece estar rodando. Tentando iniciar..."
+    ollama serve > /dev/null 2>&1 &
+    OLLAMA_PID=$!
+    sleep 2
+  fi
 
-    echo "Aguarde... Iniciando chat com ''$1."
-    SESSION_FILE=$(mktemp)
-    script -q -c "ollama run ''$1" "''$SESSION_FILE"
+  echo "Iniciando chat com $1... Escreva algo para gerar o título do arquivo."
+  SESSION_FILE=$(mktemp)
+  
+  # Grava a sessão interativa de forma limpa
+  script -q -c "ollama run $1 --system \"Você é um assistente prestativo. Responda SEMPRE em português do Brasil.\"" "$SESSION_FILE"
 
-    FIRST_LINE=$(sed 's/\x1b\[[0-9;]*m//g; s/\r//g' "''$SESSION_FILE" | grep -E '[a-zA-Z0-9]' | head -n 1 | tr -dc 'a-zA-Z0-9_ ')
-    TITLE=$(echo "''${FIRST_LINE:-conversa_sem_titulo}" | cut -c1-30 | sed 's/ /_/g')
-    FINAL_PATH="''$HOME/.historico_ai/''${TITLE}.txt"
-    
-    sed 's/\x1b\[[0-9;]*m//g; s/\r//g' "''$SESSION_FILE" > "''$FINAL_PATH"
-    echo ""
-    echo "Conversa salva com sucesso em: ''$FINAL_PATH (Título: ''$TITLE)"
-    
-    rm -f "''$SESSION_FILE"
-    if [ -n "''$OLLAMA_PID" ]; then
-      kill "''$OLLAMA_PID" 2>/dev/null
-    fi
-  }
+  # Extrai a primeira linha válida digitada para criar o título (removendo caracteres de escape ansi)
+  FIRST_LINE=$(sed 's/\x1b\[[0-9;]*m//g; s/\r//g' "$SESSION_FILE" | grep -E '[a-zA-Z0-9]' | head -n 1 | tr -dc 'a-zA-Z0-9_ ')
+  TITLE=$(echo "${FIRST_LINE:-conversa_sem_titulo}" | cut -c1-30 | sed 's/ /_/g')
+  FINAL_PATH="$HOME/.historico_ai/${TITLE}.txt"
+  
+  # Limpa o arquivo final tirando sujeiras do terminal e salva em .txt
+  sed 's/\x1b\[[0-9;]*m//g; s/\r//g' "$SESSION_FILE" > "$FINAL_PATH"
+  
+  echo ""
+  echo "Conversa salva com sucesso em: $FINAL_PATH"
+  
+  # Limpeza de temporários
+  rm -f "$SESSION_FILE"
+  if [ -n "$OLLAMA_PID" ]; then
+    kill "$OLLAMA_PID" 2>/dev/null
+  fi
+}
 
-  # 3. COMANDO PARA CARREGAR E CONTINUAR (AILOAD)
-  aiload() {
-    if [ -z "''$1" ] || [ -z "''$2" ]; then
-      echo "Uso correto: aiload <nome_do_titulo> <modelo>"
-      echo "Exemplo: aiload meu_projeto llama3.1:8b"
-      return 1
-    fi
-    
-    FILE_PATH="''$HOME/.historico_ai/''$1.json"
-    if [ ! -f "''$FILE_PATH" ]; then
-      # Tenta buscar .txt caso tenha mudado a extensão
-      FILE_PATH="''$HOME/.historico_ai/''$1.txt"
-      if [ ! -f "''$FILE_PATH" ]; then
-        echo "Histórico '室内''$1' não encontrado na pasta ~/.historico_ai/"
-        return 1
-      fi
-    fi
-
-    echo "Iniciando Ollama local..."
-    if ! pgrep -x "ollama" > /dev/null; then
-      ollama serve > /dev/null 2>&1 &
-      OLLAMA_PID=''$!
-      sleep 2
-    fi
-
-    echo "--- Carregando Contexto Antigo e Iniciando Chat ---"
-    NEW_SESSION=$(mktemp)
-    CONTEXTO_ANTIGO=$(cat "''$FILE_PATH")
-    
-    script -q -c "ollama run ''$2 --system \"Você é um assistente em português. Continue a conversa abaixo de onde paramos. Histórico anterior: ''$CONTEXTO_ANTIGO\"" "''$NEW_SESSION"
-    
-    TEMP_CLEAN=$(mktemp)
-    sed 's/\x1b\[[0-9;]*m//g; s/\r//g' "''$NEW_SESSION" > "''$TEMP_CLEAN"
-    
-    echo -e "\n\n--- CONTINUAÇÃO DA SESSÃO ---" >> "''$FILE_PATH"
-    cat "''$TEMP_CLEAN" >> "''$FILE_PATH"
-    echo ""
-    echo "Histórico atualizado com sucesso em: ''$FILE_PATH"
-    
-    rm -f "''$NEW_SESSION" "''$TEMP_CLEAN"
-    if [ -n "''$OLLAMA_PID" ]; then
-      kill "''$OLLAMA_PID" 2>/dev/null
-    fi
-  }
-
-  # 4. COMANDO PARA VER O QUE FOI SALVO (AISHOW)
-  aishow() {
-    DIR_HISTORICO="''$HOME/.historico_ai"
-    if [ ! -d "''$DIR_HISTORICO" ] || [ -z "$(ls -A "''$DIR_HISTORICO" 2>/dev/null)" ]; then
-      echo "Nenhum histórico encontrado em ''$DIR_HISTORICO"
-      return 0
-    fi
-
-    if [ -z "''$1" ]; then
-      echo "=== CONVERSAS SALVAS ==="
-      echo "Digite 'aishow <nome>' para ler uma conversa específica."
-      echo "------------------------"
-      ls -1 "''$DIR_HISTORICO" | sed 's/\.json$//' | sed 's/\.txt$//' | awk '{print "• " ''$0}'
-      return 0
-    fi
-
-    FILE_PATH=""
-    if [ -f "''$DIR_HISTORICO/''$1.json" ]; then
-      FILE_PATH="''$DIR_HISTORICO/''$1.json"
-    elif [ -f "''$DIR_HISTORICO/''$1.txt" ]; then
-      FILE_PATH="''$DIR_HISTORICO/''$1.txt"
-    fi
-
-    if [ -z "''$FILE_PATH" ]; then
-      echo "Histórico '室内''$1' não encontrado."
-      return 1
-    fi
-
-    echo "=== Exibindo: ''$1 ==="
-    echo "------------------------"
-    less -R "''$FILE_PATH"
-  }
+# 3. COMANDO PARA CARREGAR E CONTINUAR (AILOAD)
+aiload() {
+  if [ -z "$1" ] || [ -z "$2" ]; then
+    echo "Uso correto: aiload <nome_do_arquivo_sem_extensao> <modelo>"
+    echo "Exemplo: aiload minha_conversa llama3.1"
+    return 1
+  fi
+  
+  FILE_PATH="$HOME/.historico_ai/$1.txt"
+  
+  if [ ! -f "$FILE_PATH" ]; then
+    echo "Erro: Arquivo $FILE_PATH não encontrado."
+    return 1
+  fi
+  
+  echo "Carregando histórico de '$1' e continuando com o modelo $2..."
+  
+  # Envia o histórico antigo como contexto inicial para o Ollama em uma nova sessão do script
+  SESSION_FILE=$(mktemp)
+  
+  # Lê o arquivo antigo, injeta no prompt inicial do Ollama e reabre o modo interativo
+  script -q -c "(cat \"$FILE_PATH\"; echo \"\"; echo \"[Continuação da conversa anterior]\"; cat -) | ollama run $2" "$SESSION_FILE"
+  
+  # Atualiza o arquivo original com o novo conteúdo gerado
+  sed 's/\x1b\[[0-9;]*m//g; s/\r//g' "$SESSION_FILE" >> "$FILE_PATH"
+  rm -f "$SESSION_FILE"
+  
+  echo "Histórico atualizado em: $FILE_PATH"
+}
  #<-----------------------------AI--------------------------------->
 
 '';
