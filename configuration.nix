@@ -306,99 +306,98 @@ comitav() {
 
  #<--------------------------AI----------------------------->
 	# Comando rápido "ai <modelo>" no terminal
-  # 1. COMANDO PARA INICIAR SEM SALVAMENTO
-  ai() {
-    if [ -z "$1" ]; then
-      echo "Por favor, especifique o modelo. Exemplo: ai llama3.1:8b"
-      return 1
-    fi
-    
-    echo "Configurando o modelo $1 temporariamente em português..."
-    
-    # Criamos um nome único para o modelo customizado temporário
-    local TEMP_MODEL="temp_pt_$1"
-    
-    # Cria um Modelfile dinâmico com a instrução de sistema
-    local MODELFILE_TMP=$(mktemp)
-    echo "FROM $1" > "$MODELFILE_TMP"
-    echo 'SYSTEM "Você é um assistente prestativo. Responda SEMPRE em português do Brasil, de forma clara, natural e direta."' >> "$MODELFILE_TMP"
-    
-    # Compila o modelo no Ollama local
-    ollama create "$TEMP_MODEL" -f "$MODELFILE_TMP" > /dev/null
-    rm -f "$MODELFILE_TMP"
-    
-    echo "Abrindo o chat..."
-    ollama run "$TEMP_MODEL"
-    
-    # Limpa o modelo temporário após fechar o chat para não ocupar espaço
-    ollama rm "$TEMP_MODEL" > /dev/null
-  }
+  # Remove qualquer função antiga que esteja travada na sessão atual
+    unset -f ai aisav aiload 2>/dev/null
 
-  # 2. COMANDO PARA INICIAR SALVANDO (AISAV)
-  aisav() {   
-    if [ -z "$1" ]; then
-      echo "Por favor, especifique o modelo. Exemplo: aisav llama3.1:8b"
-      return 1
-    fi
-    
-    mkdir -p "$HOME/.historico_ai"
-    
-    local TEMP_MODEL="temp_pt_$1"
-    local MODELFILE_TMP=$(mktemp)
-    echo "FROM $1" > "$MODELFILE_TMP"
-    echo 'SYSTEM "Você é um assistente prestativo. Responda SEMPRE em português do Brasil, de forma clara, natural e direta."' >> "$MODELFILE_TMP"
-    
-    ollama create "$TEMP_MODEL" -f "$MODELFILE_TMP" > /dev/null
-    rm -f "$MODELFILE_TMP"
+    # 1. COMANDO PARA INICIAR SEM SALVAMENTO
+    ai() {
+      if [ -z "$1" ]; then
+        echo "Por favor, especifique o modelo. Exemplo: ai llama3.1:8b"
+        return 1
+      fi
+      
+      echo "Configurando o modelo $1 temporariamente em português..."
+      
+      # Substitui ":" por "_" para o nome do modelo temporário funcionar no Ollama
+      local TEMP_MODEL="temp_pt_''${1//:/_}"
+      local MODELFILE_TMP=$(mktemp)
+      
+      echo "FROM $1" > "$MODELFILE_TMP"
+      echo 'SYSTEM "Você é um assistente prestativo. Responda SEMPRE em português do Brasil, de forma clara, natural e direta."' >> "$MODELFILE_TMP"
+      
+      ollama create "$TEMP_MODEL" -f "$MODELFILE_TMP" > /dev/null
+      rm -f "$MODELFILE_TMP"
+      
+      echo "Abrindo o chat..."
+      ollama run "$TEMP_MODEL"
+      
+      ollama rm "$TEMP_MODEL" > /dev/null
+    }
 
-    echo "Iniciando chat gravado com $1... Escreva algo para gerar o título do arquivo."
-    SESSION_FILE=$(mktemp)
-    
-    # script grava a sessão interativa de forma limpa
-    script -q -c "ollama run $TEMP_MODEL" "$SESSION_FILE"
+    # 2. COMANDO PARA INICIAR SALVANDO (AISAV)
+    aisav() {   
+      if [ -z "$1" ]; then
+        echo "Por favor, especifique o modelo. Exemplo: aisav llama3.1:8b"
+        return 1
+      fi
+      
+      mkdir -p "$HOME/.historico_ai"
+      
+      local TEMP_MODEL="temp_pt_''${1//:/_}"
+      local MODELFILE_TMP=$(mktemp)
+      
+      echo "FROM $1" > "$MODELFILE_TMP"
+      echo 'SYSTEM "Você é um assistente prestativo. Responda SEMPRE em português do Brasil, de forma clara, natural e direta."' >> "$MODELFILE_TMP"
+      
+      ollama create "$TEMP_MODEL" -f "$MODELFILE_TMP" > /dev/null
+      rm -f "$MODELFILE_TMP"
 
-    FIRST_LINE=$(sed 's/\x1b\[[0-9;]*m//g; s/\r//g' "$SESSION_FILE" | grep -E '[a-zA-Z0-9]' | head -n 1 | tr -dc 'a-zA-Z0-9_ ')
-    
-    # Uso do ''$ para o Nix ignorar a interpolação do Bash
-    TITLE=$(echo "''${FIRST_LINE:-conversa_sem_titulo}" | cut -c1-30 | sed 's/ /_/g')
-    FINAL_PATH="$HOME/.historico_ai/''${TITLE}.txt"
-    
-    # Limpa caracteres de escape ANSI do terminal
-    sed 's/\x1b\[[0-9;]*m//g; s/\r//g' "$SESSION_FILE" > "$FINAL_PATH"
-    
-    echo ""
-    echo "Conversa salva com sucesso em: $FINAL_PATH"
-    
-    rm -f "$SESSION_FILE"
-    ollama rm "$TEMP_MODEL" > /dev/null
-  }
+      echo "Iniciando chat gravado com $1... Escreva algo para gerar o título do arquivo."
+      local SESSION_FILE=$(mktemp)
+      
+      # Executa o script capturando a sessão interativa do Zsh
+      script -q -c "ollama run $TEMP_MODEL" "$SESSION_FILE"
 
-  # 3. COMANDO PARA CARREGAR E CONTINUAR (AILOAD)
-  aiload() {
-    if [ -z "$1" ] || [ -z "$2" ]; then
-      echo "Uso correto: aiload <nome_do_arquivo_sem_extensao> <modelo>"
-      echo "Exemplo: aiload minha_conversa llama3.1:8b"
-      return 1
-    fi
-    
-    FILE_PATH="$HOME/.historico_ai/$1.txt"
-    
-    if [ ! -f "$FILE_PATH" ]; then
-      echo "Erro: Arquivo $FILE_PATH não encontrado."
-      return 1
-    fi
-    
-    echo "Carregando histórico de '$1' e continuando com o modelo $2..."
-    SESSION_FILE=$(mktemp)
-    
-    # Injeta o histórico no prompt e reabre em modo interativo
-    script -q -c "(cat \"$FILE_PATH\"; echo \"\"; echo \"[Continuação da conversa anterior]\"; cat -) | ollama run $2" "$SESSION_FILE"
-    
-    sed 's/\x1b\[[0-9;]*m//g; s/\r//g' "$SESSION_FILE" >> "$FILE_PATH"
-    rm -f "$SESSION_FILE"
-    
-    echo "Histórico atualizado em: $FILE_PATH"
-  }
+      local FIRST_LINE=$(sed 's/\x1b\[[0-9;]*m//g; s/\r//g' "$SESSION_FILE" | grep -E '[a-zA-Z0-9]' | head -n 1 | tr -dc 'a-zA-Z0-9_ ')
+      
+      # ''$ impede o Nix de achar que é uma variável dele
+      local TITLE=$(echo "''${FIRST_LINE:-conversa_sem_titulo}" | cut -c1-30 | sed 's/ /_/g')
+      local FINAL_PATH="$HOME/.historico_ai/''${TITLE}.txt"
+      
+      sed 's/\x1b\[[0-9;]*m//g; s/\r//g' "$SESSION_FILE" > "$FINAL_PATH"
+      
+      echo ""
+      echo "Conversa salva com sucesso em: $FINAL_PATH"
+      
+      rm -f "$SESSION_FILE"
+      ollama rm "$TEMP_MODEL" > /dev/null
+    }
+
+    # 3. COMANDO PARA CARREGAR E CONTINUAR (AILOAD)
+    aiload() {
+      if [ -z "$1" ] || [ -z "$2" ]; then
+        echo "Uso correto: aiload <nome_do_arquivo_sem_extensao> <modelo>"
+        echo "Exemplo: aiload minha_conversa llama3.1:8b"
+        return 1
+      fi
+      
+      local FILE_PATH="$HOME/.historico_ai/$1.txt"
+      
+      if [ ! -f "$FILE_PATH" ]; then
+        echo "Erro: Arquivo $FILE_PATH não encontrado."
+        return 1
+      fi
+      
+      echo "Carregando histórico de '$1' e continuando com o modelo $2..."
+      local SESSION_FILE=$(mktemp)
+      
+      script -q -c "(cat \"$FILE_PATH\"; echo \"\"; echo \"[Continuação da conversa anterior]\"; cat -) | ollama run $2" "$SESSION_FILE"
+      
+      sed 's/\x1b\[[0-9;]*m//g; s/\r//g' "$SESSION_FILE" >> "$FILE_PATH"
+      rm -f "$SESSION_FILE"
+      
+      echo "Histórico atualizado em: $FILE_PATH"
+    }
  #<-----------------------------AI--------------------------------->
 
 '';
