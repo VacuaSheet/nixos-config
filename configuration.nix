@@ -306,6 +306,7 @@ comitav() {
 
  #<--------------------------AI----------------------------->
 	# Comando rápido "ai <modelo>" no terminal  	
+# 1. COMANDO PARA INICIAR SEM SALVAMENTO
 ai() {
   if [ -z "$1" ]; then
     echo "Por favor, especifique o modelo. Exemplo: ai llama3.1:8b"
