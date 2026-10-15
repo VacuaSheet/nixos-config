@@ -36,7 +36,10 @@ in
   # Gaming: Gamemode & Steam
   programs.gamemode.enable = true;
   programs.steam.enable = true;
-  programs.gamescope.enable = true;
+  programs.gamescope = {
+  enable = true;
+  capSysNice = true; # Melhora a prioridade de CPU para o jogo
+};
 
   # Configuração TPM
   boot.initrd.availableKernelModules = [ "tpm_tis" ]; # Driver essencial para o TPM
